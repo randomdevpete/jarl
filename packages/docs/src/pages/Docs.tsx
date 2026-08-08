@@ -14,7 +14,7 @@ const guides: Record<DocName, string> = {
 export const DocsIndex = () => (
     <>
         <h1>Docs</h1>
-        <p>Guides for using JARL v1, the published controlled-component router.</p>
+        <p>Guides for using JARL's atomic routing model - the route atoms in <code>jarl-atoms</code> and the React bindings in <code>jarl-react</code>.</p>
         <ul className="doc-index">
             {docPages.map(({ docName, title }) => (
                 <li key={docName}>

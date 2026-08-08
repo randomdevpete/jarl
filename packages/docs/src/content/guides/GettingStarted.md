@@ -1,82 +1,100 @@
 ## Getting Started
 
-To get started you need three things: a route map, a history implementation, and a navigation provider.
+JARL is split across two packages: `jarl-atoms`, framework-agnostic [jotai](https://jotai.org/)
+atoms that do the actual route matching, and `jarl-react`, React bindings (components + hooks)
+over them. To get started you need three things: some route atoms, a jotai `<Provider>` at the
+root of your app, and `Link`/`Route` from `jarl-react` to navigate and render.
 
-### The Route Map
+### Route Atoms
 
-routes.js:
+routes.ts:
 
-```js
-import { RouteMap } from "jarl-react";
+```ts
+import { rootAtom, staticRouteAtom } from "jarl-atoms";
 
-const routes = new RouteMap([
-    {
-        path: "/",
-        state: { page: "home" },
-    },
-    {
-        path: "/about",
-        state: { page: "about" },
-    },
-]);
-
-export default routes;
+export const homeRoute = rootAtom;
+export const aboutRoute = staticRouteAtom("about");
 ```
 
-This is a straightforward route map with two routes: a home page and an about page. The map describes the mapping between a "URL" and a "location". A location is a plain object (POJO) that should be serializable.
+Each of these is a **route atom**: a jotai atom that, when read, tells you whether its path
+currently matches (`match`, `exact`, `values`) and how to build a URL for it (`reverse`); when
+_written_, it navigates there. `rootAtom` matches `/` itself and is the implicit parent every
+other route atom builds on unless you give it a different `parent`. `staticRouteAtom("about")`
+matches a single fixed path segment - here, `/about`.
 
-JARL's job is to handle that mapping for you. In your app you can deal exclusively with location objects: the current location is global state for your app, and you can use location objects to generate URLs for links.
+Unlike a v1-style route table, there's no single object describing your whole site: each page
+is its own atom, composed out of smaller ones (see the [Path Variables](/docs/path-variables)
+guide for nesting and dynamic segments).
 
-The next task is to create a provider at the root level of our app. For now we'll use a ready-to-go provider that uses local state to track the current location (we'll look at more advanced setups later).
+The next task is to make these atoms live. Route atoms read/write a shared `locationAtom`
+that's ultimately backed by the browser's `history` API (via jotai's own `Provider`/store, no
+separate `history` package to configure), so all you need at the root of your app is a
+`<Provider>`.
 
-index.js:
+main.tsx:
 
-```jsx
-import { StateProvider } from "jarl-react";
+```tsx
+import { createRoot } from "react-dom/client";
+import { Provider } from "jotai";
 import App from "./App";
-import routes from "./routes";
 
-// Using the history package to support browser history navigation
-import createHistory from "history/createBrowserHistory";
-const history = createHistory();
-
-// The provider will render our App component and pass in the routing state!
-export default () => <StateProvider routes={routes} history={history} component={App} />;
+createRoot(document.getElementById("root")!).render(
+    <Provider>
+        <App />
+    </Provider>
+);
 ```
 
-Finally we can now make use of the router state inside our app. JARL does not ship with components like `<Route>` that you might be used to working with on other libraries. We take the philosophy that a Route component is essentially the same a much simpler JavaScript construct: the `if` statement! Since we end up with the state as defined in our route table, we can simply react to that state: in fact here the correct construct is a `switch`.
+Finally, render based on which route atom currently matches, using `<Route>` from `jarl-react`:
 
-App.js:
+App.tsx:
 
-```jsx
+```tsx
+import { Route } from "jarl-react";
+import { homeRoute, aboutRoute } from "./routes";
 import { HomePage, AboutPage } from "./pages";
 
-// All the state values are injected straight into the App component
-export default ({ screen }) => {
-    switch (screen) {
-        case "home":
-            return <HomePage />;
-        case "about":
-            return <AboutPage />;
-    }
-};
+export default () => (
+    <>
+        <Route on={homeRoute} exact>
+            <HomePage />
+        </Route>
+        <Route on={aboutRoute} exact>
+            <AboutPage />
+        </Route>
+    </>
+);
 ```
 
-And that's it! JARL keeps things very simple: there are no component APIs to learn, and you define the shape of your state however you want.
+`exact` means "only render when this is the final matched segment, not just because a
+descendant route also matches" - without it, `homeRoute` (which everything else is built on
+top of) would match on every page, not just `/`.
 
-There is one piece missing of course - we can't actually navigate between the pages yet! Let's see what a Menu component will look like...
+There is one piece missing of course - we can't actually navigate between the pages yet! Let's
+see what a Menu component will look like, using `Link`:
 
-Menu.js:
+Menu.tsx:
 
-```jsx
+```tsx
 import { Link } from "jarl-react";
+import { homeRoute, aboutRoute } from "./routes";
 
 export default () => (
     <nav>
-        <Link to={screen: "home"}>Home</Link>
-        | <Link to={screen: "about"}>About</Link>
+        <Link route={homeRoute} to={{}} exact>
+            Home
+        </Link>
+        <Link route={aboutRoute} to={{}}>
+            About
+        </Link>
     </nav>
 );
 ```
 
-The `Link` component lets you use state in reverse: specify the state you want to link to, and JARL will generate the correct URL. Again, this takes advantage of the fact that state is essentially a unique identifier for a route.
+`Link` takes the route atom to link to plus the param `values` for it (`{}` here, since neither
+route has any dynamic segments) and reverses them back into an `href` - so your route atoms
+stay the single source of truth for URL shape in both directions, exactly like a v1 location
+object did, just expressed as atoms instead of a route table.
+
+That's it for the basics! Continue to [Path Variables](/docs/path-variables) for dynamic
+segments, or [Data Loading](/docs/data-loading) for fetching data as part of a route match.

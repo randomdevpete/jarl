@@ -35,10 +35,11 @@ export const docPages: { docName: DocName; title: string }[] = [
     { docName: "path-variables", title: "Path Variables" }
 ];
 
-export type ApiName = "jarl-react";
+export type ApiName = "jarl-atoms" | "jarl-react";
 
 export const apiPages: { apiName: ApiName; title: string }[] = [
-    { apiName: "jarl-react", title: "JARL" }
+    { apiName: "jarl-atoms", title: "jarl-atoms" },
+    { apiName: "jarl-react", title: "jarl-react" }
 ];
 
 /** True when the current location matches none of the site's known pages. */

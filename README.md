@@ -15,35 +15,26 @@ If you just want the docs: [JARL demos and documentation](http://jarl.downplay.c
 
 ## Why another router?
 
-A web router simply performs a mapping between URL and state. I wanted
-something that did this job extremely well without getting in the way
-of application structure and without mixing routing logic up with the component tree. JARL's
-routes are defined in a top-level config and are used to generate a `location` object.
-Routing decisions can then be made in your application by making this `location` state
-available and using simple conditions. (For instance, the is no `<Switch/>` component: just use a `switch` statement instead!)
+A web router simply performs a mapping between URL and state. I wanted something that did this
+job extremely well without getting in the way of application structure and without mixing
+routing logic up with the component tree. JARL builds that mapping out of composable
+[jotai](https://jotai.org/) atoms: each route is its own atom, matching a piece of the URL and
+telling you both whether it currently matches and how to build a URL back out of param values.
+Routing decisions in your application are then just React state reads via hooks. (There's no
+`<Switch/>` component either - a `<Route>` per page, or a plain conditional, does the job.)
 
-'Locations' are defined as simple serializable state objects. The route table is then a
-mapping between URLs and these objects. The router is a controlled component, meaning you decide how and when the location actually gets updated. This provides some key benefits:
-
-*   The state can be stored in Redux, local state, or any other storage mechanism,
-    and used for making any rendering decisions
-*   URLs don't ever need to be used inside your application, instead Link can build
-    its URL from state objects, making it very easy to tweak your route structure at any time
-*   React Native support becomes very easy since we can drop the URLs entirely and everything still works!
-
-Some examples of state mapping:
-
-`/about` -> `{page: "about"}`
-`/product/:productId` -> `{page: "product", productId: <string>}`
-
-All routing can be described using this simple approach.
+Because each route atom is an independent, subscribable unit of jotai state, a component that
+reads one only re-renders when *that atom's* derived value actually changes - not on every
+navigation everywhere in the tree, which is where the "atomic" in "Atomic Routing Library"
+comes from.
 
 ## Features
 
-*   Controlled Router with "batteries included"
-*   Object-based locations (instead of URLs)
+*   Composable route atoms - build nested/dynamic routes out of small, independent pieces
+*   Framework-agnostic core (`jarl-atoms`) with thin, hooks-first React bindings (`jarl-react`)
 *   Full querystring matching support
-*   Resolve promises during routing and redirect if required
+*   Resolve promises during routing (via jotai's own async atoms) and redirect if required
+*   SSR/SSG-safe: the shared location atom is seedable per-render on the server
 *   And much more...
 
 ## Concrete Example
@@ -51,109 +42,72 @@ All routing can be described using this simple approach.
 Add to your project:
 
 ```
-yarn add jarl-react
+npm install jarl-atoms jarl-react
 ```
 
-Declare a routing table:
+Declare some route atoms:
 
-```js
-const routes = [
-    // Home page route
-    {
-        path: "/",
-        // Model the state however you want!
-        // Here we decided to use a `page` property to
-        // switch between pages:
-        state: { page: "home" }
-    },
-    // Another static page
-    {
-        path: "/about",
-        state: { page: "about" }
-    },
-    // A dynamic URL for viewing products
-    {
-        path: "/products/:productId",
-        // The `productId` property be merged into state when the
-        // route matches
-        state: { page: "product" },
-        // Nested child routes are straightforward:
-        routes: [
-            {
-                path: "/comments",
-                // All the state will be merged down the branch,
-                // so we'll end up with the following:
-                // { page: "product", productId: <id>, tab: "comments" }
-                state: { tab: "comments" }
-            }
-        ]
-    },
-    // Dynamic (and in brackets for optional) query parameters:
-    {
-        path: "/search?q=:search&sort=(:sortKey)",
-        state: { page: "search" }
-    },
-    // Finally a catch-all `*` route for any bad URLs...
-    // ...including matching any query params into a 'query' hash
-    {
-        path: "/*:missingPath?*=:query",
-        state: { page: "404" }
-    }
-];
+```ts
+// routes.ts
+import { rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+
+export const homeRoute = rootAtom;
+export const aboutRoute = staticRouteAtom("about");
+export const productsRoute = staticRouteAtom("products");
+// The `productId` segment is bound into `values` when this route matches:
+export const productRoute = paramRouteAtom("productId", { parent: productsRoute });
 ```
 
-Load the routes and a `history` implementation of your choice into your `RoutingProvider`:
+Wrap your app in a jotai `<Provider>` (this is what makes the shared location atom live) and
+render based on which route atom currently matches, using `<Route>`:
 
-```js
-const history = createBrowserHistory();
-ReactDOM.render(
-    <RoutingProvider history={history} routes={routes}>
+```tsx
+// main.tsx
+import { createRoot } from "react-dom/client";
+import { Provider } from "jotai";
+import App from "./App";
+
+createRoot(document.getElementById("root")!).render(
+    <Provider>
         <App />
-    </RoutingProvider>,
-    rootElement
+    </Provider>
 );
 ```
 
-(See [history](https://github.com/ReactTraining/history) package for `createBrowserHistory` and other variations)
+```tsx
+// App.tsx
+import { Route } from "jarl-react";
+import { homeRoute, aboutRoute, productRoute } from "./routes";
 
-And finally in your `App` component you can inject the state to perform the actual routing:
+const App = () => (
+    <>
+        <Route on={homeRoute} exact>
+            <HomePage />
+        </Route>
+        <Route on={aboutRoute} exact>
+            <AboutPage />
+        </Route>
+        <Route on={productRoute} exact>
+            {({ productId }) => <ProductPage productId={productId} />}
+        </Route>
+    </>
+);
 
-```js
-import { routing } from "jarl-react";
-
-// All our possible state variables are made available in the App
-const App = ({ page, productId, search, sortKey, tab, missingPath }) => {
-    // Our routing is just one big switch statement - no component needed!
-    switch (page) {
-        case "home":
-            return <HomePage />;
-        case "about":
-            return <AboutPage />;
-        case "product":
-            // Inside ProductPage we'll have a similar switch or some other
-            // conditional to maybe render a tab...
-            return <ProductPage productId={productId} tab={tab} />;
-        case "search":
-            return <SearchPage search={search} sortKey={sortKey} />;
-        case "404":
-            return <MissingPage path={missingPath} />;
-    }
-};
-
-// State is actually injected into App using the `routing` higher-order component
-export default routing()(App);
+export default App;
 ```
 
-Wait, we missed something! How do you actually link to a page? JARL has a Link component much like other router libraries, but its unique feature is that we can actually generate URLs from exactly the same state objects as specified in our routing table. Your main menu might look like this:
+Wait, we missed something! How do you actually link to a page? JARL has a `Link` component much
+like other router libraries, but its unique feature is that it links directly to a route atom
+plus param values, generating the URL by reversing that same atom:
 
-```js
+```tsx
 import { Link } from "jarl-react";
 
 const MainMenu = () => (
     <nav>
-        <Link to={{ page: "home" }}>Home</Link>
-        <Link to={{ page: "about" }}>About</Link>
-        <Link to={{ page: "product", productId: 123 }}>
+        <Link route={homeRoute} to={{}} exact>Home</Link>
+        <Link route={aboutRoute} to={{}}>About</Link>
+        <Link route={productRoute} to={{ productId: "123" }}>
             Our Best Product Ever!
         </Link>
         <SearchForm />
@@ -161,41 +115,43 @@ const MainMenu = () => (
 );
 ```
 
-These links will use the routing table in reverse to stringify all the correct URLs to your pages, e.g. the product link will become `<a href="/product/123">`.
+These links use each route atom's `reverse()` to stringify the correct URL, e.g. the product
+link becomes `<a href="/products/123">`.
 
-The `SearchForm` component needs to handle links in a slightly different way, as it needs to programmatically navigate to the search page. It looks like this:
+A component that needs to navigate programmatically (rather than render a plain link) can use
+the `useNavigate` hook instead:
 
-```js
-class SearchForm extends React.Component {
-    state = { searchText: "" };
+```tsx
+import { useState } from "react";
+import { useNavigate } from "jarl-react";
+import { queryParamAtom } from "jarl-atoms";
 
-    handleChange = e => {
-        // Standard controlled input state management
-        this.setState({ searchText: e.target.value });
-    };
+// A single named query-string param is its own composable route atom too:
+const searchQueryRoute = queryParamAtom("q");
 
-    render() {
-        return (
-            <form>
-                <input
-                    type="text"
-                    value={this.state.searchText}
-                    onChange={this.handleChange}
-                    placeholder="Enter search term"
-                />
-                {/* Use the function-as-child pattern of Link to dynamically construct the search location and navigate programmatically using `onClick` */}
-                <Link to={{ page: "search", search: this.state.searchText }}>
-                    {({ onClick }) => <button onClick={onClick}>Search</button>}
-                </Link>
-            </form>
-        );
-    }
-}
+const SearchForm = () => {
+    const [searchText, setSearchText] = useState("");
+    const navigate = useNavigate(searchQueryRoute);
+    return (
+        <form onSubmit={(e) => { e.preventDefault(); navigate({ q: searchText }); }}>
+            <input
+                type="text"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Enter search term"
+            />
+            <button type="submit">Search</button>
+        </form>
+    );
+};
 
 export default SearchForm;
 ```
 
-That's all the basics! Hopefully this gave a flavour of the power and simplicity of this routing system. For more complex scenarios, there is also a `routing` higher-order component giving access to current location as well as all the router functions (serializing URLs from location objects, calling navigate or redirect, and checking whether links are active). More advanced demos (such as data preloading and code splitting) will be showcased in the demo site...
+That's all the basics! Hopefully this gave a flavour of the power and simplicity of this
+routing system. See the [docs site](https://jarl.downplay.co) for query strings, redirects, and
+data loading (resolving promises as part of a route match, `jarl-atoms`' `resolvedAtom`) in more
+depth.
 
 ## Documentation
 
@@ -250,13 +206,12 @@ Or, come and join the conversation at Reactiflux: https://discordapp.com/invite/
 
 ## Credits
 
-Query string parsing by `qs`: https://github.com/ljharb/qs
+Built on [jotai](https://jotai.org/) atoms and `jotai-location` for the underlying,
+SSR-safe browser history binding.
 
 Some ideas and inspiration from `redux-first-router`: https://github.com/faceyspacey/redux-first-router
 
 And to some extent the [Autoroute](http://www.davidhayden.me/blog/autoroute-custom-patterns-and-route-regeneration-in-orchard-1.4) feature of Orchard CMS, which I was a contributor to many moons ago ;)
-
-Recommended browser history abstraction, `history` by ReactTraining: https://github.com/ReactTraining/history
 
 ## Copyright
 

@@ -1,9 +1,11 @@
+import jarlAtoms from "../content/api-jarl-atoms.md?raw";
 import jarlReact from "../content/api-jarl-react.md?raw";
 import Markdown from "../lib/Markdown";
 import { Link } from "jarl-react";
 import { apiPageRoute, apiPages, ApiName } from "../router/routes";
 
 const content: Record<ApiName, string> = {
+    "jarl-atoms": jarlAtoms,
     "jarl-react": jarlReact
 };
 

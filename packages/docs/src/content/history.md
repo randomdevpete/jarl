@@ -1,10 +1,11 @@
 # v1 History: architecture, design, and why v2 moves to atoms
 
-This page is a design retrospective on JARL v1 (`jarl-react`, `packages/jarl-react`) -
-distinct from the [Changelog](/changelog), which just lists version-by-version release
-notes. This is about *how v1 works and why*, and why the v2 draft
-(`packages/jarl-react-v2`) replaces its internals with [jotai](https://jotai.org/)
-atoms.
+This page is a design retrospective on JARL v1 (`jarl-react`'s original implementation,
+long since removed from `packages/jarl-react`) - distinct from the
+[Changelog](/changelog), which just lists version-by-version release notes. This is
+about *how v1 works and why*, and why v2 replaces its internals with
+[jotai](https://jotai.org/) atoms, split across `packages/jarl-atoms` (the atoms
+themselves) and `packages/jarl-react` (React bindings over them).
 
 ## The core idea: locations are state, not URLs
 
@@ -154,13 +155,13 @@ subscribe to just the one piece of location state it cares about.
 [jotai](https://jotai.org/) atoms solve exactly that problem: each atom is an
 independent, subscribable unit of state, and React components that read an atom (via
 `useAtomValue`) only re-render when *that atom's* derived value actually changes - not
-on every navigation regardless of relevance. The v2 draft
-(`packages/jarl-react-v2/src/routeAtom.ts`, commit `44f8439`) reframes the whole
-router around this:
+on every navigation regardless of relevance. The v2 atoms
+(`packages/jarl-atoms/src/routeAtom.ts`) reframe the whole router around this:
 
-* A single `locationAtom` (in the real v2 draft, backed by `jotai-location`; this docs
-  site vendors a small SSR-safe equivalent - see the note at the top of
-  `packages/docs/src/router/routeAtom.ts`) holds `{ pathname }`.
+* A single `locationAtom`, backed by `jotai-location` in the browser (real
+  `history.pushState`/`replaceState`, responding to `popstate`) and by a per-store
+  override under Node - so a location can be seeded server-side for prerendering,
+  which is exactly what lets this docs site itself be statically generated.
 * `routeAtom(matchPath, makePath, { parent })` derives a **route atom** from a parent
   route atom (defaulting to a `rootAtom`), matching one path segment at a time and
   carrying a `rest.path` of unconsumed segments down to child route atoms - so nested
@@ -175,16 +176,16 @@ router around this:
   `matchPath`/`makePath`, and `transformRouteAtom` lets one route atom's matched values
   be reshaped into another shape - composable building blocks instead of one big JSON
   route table.
-* The new `Link` and `Route` components (`packages/jarl-react-v2/src/Link.tsx`,
-  `Route.tsx`) read/write a specific route atom directly via `useAtom`/`useAtomValue`,
-  so a `Link`'s active-state and a `Route`'s match check only re-render when *that
-  atom's* value changes, not on every navigation everywhere in the tree - the
-  performance TODOs scattered through `RoutingProvider.js` and `Link.js` are the direct
-  motivation.
+* The `Link` and `Route` components (`packages/jarl-react/src/Link.tsx`, `Route.tsx`)
+  read/write a specific route atom directly via `useAtom`/`useAtomValue`, so a `Link`'s
+  active-state and a `Route`'s match check only re-render when *that atom's* value
+  changes, not on every navigation everywhere in the tree - the performance TODOs
+  scattered through `RoutingProvider.js` and `Link.js` are the direct motivation.
 
-This docs site's own top-level navigation (see the [live routing demo](/demos)) and
-its `Link`/`Route` implementation are built on a vendored, SSR-adapted copy of exactly
-these v2 primitives - dogfooding the same API described above, not just linking to it.
+This docs site's own top-level navigation (see the [live routing demo](/demos)) and its
+`Link`/`Route` implementation are built directly on the real `jarl-atoms`/`jarl-react`
+packages described above (see `packages/docs/src/router/routes.ts`) - dogfooding the
+same API, not just linking to it.
 
 The location-objects-not-URLs philosophy, the controlled-component posture, and the
 `resolve`/redirect data-loading model all carry forward conceptually into v2; what's

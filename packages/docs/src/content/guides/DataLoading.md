@@ -1,73 +1,100 @@
 # Data Loading
 
 Most of the time in a real application, every route carries with it some data requirements.
-Normally in the React world we're encouraged to manage an `isLoading` flag in state and
-display some loading spinner while the data loads. This solution isn't ideal because we
-have to manage and check that flag everywhere. JARL makes it easy to manage your loading
-state at the router level rather than the component level.
+Rather than managing an `isLoading` flag by hand in every component that needs data, JARL lets
+you attach a loader to a route atom and let jotai's own async-atom machinery (and, in React,
+`Suspense`) manage the loading state for you.
 
-Let's take the previous example of a product page and see how this looks once we move the side-effects (actually loading the data) into our route map, using `resolve` on our routes.
+`resolvedAtom` (from `jarl-atoms`) takes a route atom and a loader function, and resolves once
+that route matches:
 
-routes.js:
+routes.ts:
 
-```js
-import { RouteMap } from "jarl-react";
+```ts
+import { staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { resolvedAtom } from "jarl-atoms";
 
-const routes = new RouteMap([
-    {
-        path: "/",
-        state: { page: "home" },
-    },
-    {
-        path: "/products/:productId",
-        state: { page: "product" },
-        resolve: async ({ productId }) => {
-            const result = await fetch(`/api/products/${productId}`);
-            const product = await result.json();
-            return { product };
-        },
-    },
-]);
+export const productsRoute = staticRouteAtom("products");
+export const productRoute = paramRouteAtom("productId", { parent: productsRoute });
 
-export default routes;
+export const productDataRoute = resolvedAtom(productRoute, async ({ productId }) => {
+    const result = await fetch(`/api/products/${productId}`);
+    return result.json();
+});
 ```
 
-By initiating data loads during routing, we can ensure that data is available _before_ switching routes and updating the page. JARL will wait for the Promise returned by our async function to resolve before updating the navigation state.
+`resolvedAtom` is a plain jotai async atom (`Atom<Promise<Data | Redirect | undefined>>`), so
+any of jotai's usual ways of consuming one work - the most idiomatic in React is `useAtomValue`
+under a `Suspense` boundary:
 
-## Rejecting routes
+```tsx
+import { Suspense } from "react";
+import { useAtomValue } from "jarl-react";
+import { productDataRoute } from "./routes";
 
-Handling data in our routes table provides some additional benefits. One of these is that we can reject the route by rejecting the promise. Consider this example:
+const ProductPage = () => {
+    const product = useAtomValue(productDataRoute);
+    return <ProductView product={product} />;
+};
 
-```js
-import { RouteMap } from "jarl-react";
+export default () => (
+    <Suspense fallback="Loading...">
+        <ProductPage />
+    </Suspense>
+);
+```
 
-const routes = new RouteMap([
-    {
-        path: "/",
-        state: { page: "home" },
-    },
-    {
-        path: "/products/:productSlug",
-        state: { page: "product" },
-        resolve: async ({ productSlug }) => {
-            const response = await fetch(`/api/productsBySlug?slug=${productSlug}`);
-            if (!response.ok) {
-                return Promise.reject("Not found");
-            }
-            const product = await response.json();
-            return { product };
-        },
-    },
-    {
-        path: "/products/:productSlug",
-        state: { page: "productSearch", notFound: true },
-        resolve: async ({ productSlug }) => {
-            const response = await fetch(`/api/productSearch?text=${productSlug.replace(" ", "")}`);
-            const products = await response.json();
-            return { products };
-        },
-    },
-]);
+By loading data as part of the route atom itself, the data is guaranteed to exist (or the
+resolver's `Promise` is still pending, transparently handled by `Suspense`) by the time
+`ProductPage` renders - no separate loading flag to plumb through. If you'd rather not suspend,
+jotai/utils' `loadable()` wraps any async atom into a synchronous `{ state: "hasData" | "loading"
+| "hasError", ... }` value instead.
 
-export default routes;
+## Redirecting
+
+Sometimes a route shouldn't render at all, and should instead send the visitor somewhere else -
+an auth gate, a canonical-URL redirect, or (as below) a resolver that didn't find what it was
+looking for. `redirect(to)` marks that outcome:
+
+```ts
+import { staticRouteAtom, paramRouteAtom, resolvedAtom, redirect } from "jarl-atoms";
+
+export const productBySlugRoute = paramRouteAtom("productSlug", { parent: productsRoute });
+
+export const productBySlugDataRoute = resolvedAtom(productBySlugRoute, async ({ productSlug }) => {
+    const response = await fetch(`/api/productsBySlug?slug=${productSlug}`);
+    if (!response.ok) {
+        return redirect("/products/not-found");
+    }
+    return response.json();
+});
+```
+
+A `Redirect` returned from a resolver doesn't navigate anywhere by itself - reading the atom
+just tells you a redirect *would* happen, which keeps it composable and testable like any other
+value. To actually perform the navigation, wire `followResolvedRedirects` up once near the root
+of your app (typically alongside where you create your jotai store):
+
+```ts
+import { followResolvedRedirects } from "jarl-atoms";
+import { productBySlugDataRoute } from "./routes";
+
+const unsubscribe = followResolvedRedirects(store, [productBySlugDataRoute]);
+```
+
+It subscribes to each resolved atom given and, the moment one produces a `Redirect`, replaces
+the current location with its target (`history.replaceState`, so the abandoned URL doesn't
+linger in the back-button history).
+
+If a route should redirect unconditionally - with no data fetch involved at all -
+`redirectAtom`/`followRedirects` do the same job without the `resolvedAtom` wrapper:
+
+```ts
+import { redirectAtom, followRedirects } from "jarl-atoms";
+import { staticRouteAtom } from "jarl-atoms";
+
+export const oldAboutRoute = staticRouteAtom("about-us");
+export const oldAboutRedirect = redirectAtom("/about", { parent: oldAboutRoute });
+
+followRedirects(store, [oldAboutRedirect]);
 ```
