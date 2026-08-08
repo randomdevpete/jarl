@@ -35,7 +35,15 @@ npm run format           # oxfmt across the repo
 npm run dev / npm start   # run the docs site's Vite dev server
 npm run typecheck         # tsc over packages/ and scripts/ (e2e typechecks separately)
 npm run test:e2e          # Playwright suite (see test:e2e:install)
+npm run release           # semantic-release (needs NPM_TOKEN + GH_TOKEN — CI only)
+npm run release:dry-run   # semantic-release --dry-run --no-ci, no credentials needed
 ```
+
+`jarl-atoms` and `jarl-react` are released together via semantic-release, versioned in
+lockstep from Conventional Commits on `master`, with major version bumps suppressed
+(breaking-change commits produce a minor bump instead) until that's explicitly lifted.
+See [`docs/release-strategy.md`](./docs/release-strategy.md) for the full mechanism,
+rationale, and what CI needs to wire it up.
 
 Linting is via `oxlint` and formatting via `oxfmt` (both part of the Vite+ toolchain) — there is no
 separate ESLint/Prettier config. No pre-commit hook is currently wired up (husky/lint-staged were

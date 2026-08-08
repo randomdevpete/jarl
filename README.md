@@ -233,6 +233,15 @@ npm run test:e2e:install   # once, to install the suite's deps and browsers
 npm run test:e2e
 ```
 
+## Releases & versioning
+
+`jarl-atoms` and `jarl-react` are versioned and released together via
+[semantic-release](https://semantic-release.gitbook.io/), driven by
+[Conventional Commits](https://www.conventionalcommits.org/) on `master`. Major version
+bumps are suppressed by design (breaking changes produce a minor bump instead) while the
+v2 API is still settling. See [`docs/release-strategy.md`](./docs/release-strategy.md)
+for the full details.
+
 ## Community
 
 We have a dedicated Discord server with CI announcements in #build: https://discord.gg/BVcQ6Z

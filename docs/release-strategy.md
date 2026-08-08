@@ -1,0 +1,202 @@
+# Release strategy: semantic-release with suppressed majors ("romantic versioning")
+
+This documents the versioning/release strategy for the two publishable packages,
+`jarl-atoms` and `jarl-react` (`packages/docs` is `"private": true` and never published).
+It replaces the old CircleCI/lerna/manual-tag-and-`npm publish` flow described in
+[`docs/legacy-ci.md`](./legacy-ci.md); that flow's publish step was explicitly deferred
+when CI moved to GitHub Actions and is what this ticket finally replaces.
+
+See `.releaserc.json` at the repo root for the actual config this document explains.
+
+## Chosen approach: semantic-release, lockstep-versioned, root-level config
+
+**semantic-release**, per the author's stated preference, computing versions from
+[Conventional Commits](https://www.conventionalcommits.org/) on `master`. Both
+packages are released **in lockstep**: one semantic-release run, one computed version
+number, applied to both `packages/jarl-atoms/package.json` and
+`packages/jarl-react/package.json` at once, tagged once (`vX.Y.Z`) and published
+together.
+
+Concretely, `.releaserc.json` runs a single shared pipeline:
+
+1. `@semantic-release/commit-analyzer` (custom `releaseRules`, see below) — decides
+   whether this release is a `patch`, `minor`, or `no release`, from **all** commits
+   on `master` since the last release tag (not scoped to either package's directory).
+2. `@semantic-release/release-notes-generator` — builds release notes from the same
+   commits.
+3. `@semantic-release/changelog` — prepends those notes to the root `CHANGELOG.md`.
+4. `@semantic-release/npm`, **listed twice** — once with
+   `pkgRoot: "packages/jarl-atoms"`, once with `pkgRoot: "packages/jarl-react"`.
+   semantic-release runs every plugin entry in the array at each lifecycle step, so
+   both instances independently bump their package's `version` field to the same
+   `nextRelease.version` and (when credentials are present) `npm publish` it.
+5. `@semantic-release/git` — commits the two updated `package.json` files and
+   `CHANGELOG.md` back to `master` with an `[skip ci]` release commit.
+6. `@semantic-release/github` — creates a GitHub release with the generated notes.
+
+### Why lockstep instead of `semantic-release-monorepo` / independent versioning
+
+The alternative considered was giving each package its own independently-computed
+version (via [`semantic-release-monorepo`](https://github.com/pmowrer/semantic-release-monorepo)
+or hand-rolled path-scoped commit filtering + per-package git tags like
+`jarl-atoms@2.3.0`). That's the more "correct" model for packages that genuinely
+evolve independently, but for this repo it's not worth the complexity:
+
+- `jarl-atoms` and `jarl-react` are already versioned in lockstep today (both `2.0.0`),
+  and `jarl-react` exists specifically as the React binding _over_ `jarl-atoms` — they
+  ship as one conceptual library with two entry points, not two independent products.
+- Independent versioning needs two separate release configs/executions (one scoped per
+  package directory), two tag namespaces, and — critically — some mechanism to reopen
+  and bump `jarl-react`'s `"jarl-atoms": "^2.0.0"` dependency range whenever
+  `jarl-atoms` releases a version outside that range. That's real ongoing maintenance
+  for a 2-package workspace.
+- With lockstep versioning **and** the major-suppression below, `jarl-react`'s
+  `"jarl-atoms": "^2.0.0"` dependency range never needs to change: every future
+  lockstep release stays a `2.x.y`, which `^2.0.0` already satisfies. No dependency-range
+  bump step is needed release over release.
+
+Tradeoff accepted: a change that only touches `jarl-react` (e.g. a React-only bugfix)
+still bumps and republishes `jarl-atoms`, even with no functional diff in that package.
+For a 2-package workspace this is a small, cheap redundant publish — far simpler than
+maintaining independent version lines.
+
+## How versions are derived from commits
+
+Commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/)
+(`type(scope)!: subject`, optional `BREAKING CHANGE:` footer). `commit-analyzer` is
+configured with `preset: "conventionalcommits"` (the modern preset — recognizes both the
+`!` shorthand, e.g. `feat!: ...`, and a `BREAKING CHANGE:`/`BREAKING-CHANGE:` footer as
+breaking, unlike the older `angular` preset which only recognizes the footer).
+
+Default mapping (standard Conventional Commits semantics):
+
+| Commit type                                                       | Release bump                                                  |
+| ----------------------------------------------------------------- | ------------------------------------------------------------- |
+| `fix`, `perf`                                                     | patch                                                         |
+| `feat`                                                            | minor                                                         |
+| breaking change (`!` or `BREAKING CHANGE:` footer)                | **minor** (suppressed — see below; would normally be `major`) |
+| `revert`                                                          | patch                                                         |
+| `docs`, `style`, `chore`, `refactor`, `test`, `build`, `ci`, etc. | no release                                                    |
+
+If multiple commits are included in one release, the highest applicable bump wins
+(a `feat` and a `fix` together still only produce one `minor` release).
+
+## Major-version suppression ("romantic versioning")
+
+Per the author's note on the ticket: breaking changes will happen often while the
+library is still maturing, and racing up through major version numbers (v3, v4, v50...)
+before there's ever a stable 2.0 doesn't help anyone. So major bumps are suppressed by
+design, via a custom release rule in `.releaserc.json`:
+
+```json
+{
+    "preset": "conventionalcommits",
+    "releaseRules": [
+        { "breaking": true, "release": "minor" },
+        { "type": "revert", "release": "patch" }
+    ]
+}
+```
+
+`@semantic-release/commit-analyzer` checks custom `releaseRules` **before** falling back
+to the preset's defaults, and uses whichever result the custom rules produce once any of
+them match. The `{ "breaking": true, "release": "minor" }` rule matches any commit that
+has a breaking-change marker (whether via `!` shorthand or a `BREAKING CHANGE:` footer)
+and forces its release type to `minor`, so the preset's own default
+(`{ "breaking": true, "release": "major" }`) is never reached for breaking commits.
+Conventional Commits presets have no _other_ source of a `major` bump — breaking-change
+markers are the only trigger — so with this rule in place, `commit-analyzer` can never
+return `"major"` for this repo, full stop.
+
+This was verified directly against `@semantic-release/commit-analyzer`'s `analyzeCommits`
+function with synthetic commits (see "Verification" below): a `fix!:` commit with a
+`BREAKING CHANGE:` footer, a `feat:` commit with a `BREAKING CHANGE:` footer, and a
+`feat!:` commit using only the shorthand marker all resolved to `minor`, never `major`.
+
+### Lifting the suppression later
+
+When the library is ready to start incrementing majors normally (e.g. a deliberate,
+planned 3.0 breaking release), remove the `{ "breaking": true, "release": "minor" }`
+override from `.releaserc.json`'s `commit-analyzer` config (or change its `release` value
+to `"major"`). From that point on, a breaking-change commit produces a normal major bump
+again. No other config changes are needed — this is a single-line, single-place toggle.
+
+## One-time bootstrap: the `v2.0.0` baseline tag
+
+semantic-release determines "the last release" by finding the newest git tag matching
+`tagFormat` (`v${version}` here) that's reachable from the release branch — it has no
+awareness of the `"version": "2.0.0"` already sitting in each package's `package.json`.
+This repo's newest matching tag today is `v1.0.0-beta.5` (from the pre-rewrite v1 line);
+without a `v2.0.0` tag, the **first** semantic-release run would compute its bump from
+that old v1 baseline instead, which is wrong.
+
+**Before the first automated release runs**, someone (a human step, or the first run of
+ticket 106's CI wiring) must create and push a `v2.0.0` tag pointing at the commit on
+`master` where the v2 packages first shipped at version `2.0.0`:
+
+```bash
+git tag v2.0.0 <sha-of-the-v2.0.0-commit-on-master>
+git push origin v2.0.0
+```
+
+This ticket deliberately does **not** create that tag (out of scope: "do NOT create
+tags/releases in this task") — it's called out here and in the PR description instead so
+it isn't missed.
+
+## Workspace scripts
+
+Added to the root `package.json`:
+
+```bash
+npm run release           # semantic-release — full run, needs NPM_TOKEN + GH_TOKEN/GITHUB_TOKEN
+npm run release:dry-run   # semantic-release --dry-run --no-ci — computes and prints the
+                           # next version/notes without publishing, tagging, or committing
+```
+
+`ci-publish` (`npm publish --workspace packages/jarl-atoms --workspace packages/jarl-react`)
+already existed from ticket 104 and is unrelated to this — it's a manual/ad-hoc publish
+escape hatch, not part of the automated release path.
+
+## Verification performed (no credentials available)
+
+- `npm install` resolves all new `semantic-release`/`@semantic-release/*` dependencies
+  cleanly under the existing workspace setup.
+- `npx semantic-release --dry-run --no-ci` loads `.releaserc.json` successfully: every
+  plugin (including both `@semantic-release/npm` instances, one per `pkgRoot`) resolves
+  and initializes without error. On the `master` branch it stops (as designed —
+  semantic-release only releases from `master`); pointed at a local `--repository-url`
+  override to exercise it from a branch, it correctly proceeds to `verifyConditions` and
+  fails only on the expected missing-credential errors (`ENONPMTOKEN` ×2 — one per
+  package — and `ENOGHTOKEN`), confirming the pipeline is wired correctly end to end
+  short of actual publishing.
+- `@semantic-release/commit-analyzer`'s `analyzeCommits` was called directly (bypassing
+  the full pipeline, so no credentials needed) with the exact `releaseRules` from
+  `.releaserc.json`, against synthetic commits covering `fix`, `feat`, `docs`,
+  `fix!` + footer, `feat` + footer, `feat!` shorthand, and `chore`. Results: `patch`,
+  `minor`, `null`, `minor`, `minor`, `minor`, `null` — every breaking-change form
+  resolved to `minor`, confirming the major-suppression rule works as intended.
+
+## What ticket 106 (CI wiring) needs to provide
+
+This ticket only adds config/scripts/docs — it does not wire anything into GitHub
+Actions. For the automated release to actually run, ticket 106 needs to:
+
+- Add a job to `.github/workflows/ci.yml` (or a new workflow) that runs `npm run release`
+  after `build-and-test` succeeds, triggered on `push` to `master` only (not on PRs —
+  semantic-release itself also refuses to run on PR builds, but the job shouldn't even
+  attempt it).
+- Provide these as repository secrets, injected as env vars for that job:
+    - `NPM_TOKEN` — an npm automation/publish token with publish rights to both `jarl-atoms`
+      and `jarl-react` on the registry.
+    - `GH_TOKEN` or `GITHUB_TOKEN` — the default `secrets.GITHUB_TOKEN` GitHub Actions
+      provides is sufficient for `@semantic-release/github`, as long as the job's
+      `permissions:` block grants at least `contents: write` (to push the release commit
+      and tag) and ideally `issues: write` / `pull-requests: write` (so
+      `@semantic-release/github` can comment on issues/PRs referenced by release notes).
+- Create and push the one-time `v2.0.0` baseline tag described above, before the first
+  release job run — otherwise the first computed version will be wrong (based on the old
+  v1.x tag history instead of the v2 baseline).
+- Note: GitHub Actions is currently billing-locked for this repo (ticket 82), so any CI
+  run — including this new release job once ticket 106 adds it — is expected to show as
+  failed/not-run until that's resolved, independent of whether the release config itself
+  is correct.
