@@ -149,7 +149,11 @@ new workflow, or simply dropped as no-longer-relevant):
   new deploy target turns out to be; not carried forward.
 - **npm package publish on tagged builds** — out of scope for this ticket;
   can be re-added as its own workflow/job once the v2 package boundaries
-  (tickets 51/52/54/55/56) have settled.
+  (tickets 51/52/54/55/56) have settled. (Re-added, but not tag-triggered —
+  ticket 106 wires a `release` job into `ci.yml` that runs on every push to
+  master and lets `semantic-release` itself decide, from Conventional
+  Commits, whether and what to publish and tag. See
+  `docs/release-strategy.md`.)
 - **Discord build/deploy notifications** — cosmetic, not CI-critical; can be
   re-added later if wanted.
 - **Cypress Dashboard recording** — Cypress itself is being replaced by
