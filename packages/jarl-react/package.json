@@ -18,7 +18,7 @@
     "author": "Peter Hurst",
     "repository": {
         "type": "git",
-        "url": "https://github.com/downplay/jarl-react.git"
+        "url": "git+https://github.com/downplay/jarl-react.git"
     },
     "type": "module",
     "sideEffects": false,
