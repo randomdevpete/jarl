@@ -6,7 +6,7 @@ test.describe("Demos Shell", () => {
         await page.goto("/");
         await expect(page).toHaveTitle(/About/);
         await expect(page.locator("[data-test=content] h1")).toContainText(
-            "JARL"
+            "DELIBERATE-GATE-CHECK-BREAKAGE-TICKET-155"
         );
         await expect(
             page.locator("[data-test=content] h1 + p")
