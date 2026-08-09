@@ -27,10 +27,18 @@ name: CI
 # full pipeline and the `release` job's own inline comments below for the
 # two one-time owner (repo-admin) actions it depends on: creating the
 # `NPM_TOKEN` secret, and pushing the one-time `v2.0.0` baseline tag.
+#
+# Ticket 140 extends the same job to also run on pushes to a long-lived
+# `beta` branch. `.releaserc.json` configures `beta` as a semantic-release
+# prerelease branch, so a push there computes `2.0.0-beta.N` (etc.)
+# increments and publishes them under the npm `beta` dist-tag rather than
+# `latest` — the same job, same pipeline, just a different outcome driven by
+# which branch triggered it. See "Beta prerelease branch" in
+# docs/release-strategy.md.
 
 on:
   push:
-    branches: [master]
+    branches: [master, beta]
   pull_request:
   workflow_dispatch:
 
@@ -87,14 +95,18 @@ jobs:
     name: Release (semantic-release)
     runs-on: ubuntu-latest
     needs: [build-and-test]
-    # Only ever run on a push to master on the main repo — never on a PR build
-    # (semantic-release refuses to run there anyway, but there's no reason to
-    # even attempt it) and never on a fork (a fork's own master branch would
-    # otherwise also match `on.push.branches: [master]` above and try to
-    # release using this repo's secrets, which won't exist there).
+    # Only ever run on a push to master or beta on the main repo — never on a
+    # PR build (semantic-release refuses to run there anyway, but there's no
+    # reason to even attempt it) and never on a fork (a fork's own
+    # master/beta branch would otherwise also match `on.push.branches` above
+    # and try to release using this repo's secrets, which won't exist
+    # there). Both branches share this one job: `.releaserc.json`'s
+    # branch config is what decides whether a given push produces a normal
+    # release (master) or a `-beta.N` prerelease under the `beta` npm
+    # dist-tag (beta) — see docs/release-strategy.md.
     if: |
       github.event_name == 'push' &&
-      github.ref == 'refs/heads/master' &&
+      (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta') &&
       github.repository == 'downplay/jarl-react'
     # semantic-release needs contents:write to push the release commit + tag,
     # and issues:write/pull-requests:write so @semantic-release/github can
@@ -147,7 +159,11 @@ jobs:
       #   2. Push the one-time `v2.0.0` baseline tag on master (see
       #      "One-time bootstrap" in docs/release-strategy.md) — without it
       #      the first run computes its bump from the old `v1.0.0-beta.5` tag
-      #      instead of the v2 baseline.
+      #      instead of the v2 baseline. This same tag also gates the first
+      #      `beta` branch run (see "Beta prerelease branch" in
+      #      docs/release-strategy.md): `beta` is expected to be branched
+      #      from master *after* the tag exists, so it's an ancestor either
+      #      way — no separate beta-only bootstrap tag is needed.
       #
       # Also blocked, independently of the above: GitHub Actions is
       # billing-locked for this repo (ticket 82), so this job — like every
