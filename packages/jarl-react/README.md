@@ -13,7 +13,7 @@ For documentation and demos go here:
 
 For source code and issue tracking, please see the monorepo:
 
-https://github.com/downplay/jarl-react
+https://github.com/randomdevpete/jarl
 
 For questions and support, drop into our Discord:
 

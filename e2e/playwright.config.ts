@@ -15,7 +15,7 @@ import { defineConfig, devices } from "@playwright/test";
  *
  * Decision on 05CodeSplitting.js: dropped, not ported. It was already fully
  * commented out on master (blocked historically by
- * https://github.com/downplay/jarl-react/issues/17, an unrelated webpack
+ * https://github.com/randomdevpete/jarl/issues/17, an unrelated webpack
  * build problem) and code splitting isn't yet a stated goal of the v2
  * rewrite. Revisit as a new ticket if/when v2 grows a code-splitting story.
  */

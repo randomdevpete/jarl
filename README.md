@@ -6,8 +6,8 @@ The production grade "batteries included" **controlled component** router.
 
 [![latest npm version](https://img.shields.io/npm/v/jarl-react.svg)](https://www.npmjs.com/package/jarl-react)
 [![downloads](https://img.shields.io/npm/dm/jarl-react.svg)](https://www.npmjs.com/package/jarl-react)
-[![dependencies](https://david-dm.org/downplay/jarl-react.svg?path=packages/jarl-react)](https://david-dm.org/downplay/jarl-react?path=packages/jarl-react)
-[![CI](https://github.com/downplay/jarl-react/actions/workflows/ci.yml/badge.svg)](https://github.com/downplay/jarl-react/actions/workflows/ci.yml)
+[![dependencies](https://david-dm.org/randomdevpete/jarl.svg?path=packages/jarl-react)](https://david-dm.org/randomdevpete/jarl?path=packages/jarl-react)
+[![CI](https://github.com/randomdevpete/jarl/actions/workflows/ci.yml/badge.svg)](https://github.com/randomdevpete/jarl/actions/workflows/ci.yml)
 [![Cypress end-to-end tests](https://img.shields.io/badge/cypress-dashboard-brightgreen.svg)](https://dashboard.cypress.io/#/projects/ps43vs/runs)
 [![Join the conversation on Discord](https://img.shields.io/discord/437254750946459648.svg)](https://discord.gg/BVcQ6Z)
 
@@ -164,8 +164,8 @@ Detailed documentation, and demos with annotated code samples, can be viewed at 
 ## Tests & Demos
 
 ```
-git clone https://github.com/downplay/jarl-react
-cd jarl-react
+git clone https://github.com/randomdevpete/jarl
+cd jarl
 npm install
 npm run build
 ```
