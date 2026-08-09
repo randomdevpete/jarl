@@ -143,6 +143,93 @@ This ticket deliberately does **not** create that tag (out of scope: "do NOT cre
 tags/releases in this task") — it's called out here and in the PR description instead so
 it isn't missed.
 
+## Beta prerelease branch (ticket 140)
+
+Per the author's further thought on ticket 140: rather than publishing `2.0.0` straight
+to `latest` as soon as the v2 rewrite is code-complete, a long-lived `beta` branch lets
+work continue to be pushed out as installable, incrementing prereleases
+(`2.0.0-beta.1`, `2.0.0-beta.2`, ...) while it's still settling — without ever touching
+the `latest` dist-tag npm installs by default. Once the beta line feels ready to become
+the real `2.0.0` (possibly via a release-candidate phase first — see below), the plan
+reverts to what ticket 107 already describes: a real `2.0.0` published as `latest`. That
+ticket's `depends_on` already includes 140 for exactly this reason.
+
+### How it's wired
+
+`.releaserc.json`'s `branches` array adds `beta` as a semantic-release **prerelease
+branch**:
+
+```json
+{ "name": "beta", "prerelease": true }
+```
+
+`prerelease: true` tells semantic-release two things at once, both driven by the branch
+name:
+
+1. Computed versions on this branch get the `-beta.N` suffix appended, e.g. a `feat`
+   commit pushed to `beta` when the last real release was `2.0.0` computes
+   `2.0.1-beta.1` (or `2.0.0-beta.1` before any real release exists yet — see bootstrap
+   below); a second push before promotion computes `...-beta.2`, and so on.
+2. `@semantic-release/npm`'s publish **channel** for this branch also defaults to the
+   branch name, so every `beta` publish goes out under the `beta` npm dist-tag —
+   `npm install jarl-react` (no tag) keeps resolving whatever `latest` currently points
+   at; only `npm install jarl-react@beta` picks up the prerelease train.
+
+The rest of the pipeline — commit-analyzer's rules (including the major-suppression
+above), release-notes-generator, the changelog, `@semantic-release/git`, and
+`@semantic-release/github` — all run unchanged on `beta`, same as on `master`. CI wiring
+is the same `release` job in `.github/workflows/ci.yml` for both branches; see that
+file's comments for the branch-triggering and `if:` details.
+
+### Bootstrap: reuses the same `v2.0.0` tag, no separate beta baseline needed
+
+The "One-time bootstrap" section above already requires a `v2.0.0` tag on `master`
+before the _first_ automated release of any kind runs, because without it
+semantic-release would otherwise find this same repo's old pre-rewrite `v1.0.0-beta.5`
+tag as "the last release" and continue that lineage instead. That requirement applies
+identically to `beta`: as long as the `beta` branch is created from `master` **after**
+the `v2.0.0` tag has been pushed, the tag is an ancestor of `beta` too, so semantic-release
+resolves the same correct baseline on either branch. No second, beta-specific bootstrap
+tag is required — but the ordering matters (tag first, branch second), and pushing to
+`beta` before the tag exists would carry over the wrong (v1) baseline just as it would on
+`master`.
+
+### Version bumps landed by this ticket
+
+`packages/jarl-atoms/package.json` and `packages/jarl-react/package.json`'s resting
+`"version"` fields are bumped from `2.0.0` to `2.0.0-beta.1` in this ticket, to reflect
+that the repo is now in the beta phase rather than presenting as an already-released
+`2.0.0`. This is a documentation/dev-state convenience only — semantic-release computes
+the version actually published from git tags, not from whatever is checked into
+`package.json` at push time (it overwrites both files' `version` field itself as part of
+each release commit). `packages/jarl-react/package.json`'s dependency on `jarl-atoms` is
+also updated, from `^2.0.0` to `^2.0.0-beta.1`: npm's semver treats prerelease versions
+specially — a plain `^2.0.0` range never matches _any_ prerelease version (`2.0.0-beta.1`
+included), only a range with a prerelease comparator on the same `major.minor.patch`
+does, and that comparator still matches later betas, an eventual real `2.0.0`, and any
+`2.x.y` after that. Without this change, installing `jarl-react@beta` would fail to
+resolve its own `jarl-atoms` dependency.
+
+### Not done by this ticket
+
+- **The `beta` branch itself is not created or pushed.** This ticket lands the
+  configuration and CI wiring only; creating `beta` (and thus triggering its first real
+  publish) is left as a follow-up action once the owner is ready to start iterating in
+  public beta — consistent with the "do NOT create tags/releases" scoping already
+  observed above for the `v2.0.0` bootstrap tag.
+- **No `rc`/release-candidate prerelease branch is added.** The ticket's title
+  ("...until ready to move to release candidate") anticipates an eventual RC step, but
+  doesn't require building it now. If a formal RC phase turns out to be wanted later, the
+  same pattern extends directly — add another prerelease branch entry (e.g.
+  `{ "name": "rc", "prerelease": true }`) publishing under an `rc` dist-tag — but that's
+  left for a future ticket rather than spun up speculatively here. The simplest path from
+  beta to stable remains: merge `beta` back into `master` and let master's existing
+  non-prerelease pipeline cut the real `2.0.0`.
+- **GitHub Actions billing lock (ticket 82).** Same blocker noted throughout this
+  document already applies to the `beta` branch's runs of the `release` job: Actions is
+  billing-locked for this repo, so no CI run — beta or master — can be proven green from
+  outside GitHub until that's resolved.
+
 ## Workspace scripts
 
 Added to the root `package.json`:

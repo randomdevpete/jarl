@@ -40,9 +40,12 @@ npm run release:dry-run   # semantic-release --dry-run --no-ci, no credentials n
 ```
 
 `jarl-atoms` and `jarl-react` are released together via semantic-release, versioned in
-lockstep from Conventional Commits on `master`, with major version bumps suppressed
-(breaking-change commits produce a minor bump instead) until that's explicitly lifted.
-See [`docs/release-strategy.md`](./docs/release-strategy.md) for the full mechanism,
+lockstep from Conventional Commits, with major version bumps suppressed (breaking-change
+commits produce a minor bump instead) until that's explicitly lifted. Pushes to `master`
+cut normal releases (`latest` dist-tag); pushes to the long-lived `beta` branch cut
+`2.0.0-beta.N`-style prereleases under the `beta` dist-tag instead, so iteration can ship
+installable builds before committing to a real `2.0.0`. See
+[`docs/release-strategy.md`](./docs/release-strategy.md) for the full mechanism,
 rationale, and what CI needs to wire it up.
 
 Linting is via `oxlint` and formatting via `oxfmt` (both part of the Vite+ toolchain) — there is no
