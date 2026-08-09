@@ -46,7 +46,7 @@ export const Layout = ({ children }: { children: ReactNode }) => (
         <footer className="site-footer">
             <p>
                 JARL: Atomic Routing Library &mdash;{" "}
-                <a href="https://github.com/downplay/jarl-react">GitHub</a>
+                <a href="https://github.com/randomdevpete/jarl">GitHub</a>
             </p>
         </footer>
     </div>

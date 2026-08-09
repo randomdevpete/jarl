@@ -107,7 +107,7 @@ jobs:
     if: |
       github.event_name == 'push' &&
       (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta') &&
-      github.repository == 'downplay/jarl-react'
+      github.repository == 'randomdevpete/jarl'
     # semantic-release needs contents:write to push the release commit + tag,
     # and issues:write/pull-requests:write so @semantic-release/github can
     # comment on issues/PRs referenced by release notes. See
