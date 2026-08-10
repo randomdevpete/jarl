@@ -31,9 +31,8 @@ const DemoAbout = () => (
     <div>
         <h3>About</h3>
         <p>
-            This page is rendered by <code>basicRoutingDemoPageRoute</code>, a{" "}
-            <code>paramRouteAtom</code> child of <code>basicRoutingDemoRoute</code>, matched
-            when its value is <code>&quot;about&quot;</code>.
+            This page is rendered by <code>basicRoutingDemoPageRoute</code>, a <code>paramRouteAtom</code> child of{" "}
+            <code>basicRoutingDemoRoute</code>, matched when its value is <code>&quot;about&quot;</code>.
         </p>
     </div>
 );
@@ -42,7 +41,11 @@ const DemoNotFound = ({ page }: { page: string }) => (
     <div>
         <h3>Not found</h3>
         <p>
-            No demo page named &ldquo;{page}&rdquo;. Try <Link route={basicRoutingDemoRoute} to={{}}>Home</Link>.
+            No demo page named &ldquo;{page}&rdquo;. Try{" "}
+            <Link route={basicRoutingDemoRoute} to={{}}>
+                Home
+            </Link>
+            .
         </p>
     </div>
 );

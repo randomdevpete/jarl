@@ -57,11 +57,7 @@ const Shell = () => {
     } else {
         // Deeper unmatched paths (e.g. two+ segments) aren't caught by
         // shellMissingAtom, which only matches a single top-level segment.
-        content = (
-            <NotFound
-                missingPath={root.match ? root.rest.path.join("/") : ""}
-            />
-        );
+        content = <NotFound missingPath={root.match ? root.rest.path.join("/") : ""} />;
     }
 
     return (

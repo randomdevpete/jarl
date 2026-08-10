@@ -23,28 +23,25 @@ export type DefaultParams = {};
  */
 export type NavOptions = { replace?: boolean };
 
-export type ExtractRouteOptionalParam<PathType extends Path> =
-  PathType extends `${infer Param}?`
+export type ExtractRouteOptionalParam<PathType extends Path> = PathType extends `${infer Param}?`
     ? { readonly [k in Param]: string | undefined }
     : PathType extends `${infer Param}*`
-    ? { readonly [k in Param]: string | undefined }
-    : PathType extends `${infer Param}+`
-    ? { readonly [k in Param]: string }
-    : { readonly [k in PathType]: string };
+      ? { readonly [k in Param]: string | undefined }
+      : PathType extends `${infer Param}+`
+        ? { readonly [k in Param]: string }
+        : { readonly [k in PathType]: string };
 
-export type ExtractRouteParams<PathType extends string> =
-  string extends PathType
+export type ExtractRouteParams<PathType extends string> = string extends PathType
     ? DefaultParams
     : PathType extends `${infer _Start}:${infer ParamWithOptionalRegExp}/${infer Rest}`
-    ? ParamWithOptionalRegExp extends `${infer Param}(${infer _RegExp})`
-      ? ExtractRouteOptionalParam<Param> & ExtractRouteParams<Rest>
-      : ExtractRouteOptionalParam<ParamWithOptionalRegExp> &
-          ExtractRouteParams<Rest>
-    : PathType extends `${infer _Start}:${infer ParamWithOptionalRegExp}`
-    ? ParamWithOptionalRegExp extends `${infer Param}(${infer _RegExp})`
-      ? ExtractRouteOptionalParam<Param>
-      : ExtractRouteOptionalParam<ParamWithOptionalRegExp>
-    : {};
+      ? ParamWithOptionalRegExp extends `${infer Param}(${infer _RegExp})`
+          ? ExtractRouteOptionalParam<Param> & ExtractRouteParams<Rest>
+          : ExtractRouteOptionalParam<ParamWithOptionalRegExp> & ExtractRouteParams<Rest>
+      : PathType extends `${infer _Start}:${infer ParamWithOptionalRegExp}`
+        ? ParamWithOptionalRegExp extends `${infer Param}(${infer _RegExp})`
+            ? ExtractRouteOptionalParam<Param>
+            : ExtractRouteOptionalParam<ParamWithOptionalRegExp>
+        : {};
 
 // Exported so queryAtom/redirectAtom/resolvedAtom can compose on top of the
 // same underlying location without each creating their own history binding.
@@ -58,9 +55,9 @@ export type ExtractRouteParams<PathType extends string> =
  * both ways still typechecks.
  */
 export type JarlLocation = {
-  pathname?: string;
-  searchParams?: URLSearchParams;
-  hash?: string;
+    pathname?: string;
+    searchParams?: URLSearchParams;
+    hash?: string;
 };
 
 const isBrowser = typeof window !== "undefined";
@@ -102,253 +99,228 @@ const serverLocationAtom = atom<JarlLocation | null>(null);
  * throws `ReferenceError: window is not defined` and the router can't SSR at all
  * — which is what the docs site (packages/docs) needs in order to prerender.
  */
-export const locationAtom: WritableAtom<
-  JarlLocation,
-  [SetStateAction<JarlLocation>, { replace?: boolean }?],
-  void
-> = atom(
-  (get) => {
-    if (!isBrowser) {
-      const override = get(serverLocationAtom);
-      if (override) return override;
-    }
-    return get(historyLocationAtom);
-  },
-  (get, set, update: SetStateAction<JarlLocation>, options?: { replace?: boolean }) => {
-    if (isBrowser) {
-      set(historyLocationAtom, update, options);
-      return;
-    }
-    const current = get(serverLocationAtom) ?? get(historyLocationAtom);
-    set(
-      serverLocationAtom,
-      typeof update === "function"
-        ? (update as (prev: JarlLocation) => JarlLocation)(current)
-        : update
+export const locationAtom: WritableAtom<JarlLocation, [SetStateAction<JarlLocation>, { replace?: boolean }?], void> =
+    atom(
+        (get) => {
+            if (!isBrowser) {
+                const override = get(serverLocationAtom);
+                if (override) return override;
+            }
+            return get(historyLocationAtom);
+        },
+        (get, set, update: SetStateAction<JarlLocation>, options?: { replace?: boolean }) => {
+            if (isBrowser) {
+                set(historyLocationAtom, update, options);
+                return;
+            }
+            const current = get(serverLocationAtom) ?? get(historyLocationAtom);
+            set(
+                serverLocationAtom,
+                typeof update === "function" ? (update as (prev: JarlLocation) => JarlLocation)(current) : update,
+            );
+        },
     );
-  }
-);
 
 export type RouteReturn<T extends DefaultParams = DefaultParams> = {
-  reverse: (values: T) => string;
+    reverse: (values: T) => string;
 } & (
-  | {
-      match: true;
-      values: T;
-      exact: boolean;
-      rest: { path: string[] };
-    }
-  | {
-      match: false;
-      exact: false;
-      values: undefined;
-    }
+    | {
+          match: true;
+          values: T;
+          exact: boolean;
+          rest: { path: string[] };
+      }
+    | {
+          match: false;
+          exact: false;
+          values: undefined;
+      }
 );
 
 // jotai's WritableAtom takes its write-side arguments as a tuple (Args) plus
 // a Result type, rather than the single-Update-type shape older jotai
 // versions used — hence `[T]` (a single-argument tuple) and `void` here.
-export type RouteAtom<T extends DefaultParams> = WritableAtom<
-  RouteReturn<T>,
-  [T, NavOptions?],
-  void
->;
+export type RouteAtom<T extends DefaultParams> = WritableAtom<RouteReturn<T>, [T, NavOptions?], void>;
 
 // Earlier design sketches (a tuple-shaped RouteReturn, a pattern-string-driven
 // routeAtom overload, and the type plumbing they'd need) were explored here
 // and are preserved with context in ../DESIGN-NOTES.md rather than dropped.
 
 export type RouteOptions<Parent extends DefaultParams> = {
-  parent?: RouteAtom<Parent>;
+    parent?: RouteAtom<Parent>;
 };
 
-export const routeAtom = <
-  T extends DefaultParams = DefaultParams,
-  Parent extends DefaultParams = DefaultParams
->(
-  matchPath: (path: string, get: Getter) => T | undefined,
-  makePath: (values: T, get: Getter) => string,
-  options?: RouteOptions<Parent>
+export const routeAtom = <T extends DefaultParams = DefaultParams, Parent extends DefaultParams = DefaultParams>(
+    matchPath: (path: string, get: Getter) => T | undefined,
+    makePath: (values: T, get: Getter) => string,
+    options?: RouteOptions<Parent>,
 ): RouteAtom<T & Parent> => {
-  const parentAtom = options?.parent || (rootAtom as RouteAtom<Parent>);
-  // TODO: To avoid unnecessary recomputes we should be caching a memoization of the unmatched
-  // state, this way we won't recalculate all leaves of an unmatched branch
-  const reverse = (get: Getter) => (values: T) => {
-    const parent = get(parentAtom);
-    const parentPath = parent.reverse(values as unknown as Parent);
-    // TODO: Combine query parameters too
-    return parentPath === "/"
-      ? parentPath + makePath(values, get)
-      : parentPath + "/" + makePath(values, get);
-  };
-  return atom(
-    (get) => {
-      const parent = get(parentAtom);
-      let values: T | undefined;
-      if (!parent.match || !(values = matchPath(parent.rest.path[0], get))) {
-        return {
-          reverse: reverse(get),
-          match: false,
-          exact: false,
-          values: undefined,
-        };
-      }
-      const rest = { path: parent.rest.path.slice(1) };
-      return {
-        reverse: reverse(get),
-        match: true,
-        exact: rest.path.length === 0,
-        rest,
-        values: { ...values, ...parent.values },
-      };
-    },
-    (get, set, action, navOptions) => {
-      // Every write recomputes the full href (path, and query if any query
-      // atoms are composed into this chain via `reverse`) and replaces the
-      // location wholesale - a route only ever preserves the query params it
-      // explicitly declares, matching v1's per-route stringify semantics.
-      const [pathname, searchParams] = splitHref(reverse(get)(action));
-      set(locationAtom, (prev) => ({ ...prev, pathname, searchParams }), navOptions);
-    }
-  );
+    const parentAtom = options?.parent || (rootAtom as RouteAtom<Parent>);
+    // TODO: To avoid unnecessary recomputes we should be caching a memoization of the unmatched
+    // state, this way we won't recalculate all leaves of an unmatched branch
+    const reverse = (get: Getter) => (values: T) => {
+        const parent = get(parentAtom);
+        const parentPath = parent.reverse(values as unknown as Parent);
+        // TODO: Combine query parameters too
+        return parentPath === "/" ? parentPath + makePath(values, get) : parentPath + "/" + makePath(values, get);
+    };
+    return atom(
+        (get) => {
+            const parent = get(parentAtom);
+            let values: T | undefined;
+            if (!parent.match || !(values = matchPath(parent.rest.path[0], get))) {
+                return {
+                    reverse: reverse(get),
+                    match: false,
+                    exact: false,
+                    values: undefined,
+                };
+            }
+            const rest = { path: parent.rest.path.slice(1) };
+            return {
+                reverse: reverse(get),
+                match: true,
+                exact: rest.path.length === 0,
+                rest,
+                values: { ...values, ...parent.values },
+            };
+        },
+        (get, set, action, navOptions) => {
+            // Every write recomputes the full href (path, and query if any query
+            // atoms are composed into this chain via `reverse`) and replaces the
+            // location wholesale - a route only ever preserves the query params it
+            // explicitly declares, matching v1's per-route stringify semantics.
+            const [pathname, searchParams] = splitHref(reverse(get)(action));
+            set(locationAtom, (prev) => ({ ...prev, pathname, searchParams }), navOptions);
+        },
+    );
 };
 
 export type RootOptions = {
-  /**
-   * Scopes this router to a subtree of the URL, mirroring v1's
-   * RoutingProvider `basePath` prop: the prefix is stripped from the
-   * pathname before matching begins, and prepended again by `reverse`/write.
-   *
-   * Unlike v1 (which simply *ignored* navigation events outside basePath,
-   * leaving the router frozen on its last good state) this makes the whole
-   * tree report `match: false` when the current location falls outside
-   * basePath - there's no "previous state" to fall back to in a pull-based
-   * atom, and treating it as a plain non-match is the closer fit for the
-   * atomic model. Documented as a deliberate deviation, see PR body.
-   */
-  basePath?: Path;
+    /**
+     * Scopes this router to a subtree of the URL, mirroring v1's
+     * RoutingProvider `basePath` prop: the prefix is stripped from the
+     * pathname before matching begins, and prepended again by `reverse`/write.
+     *
+     * Unlike v1 (which simply *ignored* navigation events outside basePath,
+     * leaving the router frozen on its last good state) this makes the whole
+     * tree report `match: false` when the current location falls outside
+     * basePath - there's no "previous state" to fall back to in a pull-based
+     * atom, and treating it as a plain non-match is the closer fit for the
+     * atomic model. Documented as a deliberate deviation, see PR body.
+     */
+    basePath?: Path;
 };
 
-const stripBasePath = (
-  pathname: string,
-  basePath: string
-): string | undefined => {
-  if (!basePath) return pathname;
-  if (pathname === basePath) return "/";
-  if (pathname.indexOf(`${basePath}/`) === 0) {
-    return pathname.slice(basePath.length) || "/";
-  }
-  return undefined;
+const stripBasePath = (pathname: string, basePath: string): string | undefined => {
+    if (!basePath) return pathname;
+    if (pathname === basePath) return "/";
+    if (pathname.indexOf(`${basePath}/`) === 0) {
+        return pathname.slice(basePath.length) || "/";
+    }
+    return undefined;
 };
 
 /**
  * Creates a root RouteAtom. Call this directly (instead of using the default
  * `rootAtom` export) when the app needs to be scoped under a basePath.
  */
-export const createRootAtom = (
-  options?: RootOptions
-): RouteAtom<DefaultParams> => {
-  const basePath = options?.basePath
-    ? normalizePathname(options.basePath)
-    : "";
-  return atom(
-    (get) => {
-      const location = get(locationAtom);
-      const path = location.pathname || "/";
-      const withinBase = stripBasePath(path, basePath);
-      if (withinBase === undefined) {
-        // Outside of this router's basePath entirely: nothing matches.
-        return {
-          match: false,
-          exact: false,
-          values: undefined,
-          reverse: () => basePath || "/",
-        };
-      }
-      const segments = withinBase === "/" ? [""] : withinBase.split("/");
-      // Handle trailing slash
-      if (segments.length > 1 && segments[segments.length - 1] === "") {
-        segments.pop();
-      }
-      return {
-        // root always matches (as long as we're within basePath)
-        match: true,
-        exact: segments.length === 1,
-        rest: { path: segments.slice(1) },
-        reverse: () => basePath || "/",
-        values: {},
-      };
-    },
-    (get, set, action, navOptions) => {
-      set(
-        locationAtom,
-        (prev) => ({ ...prev, pathname: basePath || "/", searchParams: new URLSearchParams() }),
-        navOptions
-      );
-    }
-  );
+export const createRootAtom = (options?: RootOptions): RouteAtom<DefaultParams> => {
+    const basePath = options?.basePath ? normalizePathname(options.basePath) : "";
+    return atom(
+        (get) => {
+            const location = get(locationAtom);
+            const path = location.pathname || "/";
+            const withinBase = stripBasePath(path, basePath);
+            if (withinBase === undefined) {
+                // Outside of this router's basePath entirely: nothing matches.
+                return {
+                    match: false,
+                    exact: false,
+                    values: undefined,
+                    reverse: () => basePath || "/",
+                };
+            }
+            const segments = withinBase === "/" ? [""] : withinBase.split("/");
+            // Handle trailing slash
+            if (segments.length > 1 && segments[segments.length - 1] === "") {
+                segments.pop();
+            }
+            return {
+                // root always matches (as long as we're within basePath)
+                match: true,
+                exact: segments.length === 1,
+                rest: { path: segments.slice(1) },
+                reverse: () => basePath || "/",
+                values: {},
+            };
+        },
+        (get, set, action, navOptions) => {
+            set(
+                locationAtom,
+                (prev) => ({ ...prev, pathname: basePath || "/", searchParams: new URLSearchParams() }),
+                navOptions,
+            );
+        },
+    );
 };
 
 export const rootAtom = createRootAtom();
 
 export const staticRouteAtom = <Parent extends DefaultParams>(
-  name: string,
-  options?: RouteOptions<Parent>
+    name: string,
+    options?: RouteOptions<Parent>,
 ): RouteAtom<Parent> => {
-  return routeAtom(
-    (path) => (name === path ? {} : undefined),
-    () => name,
-    options
-  );
+    return routeAtom(
+        (path) => (name === path ? {} : undefined),
+        () => name,
+        options,
+    );
 };
 
 export const paramRouteAtom = <T extends string, Parent extends DefaultParams>(
-  name: T,
-  options?: RouteOptions<Parent>
+    name: T,
+    options?: RouteOptions<Parent>,
 ) => {
-  return routeAtom(
-    // Only match when there is actually a segment here to bind the param to.
-    // Returning a value unconditionally would make a param route match its
-    // parent's own path (e.g. `paramRouteAtom("docName", { parent: docs })`
-    // matching "/docs" itself, exactly, with `docName: undefined`), so a
-    // section index and its param child would both render.
-    (path) =>
-      path ? ({ [name]: path } as { [key in T]: string }) : undefined,
-    (values) => values[name],
-    options
-  );
+    return routeAtom(
+        // Only match when there is actually a segment here to bind the param to.
+        // Returning a value unconditionally would make a param route match its
+        // parent's own path (e.g. `paramRouteAtom("docName", { parent: docs })`
+        // matching "/docs" itself, exactly, with `docName: undefined`), so a
+        // section index and its param child would both render.
+        (path) => (path ? ({ [name]: path } as { [key in T]: string }) : undefined),
+        (values) => values[name],
+        options,
+    );
 };
 
-export const transformRouteAtom = <
-  T extends DefaultParams,
-  Return extends DefaultParams
->(
-  parentAtom: RouteAtom<T>,
-  getter: (values: T, get: Getter) => Return | undefined,
-  setter: (values: Return, get: Getter) => T
+export const transformRouteAtom = <T extends DefaultParams, Return extends DefaultParams>(
+    parentAtom: RouteAtom<T>,
+    getter: (values: T, get: Getter) => Return | undefined,
+    setter: (values: Return, get: Getter) => T,
 ): RouteAtom<Return> => {
-  const reverse = (get: Getter) => (values: Return) => {
-    const transformed = setter(values, get);
-    const parent = get(parentAtom);
-    return parent.reverse(transformed);
-  };
-  return atom(
-    (get) => {
-      const parent = get(parentAtom);
-      let transformed: Return | undefined;
-      if (!parent.match || !(transformed = getter(parent.values, get))) {
-        return {
-          match: false,
-          exact: false,
-          values: undefined,
-          reverse: reverse(get),
-        };
-      }
-      return { ...parent, values: transformed, reverse: reverse(get) };
-    },
-    (get, set, action, navOptions) => {
-      const transformed = setter(action, get);
-      set(parentAtom, transformed, navOptions);
-    }
-  );
+    const reverse = (get: Getter) => (values: Return) => {
+        const transformed = setter(values, get);
+        const parent = get(parentAtom);
+        return parent.reverse(transformed);
+    };
+    return atom(
+        (get) => {
+            const parent = get(parentAtom);
+            let transformed: Return | undefined;
+            if (!parent.match || !(transformed = getter(parent.values, get))) {
+                return {
+                    match: false,
+                    exact: false,
+                    values: undefined,
+                    reverse: reverse(get),
+                };
+            }
+            return { ...parent, values: transformed, reverse: reverse(get) };
+        },
+        (get, set, action, navOptions) => {
+            const transformed = setter(action, get);
+            set(parentAtom, transformed, navOptions);
+        },
+    );
 };

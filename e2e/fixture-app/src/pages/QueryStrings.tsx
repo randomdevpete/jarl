@@ -14,10 +14,7 @@ const useTitle = (title: string) => {
 const QueryStrings = () => {
     useTitle("Query Strings - Home - JARL");
     return (
-        <div
-            data-test="page"
-            style={{ backgroundColor: "rgb(255, 255, 255)" }}
-        >
+        <div data-test="page" style={{ backgroundColor: "rgb(255, 255, 255)" }}>
             <div data-test="header" style={{ color: "rgb(0, 0, 0)" }}>
                 Home
             </div>
@@ -27,10 +24,7 @@ const QueryStrings = () => {
                     Search
                 </button>
             </form>
-            <p>
-                Query-string aware routing (search, ?theme=) is not yet
-                wired up in this fixture.
-            </p>
+            <p>Query-string aware routing (search, ?theme=) is not yet wired up in this fixture.</p>
         </div>
     );
 };

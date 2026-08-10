@@ -1,11 +1,6 @@
 import { useAtomValue } from "jotai";
 import { useEffect } from "react";
-import {
-    productAtom,
-    productRatingsAtom,
-    productGalleryAtom,
-    productGalleryImageAtom
-} from "../routes";
+import { productAtom, productRatingsAtom, productGalleryAtom, productGalleryImageAtom } from "../routes";
 import { Link } from "jarl-react";
 
 const useTitle = (title: string) => {
@@ -26,10 +21,7 @@ const Home = () => {
     return (
         <div>
             <div data-test="header">Home</div>
-            <span
-                data-test-demo-link="advancedRouting"
-                data-test-active="true"
-            />
+            <span data-test-demo-link="advancedRouting" data-test-active="true" />
             <Link route={productAtom} data-test="product-link">
                 Product
             </Link>
@@ -85,21 +77,13 @@ const Product = () => {
         <div>
             <div data-test="header">Product</div>
             <nav>
-                <Link
-                    route={productAtom}
-                    exact
-                    data-test="details-tab-link"
-                >
+                <Link route={productAtom} exact data-test="details-tab-link">
                     Details
                 </Link>{" "}
                 <Link route={productRatingsAtom} data-test="ratings-tab-link">
                     Ratings
                 </Link>{" "}
-                <Link
-                    route={productGalleryImageAtom}
-                    to={{ imageId: "1" }}
-                    data-test="gallery-tab-link"
-                >
+                <Link route={productGalleryImageAtom} to={{ imageId: "1" }} data-test="gallery-tab-link">
                     Gallery
                 </Link>
             </nav>

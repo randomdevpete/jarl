@@ -19,8 +19,8 @@ async function main() {
         root,
         build: {
             outDir,
-            emptyOutDir: true
-        }
+            emptyOutDir: true,
+        },
     });
 
     // eslint-disable-next-line no-console
@@ -32,9 +32,9 @@ async function main() {
             emptyOutDir: true,
             ssr: "src/entry-server.tsx",
             rollupOptions: {
-                output: { entryFileNames: "entry-server.js" }
-            }
-        }
+                output: { entryFileNames: "entry-server.js" },
+            },
+        },
     });
 
     const templatePath = path.join(outDir, "index.html");
@@ -47,14 +47,14 @@ async function main() {
     // eslint-disable-next-line no-console
     console.log(`[docs:build] prerendering ${staticPaths.length} routes...`);
     await Promise.all(
-        staticPaths.map(async routePath => {
+        staticPaths.map(async (routePath) => {
             const { html } = render(routePath);
             const page = template.replace("<!--app-html-->", html);
             const outFile =
                 routePath === "/" ? path.join(outDir, "index.html") : path.join(outDir, routePath, "index.html");
             await fs.mkdir(path.dirname(outFile), { recursive: true });
             await fs.writeFile(outFile, page, "utf-8");
-        })
+        }),
     );
 
     // A 404.html at the root - the convention most static hosts (S3 + CloudFront,
@@ -70,7 +70,7 @@ async function main() {
     console.log(`[docs:build] done. Static output in ${path.relative(process.cwd(), outDir)}/`);
 }
 
-main().catch(error => {
+main().catch((error) => {
     // eslint-disable-next-line no-console
     console.error(error);
     process.exit(1);

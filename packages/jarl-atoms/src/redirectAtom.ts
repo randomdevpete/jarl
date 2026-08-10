@@ -23,26 +23,18 @@
 
 import { Getter, atom, createStore } from "jotai/vanilla";
 import { Path, splitHref } from "./href";
-import {
-  DefaultParams,
-  NavOptions,
-  RouteAtom,
-  RouteOptions,
-  locationAtom,
-  rootAtom,
-} from "./routeAtom";
+import { DefaultParams, NavOptions, RouteAtom, RouteOptions, locationAtom, rootAtom } from "./routeAtom";
 
 /** Marks a value as "actually, redirect to this instead". Returned from a
  * resolvedAtom loader to defer a redirect decision until after data loads,
  * mirroring v1's `resolve: () => redirect(...)`. */
 export class Redirect {
-  constructor(public readonly to: Path) {}
+    constructor(public readonly to: Path) {}
 }
 
 export const redirect = (to: Path): Redirect => new Redirect(to);
 
-export const isRedirect = (value: unknown): value is Redirect =>
-  value instanceof Redirect;
+export const isRedirect = (value: unknown): value is Redirect => value instanceof Redirect;
 
 /**
  * A RouteAtom-shaped leaf that matches whenever its parent matches (it
@@ -56,44 +48,44 @@ export const isRedirect = (value: unknown): value is Redirect =>
  * `followRedirects` below to actually make that happen.
  */
 export const redirectAtom = <Parent extends DefaultParams = DefaultParams>(
-  to: Path | ((get: Getter) => Path),
-  options?: RouteOptions<Parent>
+    to: Path | ((get: Getter) => Path),
+    options?: RouteOptions<Parent>,
 ): RouteAtom<Parent> => {
-  const target = (get: Getter) => (typeof to === "function" ? to(get) : to);
-  const parentAtom = options?.parent || (rootAtom as RouteAtom<Parent>);
+    const target = (get: Getter) => (typeof to === "function" ? to(get) : to);
+    const parentAtom = options?.parent || (rootAtom as RouteAtom<Parent>);
 
-  const reverse = (get: Getter) => () => target(get);
+    const reverse = (get: Getter) => () => target(get);
 
-  return atom(
-    (get) => {
-      const parent = get(parentAtom);
-      if (!parent.match) {
-        return {
-          match: false,
-          exact: false,
-          values: undefined,
-          reverse: reverse(get),
-        };
-      }
-      return {
-        match: true,
-        exact: true,
-        rest: { path: [] },
-        reverse: reverse(get),
-        values: parent.values,
-      };
-    },
-    (get, set, _action, navOptions?: NavOptions) => {
-      const [pathname, searchParams] = splitHref(target(get));
-      set(
-        locationAtom,
-        (prev) => ({ ...prev, pathname, searchParams }),
-        // Redirects replace by default (v1: `history.replace`), but an
-        // explicit navOptions.replace === false can opt back into push.
-        { replace: true, ...navOptions }
-      );
-    }
-  );
+    return atom(
+        (get) => {
+            const parent = get(parentAtom);
+            if (!parent.match) {
+                return {
+                    match: false,
+                    exact: false,
+                    values: undefined,
+                    reverse: reverse(get),
+                };
+            }
+            return {
+                match: true,
+                exact: true,
+                rest: { path: [] },
+                reverse: reverse(get),
+                values: parent.values,
+            };
+        },
+        (get, set, _action, navOptions?: NavOptions) => {
+            const [pathname, searchParams] = splitHref(target(get));
+            set(
+                locationAtom,
+                (prev) => ({ ...prev, pathname, searchParams }),
+                // Redirects replace by default (v1: `history.replace`), but an
+                // explicit navOptions.replace === false can opt back into push.
+                { replace: true, ...navOptions },
+            );
+        },
+    );
 };
 
 export type Store = ReturnType<typeof createStore>;
@@ -106,20 +98,17 @@ export type Store = ReturnType<typeof createStore>;
  * to v1's RoutingProvider automatically following redirects found during
  * doNavigation. Returns an unsubscribe function.
  */
-export const followRedirects = (
-  store: Store,
-  redirectAtoms: ReadonlyArray<RouteAtom<any>>
-): (() => void) => {
-  const unsubs = redirectAtoms.map((redirectRouteAtom) => {
-    const check = () => {
-      const result = store.get(redirectRouteAtom);
-      if (result.match) {
-        store.set(redirectRouteAtom, {}, { replace: true });
-      }
-    };
-    const unsub = store.sub(redirectRouteAtom, check);
-    check();
-    return unsub;
-  });
-  return () => unsubs.forEach((unsub) => unsub());
+export const followRedirects = (store: Store, redirectAtoms: ReadonlyArray<RouteAtom<any>>): (() => void) => {
+    const unsubs = redirectAtoms.map((redirectRouteAtom) => {
+        const check = () => {
+            const result = store.get(redirectRouteAtom);
+            if (result.match) {
+                store.set(redirectRouteAtom, {}, { replace: true });
+            }
+        };
+        const unsub = store.sub(redirectRouteAtom, check);
+        check();
+        return unsub;
+    });
+    return () => unsubs.forEach((unsub) => unsub());
 };

@@ -17,6 +17,9 @@
         "type": "git",
         "url": "git+https://github.com/randomdevpete/jarl.git"
     },
+    "files": [
+        "dist"
+    ],
     "type": "module",
     "sideEffects": false,
     "main": "./dist/index.cjs",
@@ -30,9 +33,6 @@
         },
         "./package.json": "./package.json"
     },
-    "files": [
-        "dist"
-    ],
     "scripts": {
         "build": "tsc -b && rolldown -c",
         "watch": "rolldown -c -w",

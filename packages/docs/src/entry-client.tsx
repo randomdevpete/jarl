@@ -12,5 +12,5 @@ hydrateRoot(
     root,
     <Provider>
         <App />
-    </Provider>
+    </Provider>,
 );

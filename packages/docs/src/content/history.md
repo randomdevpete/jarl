@@ -3,7 +3,7 @@
 This page is a design retrospective on JARL v1 (`jarl-react`'s original implementation,
 long since removed from `packages/jarl-react`) - distinct from the
 [Changelog](/changelog), which just lists version-by-version release notes. This is
-about *how v1 works and why*, and why v2 replaces its internals with
+about _how v1 works and why_, and why v2 replaces its internals with
 [jotai](https://jotai.org/) atoms, split across `packages/jarl-atoms` (the atoms
 themselves) and `packages/jarl-react` (React bindings over them).
 
@@ -18,8 +18,8 @@ React Native (`createMemoryHistory` plus deep-link handling) with no branching i
 application code, and it's a decision v2 keeps.
 
 Everything below - context, the HOC, the render-prop `Link`, resolve/redirect - is
-about *how that location object gets from a URL, through matching, into your
-components, and back out again as an `href`*. That plumbing is what v2 rebuilds.
+about _how that location object gets from a URL, through matching, into your
+components, and back out again as an `href`_. That plumbing is what v2 rebuilds.
 
 ## Legacy React context
 
@@ -54,7 +54,7 @@ selective-subscription benefits of new Context moot at the time.
 
 ## `RoutingProvider`: a controlled component that matches, resolves, and force-updates
 
-`RoutingProvider` is deliberately a *controlled* component, mirroring a controlled
+`RoutingProvider` is deliberately a _controlled_ component, mirroring a controlled
 `<input>`: it never owns the "real" location as internal state that only it can see.
 Instead:
 
@@ -69,7 +69,7 @@ Instead:
    `history.replace` instead of completing the navigation, so the invalid/interim URL
    never lands in browser history.
 4. Once matching and all resolvers settle, `completeRouting` calls `this.props.onChange`
-   (handing the new `{ location, resolved }` up to *your* app state - a plain
+   (handing the new `{ location, resolved }` up to _your_ app state - a plain
    `setState`, Redux dispatch, whatever you want) and then calls `this.forceUpdate()`.
 
 That last step is the important, slightly awkward one: `RoutingProvider` doesn't store
@@ -80,7 +80,7 @@ via context, not props) to see the update is an explicit `forceUpdate()`. It's a
 pragmatic solution given legacy context has no subscription model, but it means every
 navigation re-renders the entire subtree under the provider, matching happens
 synchronously against the whole route table on every path change, and "is a link active"
-(`isActive`) has to re-run matching for *both* the link's target and the current
+(`isActive`) has to re-run matching for _both_ the link's target and the current
 location on every render of every `Link` to compare branches - there's a `TODO: PERF`
 comment in the source about exactly this.
 
@@ -88,16 +88,21 @@ comment in the source about exactly this.
 
 ```js
 const routing = (mapLocationToProps, mapRoutingToProps, mapResolvedToProps) =>
-    hocFactory(WrappedComponent => class Routing extends Component {
-        static contextTypes = { routing: routingContextShape };
-        render() {
-            const { isActive, navigate, stringify, redirect, getLocation, getResolved } = this.context.routing;
-            const location = mapLocationToProps ? mapLocationToProps(getLocation()) : getLocation();
-            const callbacks = mapRoutingToProps ? mapRoutingToProps({ isActive, navigate, stringify, redirect }, this.props) : {};
-            const resolved = mapResolvedToProps ? mapResolvedToProps(getResolved()) : getResolved();
-            return <WrappedComponent {...this.props} {...location} {...resolved} {...callbacks} />;
-        }
-    });
+    hocFactory(
+        (WrappedComponent) =>
+            class Routing extends Component {
+                static contextTypes = { routing: routingContextShape };
+                render() {
+                    const { isActive, navigate, stringify, redirect, getLocation, getResolved } = this.context.routing;
+                    const location = mapLocationToProps ? mapLocationToProps(getLocation()) : getLocation();
+                    const callbacks = mapRoutingToProps
+                        ? mapRoutingToProps({ isActive, navigate, stringify, redirect }, this.props)
+                        : {};
+                    const resolved = mapResolvedToProps ? mapResolvedToProps(getResolved()) : getResolved();
+                    return <WrappedComponent {...this.props} {...location} {...resolved} {...callbacks} />;
+                }
+            },
+    );
 ```
 
 This is a very Redux-`connect`-shaped API (deliberately - the README credits
@@ -131,11 +136,11 @@ only so the link is a real, right-clickable/`Cmd`-clickable anchor and works wit
 A route can declare `resolve: (location, context) => Promise`, run serially down the
 matched branch (see above). Two outcomes beyond a plain resolved value matter:
 
-* Returning (or the promise resolving to) a `Redirect` instance breaks the promise
+- Returning (or the promise resolving to) a `Redirect` instance breaks the promise
   chain immediately (`Promise.reject(result)`) and the provider issues a
   `history.replace` to the redirect target - used for auth gates, canonical-URL
   redirects, etc., without ever completing navigation to the original URL.
-* An unhandled rejection falls through to `props.onError` if provided, or otherwise
+- An unhandled rejection falls through to `props.onError` if provided, or otherwise
   just logs a `warning` - v1 expects you to handle failure cases with a redirect
   (e.g. to an error page) rather than letting a resolver throw uncaught.
 
@@ -145,7 +150,7 @@ button history.
 
 ## Why v2 moves to atoms
 
-None of the above is *wrong* - JARL v1 has been stable in production for years - but
+None of the above is _wrong_ - JARL v1 has been stable in production for years - but
 several of its rough edges trace back to a single root cause: **legacy context plus
 `forceUpdate` is not a real subscription model.** Every navigation re-renders
 everything under the provider, `isActive` re-derives both branches from scratch on
@@ -154,31 +159,31 @@ subscribe to just the one piece of location state it cares about.
 
 [jotai](https://jotai.org/) atoms solve exactly that problem: each atom is an
 independent, subscribable unit of state, and React components that read an atom (via
-`useAtomValue`) only re-render when *that atom's* derived value actually changes - not
+`useAtomValue`) only re-render when _that atom's_ derived value actually changes - not
 on every navigation regardless of relevance. The v2 atoms
 (`packages/jarl-atoms/src/routeAtom.ts`) reframe the whole router around this:
 
-* A single `locationAtom`, backed by `jotai-location` in the browser (real
+- A single `locationAtom`, backed by `jotai-location` in the browser (real
   `history.pushState`/`replaceState`, responding to `popstate`) and by a per-store
   override under Node - so a location can be seeded server-side for prerendering,
   which is exactly what lets this docs site itself be statically generated.
-* `routeAtom(matchPath, makePath, { parent })` derives a **route atom** from a parent
+- `routeAtom(matchPath, makePath, { parent })` derives a **route atom** from a parent
   route atom (defaulting to a `rootAtom`), matching one path segment at a time and
   carrying a `rest.path` of unconsumed segments down to child route atoms - so nested
   routes compose as a chain of atoms instead of a nested-array route table walked by a
   single `RouteMap.match` call.
-* Each route atom is *writable*: reading it (`get`) gives `{ match, exact, values,
-  reverse }`; writing it (`set`) navigates by computing the target path via `reverse`
+- Each route atom is _writable_: reading it (`get`) gives `{ match, exact, values,
+reverse }`; writing it (`set`) navigates by computing the target path via `reverse`
   and updating `locationAtom` - so `RouteMap.stringify` and `history.push` collapse into
   one atom write, instead of the `stringify` + `navigate` pair of context callbacks v1
   exposes.
-* `staticRouteAtom`/`paramRouteAtom` are just `routeAtom` with a canned
+- `staticRouteAtom`/`paramRouteAtom` are just `routeAtom` with a canned
   `matchPath`/`makePath`, and `transformRouteAtom` lets one route atom's matched values
   be reshaped into another shape - composable building blocks instead of one big JSON
   route table.
-* The `Link` and `Route` components (`packages/jarl-react/src/Link.tsx`, `Route.tsx`)
+- The `Link` and `Route` components (`packages/jarl-react/src/Link.tsx`, `Route.tsx`)
   read/write a specific route atom directly via `useAtom`/`useAtomValue`, so a `Link`'s
-  active-state and a `Route`'s match check only re-render when *that atom's* value
+  active-state and a `Route`'s match check only re-render when _that atom's_ value
   changes, not on every navigation everywhere in the tree - the performance TODOs
   scattered through `RoutingProvider.js` and `Link.js` are the direct motivation.
 

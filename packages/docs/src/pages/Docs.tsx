@@ -8,13 +8,16 @@ import { docPageRoute, docPages, DocName } from "../router/routes";
 const guides: Record<DocName, string> = {
     "getting-started": gettingStarted,
     "data-loading": dataLoading,
-    "path-variables": pathVariables
+    "path-variables": pathVariables,
 };
 
 export const DocsIndex = () => (
     <>
         <h1>Docs</h1>
-        <p>Guides for using JARL's atomic routing model - the route atoms in <code>jarl-atoms</code> and the React bindings in <code>jarl-react</code>.</p>
+        <p>
+            Guides for using JARL's atomic routing model - the route atoms in <code>jarl-atoms</code> and the React
+            bindings in <code>jarl-react</code>.
+        </p>
         <ul className="doc-index">
             {docPages.map(({ docName, title }) => (
                 <li key={docName}>
@@ -34,7 +37,11 @@ export const DocPage = ({ docName }: { docName: string }) => {
             <>
                 <h1>Not found</h1>
                 <p>
-                    No guide named &ldquo;{docName}&rdquo;. Back to <Link route={docPageRoute} to={{ docName: docPages[0].docName }}>Docs</Link>.
+                    No guide named &ldquo;{docName}&rdquo;. Back to{" "}
+                    <Link route={docPageRoute} to={{ docName: docPages[0].docName }}>
+                        Docs
+                    </Link>
+                    .
                 </p>
             </>
         );

@@ -6,16 +6,12 @@ import path from "path";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Discord: any = require("discord.js");
 
-const client = new Discord.WebhookClient(
-    process.env.DISCORD_WEBHOOK_ID,
-    process.env.DISCORD_WEBHOOK_TOKEN
-);
+const client = new Discord.WebhookClient(process.env.DISCORD_WEBHOOK_ID, process.env.DISCORD_WEBHOOK_TOKEN);
 
 const notifyDiscord = (message: string, file?: string | null) =>
     client.send(message, file ? new Discord.Attachment(file) : null);
 
-const findCypressScreenshot = (): string =>
-    path.resolve(__dirname, "../demo/cypress/screenshots/HomePage.png");
+const findCypressScreenshot = (): string => path.resolve(__dirname, "../demo/cypress/screenshots/HomePage.png");
 
 const createMessage = async (type: string): Promise<void> => {
     const {
@@ -23,17 +19,14 @@ const createMessage = async (type: string): Promise<void> => {
         CIRCLE_BUILD_NUM: buildNum,
         CIRCLE_BUILD_URL: buildUrl,
         CIRCLE_PULL_REQUEST: pr,
-        JARL_VERSION: version
+        JARL_VERSION: version,
     } = process.env;
     const prefix = `[#${buildNum}](${buildUrl}):`;
     switch (type) {
         case "staging": {
             const filePath = findCypressScreenshot();
             const stagingUrl = process.env.NOW_DEPLOY;
-            notifyDiscord(
-                `${prefix} Deployed demo to staging URL ${stagingUrl} from ${commit}`,
-                filePath
-            );
+            notifyDiscord(`${prefix} Deployed demo to staging URL ${stagingUrl} from ${commit}`, filePath);
             break;
         }
         case "build": {
@@ -42,23 +35,16 @@ const createMessage = async (type: string): Promise<void> => {
             } else if (version) {
                 notifyDiscord(`${prefix} Building version ${version}`);
             } else {
-                notifyDiscord(
-                    `${prefix} Building demos for deployment to staging`
-                );
+                notifyDiscord(`${prefix} Building demos for deployment to staging`);
             }
             break;
         }
         case "published":
-            notifyDiscord(
-                `${prefix} Published ${version} to npm registry: <https://www.npmjs.com/package/jarl-react>`
-            );
+            notifyDiscord(`${prefix} Published ${version} to npm registry: <https://www.npmjs.com/package/jarl-react>`);
             break;
         case "deployed": {
             const filePath = findCypressScreenshot();
-            notifyDiscord(
-                `${prefix} Deployed ${version} to http://jarl.downplay.co`,
-                filePath
-            );
+            notifyDiscord(`${prefix} Deployed ${version} to http://jarl.downplay.co`, filePath);
             break;
         }
         default:
@@ -73,6 +59,6 @@ createMessage(type)
     .then(() => {
         console.log("Sent");
     })
-    .catch(e => {
+    .catch((e) => {
         console.error(e);
     });

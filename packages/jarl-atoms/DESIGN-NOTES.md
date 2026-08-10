@@ -65,7 +65,7 @@ is a reasonable follow-up if a string-pattern route helper is wanted (e.g.
 ```
 
 An earlier, simpler `routeAtom` sketch that took a single pattern string
-(e.g. `"/users/:id"`) and matched the *whole* location pathname against it in
+(e.g. `"/users/:id"`) and matched the _whole_ location pathname against it in
 one atom, rather than the path-segment-by-segment composition the shipped
 `routeAtom`/`staticRouteAtom`/`paramRouteAtom` use (each route atom consumes
 one segment off its parent's remaining path via `rest.path`). The segment
