@@ -58,7 +58,7 @@ Linking to a dynamic route works the same way as a static one - just pass the pa
 
 ## Query parameters
 
-Dynamic *path* segments aren't the only way to carry a value in a URL - `queryParamAtom` (from
+Dynamic _path_ segments aren't the only way to carry a value in a URL - `queryParamAtom` (from
 `jarl-atoms`) does the same job for a single named query-string parameter, composed on top of a
 parent route atom exactly like `paramRouteAtom`, except it doesn't consume a path segment:
 

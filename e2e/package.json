@@ -1,9 +1,9 @@
 {
-    "private": true,
     "name": "jarl-react-e2e",
     "version": "0.0.0",
-    "type": "module",
+    "private": true,
     "description": "Playwright e2e suite for jarl-react v2, plus a minimal Vite fixture app that renders the draft v2 route atoms. This is a TEST FIXTURE only, not the real demo/docs site (see ticket 58).",
+    "type": "module",
     "scripts": {
         "dev": "vite --config fixture-app/vite.config.ts",
         "build": "vite build --config fixture-app/vite.config.ts",

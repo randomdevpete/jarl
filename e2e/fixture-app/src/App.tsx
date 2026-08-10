@@ -16,7 +16,7 @@ const DEMOS: Record<string, ComponentType> = {
     basicRouting: BasicRouting,
     advancedRouting: AdvancedRouting,
     queryStrings: QueryStrings,
-    redirects: Redirects
+    redirects: Redirects,
 };
 
 const App = () => {

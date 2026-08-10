@@ -23,12 +23,12 @@ export const render = (path: string): RenderResult => {
     const [rawPathname, rawSearch = ""] = path.split("?");
     store.set(locationAtom, {
         pathname: rawPathname || "/",
-        searchParams: new URLSearchParams(rawSearch)
+        searchParams: new URLSearchParams(rawSearch),
     });
     const html = renderToString(
         <Provider store={store}>
             <App />
-        </Provider>
+        </Provider>,
     );
     return { html };
 };

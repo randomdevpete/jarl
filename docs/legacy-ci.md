@@ -32,7 +32,7 @@ to this commit if the raw files are needed again.
 Two workflows, both built from the single `build` job (and `publish` only on the
 second):
 
-1. **`pr_build`** — runs the `build` job on every branch *except* `master`
+1. **`pr_build`** — runs the `build` job on every branch _except_ `master`
    (i.e. PR/branch validation).
 2. **`master_deploy`** — runs `build` then `publish` (requires `build`) only on
    `master` (i.e. deploy pipeline after merge).
@@ -100,7 +100,7 @@ Steps, in order:
    with `CYPRESS_baseUrl=${NOW_DEPLOY}` — smoke-tests the actual deployed
    staging instance rather than the local server.
 8. **Alias to production, only if tagged**: `now -t ${NOW_TOKEN} alias
-   ${NOW_DEPLOY} jarl.downplay.co` — promotes the staging deploy to the
+${NOW_DEPLOY} jarl.downplay.co` — promotes the staging deploy to the
    production alias, then Discord-notifies `deployed`.
 
 ## Secrets/env vars referenced (CircleCI project settings, not in-repo)
@@ -164,7 +164,7 @@ new workflow, or simply dropped as no-longer-relevant):
 
 ## Why the new workflow is expected to fail for a while
 
-The new GitHub Actions workflow calls the *conventional* v2 scripts
+The new GitHub Actions workflow calls the _conventional_ v2 scripts
 (`npm run build`, `npm test`, `npm run test:e2e`) that several sibling
 tickets are introducing in parallel (51 tooling, 52 TypeScript conversion,
 54 atoms core, 55 bindings, 57 Playwright e2e). Until those land on `master`,

@@ -5,7 +5,11 @@ export const NotFound = () => (
     <>
         <h1>Page not found</h1>
         <p>
-            Nothing matched this URL. Back to <Link route={homeRoute} to={{}}>Home</Link>.
+            Nothing matched this URL. Back to{" "}
+            <Link route={homeRoute} to={{}}>
+                Home
+            </Link>
+            .
         </p>
     </>
 );

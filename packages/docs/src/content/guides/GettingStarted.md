@@ -41,7 +41,7 @@ import App from "./App";
 createRoot(document.getElementById("root")!).render(
     <Provider>
         <App />
-    </Provider>
+    </Provider>,
 );
 ```
 

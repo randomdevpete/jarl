@@ -71,7 +71,7 @@ export const productBySlugDataRoute = resolvedAtom(productBySlugRoute, async ({ 
 ```
 
 A `Redirect` returned from a resolver doesn't navigate anywhere by itself - reading the atom
-just tells you a redirect *would* happen, which keeps it composable and testable like any other
+just tells you a redirect _would_ happen, which keeps it composable and testable like any other
 value. To actually perform the navigation, wire `followResolvedRedirects` up once near the root
 of your app (typically alongside where you create your jotai store):
 

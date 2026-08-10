@@ -1,11 +1,7 @@
 {
     "compilerOptions": {
         "target": "ES2020",
-        "lib": [
-            "ES2020",
-            "DOM",
-            "DOM.Iterable"
-        ],
+        "lib": ["ES2020", "DOM", "DOM.Iterable"],
         "module": "ESNext",
         "moduleResolution": "Bundler",
         "jsx": "react-jsx",
@@ -18,12 +14,8 @@
         "isolatedModules": true,
         "resolveJsonModule": true,
         "paths": {
-            "jarl-atoms": [
-                "../jarl-atoms/src/index.ts"
-            ]
+            "jarl-atoms": ["../jarl-atoms/src/index.ts"]
         }
     },
-    "include": [
-        "src"
-    ]
+    "include": ["src"]
 }

@@ -60,12 +60,9 @@ export type JarlLocation = {
  * throws `ReferenceError: window is not defined` and the router can't SSR at all
  * — which is what the docs site (packages/docs) needs in order to prerender.
  */
-export declare const locationAtom: WritableAtom<JarlLocation, [
-    SetStateAction<JarlLocation>,
-    {
-        replace?: boolean;
-    }?
-], void>;
+export declare const locationAtom: WritableAtom<JarlLocation, [SetStateAction<JarlLocation>, {
+    replace?: boolean;
+}?], void>;
 export type RouteReturn<T extends DefaultParams = DefaultParams> = {
     reverse: (values: T) => string;
 } & ({
@@ -80,10 +77,7 @@ export type RouteReturn<T extends DefaultParams = DefaultParams> = {
     exact: false;
     values: undefined;
 });
-export type RouteAtom<T extends DefaultParams> = WritableAtom<RouteReturn<T>, [
-    T,
-    NavOptions?
-], void>;
+export type RouteAtom<T extends DefaultParams> = WritableAtom<RouteReturn<T>, [T, NavOptions?], void>;
 export type RouteOptions<Parent extends DefaultParams> = {
     parent?: RouteAtom<Parent>;
 };

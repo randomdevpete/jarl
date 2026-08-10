@@ -12,11 +12,7 @@
  * redirects/resolve and basePath, but this fixture doesn't consume them yet,
  * so those scenarios remain `test.fixme()` in their specs - see the PR body.
  */
-import {
-    rootAtom,
-    staticRouteAtom,
-    paramRouteAtom
-} from "jarl-atoms";
+import { rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 
 // --- Shell (demo/cypress/integration/00DemosShell.js) ---
 export { rootAtom };
@@ -27,22 +23,22 @@ export const shellMissingAtom = paramRouteAtom("missingPath");
 // --- Basic Routing (01BasicRouting.js) ---
 export const basicRoutingAtom = staticRouteAtom("basicRouting");
 export const basicRoutingAboutAtom = staticRouteAtom("about", {
-    parent: basicRoutingAtom
+    parent: basicRoutingAtom,
 });
 
 // --- Advanced Routing (02AdvancedRouting.js) ---
 export const advancedRoutingAtom = staticRouteAtom("advancedRouting");
 export const productAtom = staticRouteAtom("product", {
-    parent: advancedRoutingAtom
+    parent: advancedRoutingAtom,
 });
 export const productRatingsAtom = staticRouteAtom("ratings", {
-    parent: productAtom
+    parent: productAtom,
 });
 export const productGalleryAtom = staticRouteAtom("gallery", {
-    parent: productAtom
+    parent: productAtom,
 });
 export const productGalleryImageAtom = paramRouteAtom("imageId", {
-    parent: productGalleryAtom
+    parent: productGalleryAtom,
 });
 
 // --- Query Strings (03QueryStrings.js) ---
@@ -50,7 +46,7 @@ export const productGalleryImageAtom = paramRouteAtom("imageId", {
 // write query/search params in this fixture yet (`queryAtom` exists).
 export const queryStringsAtom = staticRouteAtom("queryStrings");
 export const queryStringsSearchAtom = staticRouteAtom("search", {
-    parent: queryStringsAtom
+    parent: queryStringsAtom,
 });
 
 // --- Redirects (04Redirects.js) ---
@@ -58,14 +54,14 @@ export const queryStringsSearchAtom = staticRouteAtom("search", {
 // support wired up in this fixture yet (`redirectAtom` exists).
 export const redirectsAtom = staticRouteAtom("redirects");
 export const redirectsMovedAtom = staticRouteAtom("moved", {
-    parent: redirectsAtom
+    parent: redirectsAtom,
 });
 export const redirectsAdminAtom = staticRouteAtom("admin", {
-    parent: redirectsAtom
+    parent: redirectsAtom,
 });
 export const redirectsContentAtom = staticRouteAtom("content", {
-    parent: redirectsAtom
+    parent: redirectsAtom,
 });
 export const redirectsContentSlugAtom = paramRouteAtom("slug", {
-    parent: redirectsContentAtom
+    parent: redirectsContentAtom,
 });

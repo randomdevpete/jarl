@@ -15,7 +15,7 @@ async function main() {
     const vite = await createViteServer({
         root,
         server: { middlewareMode: true },
-        appType: "custom"
+        appType: "custom",
     });
 
     const server = http.createServer((req, res) => {

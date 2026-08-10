@@ -1,10 +1,6 @@
 import { useAtomValue } from "jotai";
 import { useEffect } from "react";
-import {
-    redirectsMovedAtom,
-    redirectsAdminAtom,
-    redirectsContentSlugAtom
-} from "../routes";
+import { redirectsMovedAtom, redirectsAdminAtom, redirectsContentSlugAtom } from "../routes";
 import { Link } from "jarl-react";
 
 const useTitle = (title: string) => {
@@ -15,8 +11,7 @@ const useTitle = (title: string) => {
 
 // A little JARL etymology, mirroring the flavour of the v1 demo content.
 const CONTENT: Record<string, string> = {
-    "about-us":
-        "A jarl was a Norse or Danish chief, a rank of nobility above a freeman and below a king."
+    "about-us": "A jarl was a Norse or Danish chief, a rank of nobility above a freeman and below a king.",
 };
 
 const Landing = () => {
@@ -38,18 +33,10 @@ const Landing = () => {
             <Link route={redirectsAdminAtom} data-test="admin-link">
                 Admin page
             </Link>
-            <Link
-                route={redirectsContentSlugAtom}
-                to={{ slug: "about-us" }}
-                data-test="found-content-link"
-            >
+            <Link route={redirectsContentSlugAtom} to={{ slug: "about-us" }} data-test="found-content-link">
                 About us
             </Link>
-            <Link
-                route={redirectsContentSlugAtom}
-                to={{ slug: "not-a-real-page" }}
-                data-test="missing-content-link"
-            >
+            <Link route={redirectsContentSlugAtom} to={{ slug: "not-a-real-page" }} data-test="missing-content-link">
                 Missing content
             </Link>
         </div>

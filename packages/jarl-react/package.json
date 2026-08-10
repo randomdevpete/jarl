@@ -20,6 +20,9 @@
         "type": "git",
         "url": "git+https://github.com/randomdevpete/jarl.git"
     },
+    "files": [
+        "dist"
+    ],
     "type": "module",
     "sideEffects": false,
     "main": "./dist/index.cjs",
@@ -33,9 +36,6 @@
         },
         "./package.json": "./package.json"
     },
-    "files": [
-        "dist"
-    ],
     "scripts": {
         "build": "tsc -b && rolldown -c",
         "watch": "rolldown -c -w",
@@ -49,9 +49,6 @@
     "dependencies": {
         "jarl-atoms": "^2.0.0-beta.1",
         "jotai": "^2.20.2"
-    },
-    "peerDependencies": {
-        "react": "^18.0.0 || ^19.0.0"
     },
     "devDependencies": {
         "@testing-library/dom": "^10.4.1",
@@ -68,5 +65,8 @@
         "rolldown-plugin-dts": "^0.28.0",
         "typescript": "^6.0.3",
         "vitest": "^4.1.10"
+    },
+    "peerDependencies": {
+        "react": "^18.0.0 || ^19.0.0"
     }
 }

@@ -29,9 +29,7 @@ const NotFound = ({ missingPath }: { missingPath: string }) => {
     return (
         <div>
             <div data-test="header">404 Not Found</div>
-            <p data-test="mordor">
-                One does not simply navigate to {missingPath}
-            </p>
+            <p data-test="mordor">One does not simply navigate to {missingPath}</p>
         </div>
     );
 };
@@ -52,11 +50,7 @@ const BasicRouting = () => {
     } else if (basic.exact) {
         content = <Home />;
     } else {
-        content = (
-            <NotFound
-                missingPath={basic.match ? basic.rest.path.join("/") : ""}
-            />
-        );
+        content = <NotFound missingPath={basic.match ? basic.rest.path.join("/") : ""} />;
     }
 
     return (
@@ -72,19 +66,15 @@ const BasicRouting = () => {
             {content}
             {showMarker ? (
                 <div data-test="marker">
-                    This is showing because the marker was set. Navigating
-                    via JARL&rsquo;s Link component should not cause this
-                    state to reset, but clicking a normal anchor will.
+                    This is showing because the marker was set. Navigating via JARL&rsquo;s Link component should not
+                    cause this state to reset, but clicking a normal anchor will.
                     <br />
                     <a data-test="marker-anchor" href="/basicRouting">
                         Here is an anchor to test that!
                     </a>
                 </div>
             ) : (
-                <button
-                    data-test="marker-button"
-                    onClick={() => setShowMarker(true)}
-                >
+                <button data-test="marker-button" onClick={() => setShowMarker(true)}>
                     Marker
                 </button>
             )}

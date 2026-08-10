@@ -6,7 +6,7 @@ import {
     apiSectionRoute,
     changelogRoute,
     historyRoute,
-    demosIndexRoute
+    demosIndexRoute,
 } from "../router/routes";
 
 const navLinks = (
@@ -45,8 +45,7 @@ export const Layout = ({ children }: { children: ReactNode }) => (
         <main className="site-main">{children}</main>
         <footer className="site-footer">
             <p>
-                JARL: Atomic Routing Library &mdash;{" "}
-                <a href="https://github.com/randomdevpete/jarl">GitHub</a>
+                JARL: Atomic Routing Library &mdash; <a href="https://github.com/randomdevpete/jarl">GitHub</a>
             </p>
         </footer>
     </div>

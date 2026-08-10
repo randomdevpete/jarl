@@ -6,7 +6,7 @@ import { apiPageRoute, apiPages, ApiName } from "../router/routes";
 
 const content: Record<ApiName, string> = {
     "jarl-atoms": jarlAtoms,
-    "jarl-react": jarlReact
+    "jarl-react": jarlReact,
 };
 
 export const ApiIndex = () => (

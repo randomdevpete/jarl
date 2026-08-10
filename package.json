@@ -64,11 +64,11 @@
         "vitest": "^4.1.10"
     },
     "overrides": {
+        "@yuku-toolchain/types": "0.8.3",
         "cheerio": "1.0.0-rc.12",
         "yuku-ast": "0.8.3",
         "yuku-codegen": "0.8.3",
-        "yuku-parser": "0.8.3",
-        "@yuku-toolchain/types": "0.8.3"
+        "yuku-parser": "0.8.3"
     },
     "engines": {
         "node": "^22.22.2 || ^24.15.0 || >=26.0.0"

@@ -7,10 +7,7 @@ import { readFileSync } from "node:fs";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const atomsPackageJson = JSON.parse(
-    readFileSync(
-        path.resolve(dirname, "../../packages/jarl-atoms/package.json"),
-        "utf-8"
-    )
+    readFileSync(path.resolve(dirname, "../../packages/jarl-atoms/package.json"), "utf-8"),
 );
 
 // This is a minimal Vite app that exists purely as a Playwright test fixture
@@ -27,14 +24,8 @@ export default defineConfig({
             // Resolve both workspace packages to their TypeScript source, so
             // the fixture exercises the source in this commit rather than a
             // possibly-stale dist/ build.
-            "jarl-atoms": path.resolve(
-                dirname,
-                "../../packages/jarl-atoms/src"
-            ),
-            "jarl-react": path.resolve(
-                dirname,
-                "../../packages/jarl-react/src"
-            ),
+            "jarl-atoms": path.resolve(dirname, "../../packages/jarl-atoms/src"),
+            "jarl-react": path.resolve(dirname, "../../packages/jarl-react/src"),
             // Those packages resolve their own dependencies from the repo
             // root, so their bare imports of
             // "react"/"jotai"/"jotai-location" need to be pointed at this
@@ -44,21 +35,18 @@ export default defineConfig({
             react: path.resolve(dirname, "../node_modules/react"),
             "react-dom": path.resolve(dirname, "../node_modules/react-dom"),
             jotai: path.resolve(dirname, "../node_modules/jotai"),
-            "jotai-location": path.resolve(
-                dirname,
-                "../node_modules/jotai-location"
-            )
-        }
+            "jotai-location": path.resolve(dirname, "../node_modules/jotai-location"),
+        },
     },
     define: {
-        __JARL_VERSION__: JSON.stringify(atomsPackageJson.version)
+        __JARL_VERSION__: JSON.stringify(atomsPackageJson.version),
     },
     server: {
         port: 4173,
-        strictPort: true
+        strictPort: true,
     },
     preview: {
         port: 4173,
-        strictPort: true
-    }
+        strictPort: true,
+    },
 });

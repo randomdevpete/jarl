@@ -12,7 +12,7 @@ import {
     demosIndexRoute,
     basicRoutingDemoRoute,
     basicRoutingDemoPageRoute,
-    notFoundAtom
+    notFoundAtom,
 } from "./router/routes";
 import Home from "./pages/Home";
 import { DocsIndex, DocPage } from "./pages/Docs";

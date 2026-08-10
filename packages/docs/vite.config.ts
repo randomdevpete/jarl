@@ -20,12 +20,12 @@ export default defineConfig({
         // package build order.
         alias: {
             "jarl-atoms": path.resolve(repoRoot, "packages/jarl-atoms/src/index.ts"),
-            "jarl-react": path.resolve(repoRoot, "packages/jarl-react/src/index.ts")
-        }
+            "jarl-react": path.resolve(repoRoot, "packages/jarl-react/src/index.ts"),
+        },
     },
     server: {
         fs: {
-            allow: [__dirname, repoRoot]
-        }
-    }
+            allow: [__dirname, repoRoot],
+        },
+    },
 });
