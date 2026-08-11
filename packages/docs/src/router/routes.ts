@@ -30,45 +30,45 @@ export const basicRoutingDemoPageRoute = paramRouteAtom("page", { parent: basicR
 export type DocName = "getting-started" | "data-loading" | "path-variables";
 
 export const docPages: { docName: DocName; title: string }[] = [
-    { docName: "getting-started", title: "Getting Started" },
-    { docName: "data-loading", title: "Data Loading" },
-    { docName: "path-variables", title: "Path Variables" },
+  { docName: "getting-started", title: "Getting Started" },
+  { docName: "data-loading", title: "Data Loading" },
+  { docName: "path-variables", title: "Path Variables" },
 ];
 
 export type ApiName = "jarl-atoms" | "jarl-react";
 
 export const apiPages: { apiName: ApiName; title: string }[] = [
-    { apiName: "jarl-atoms", title: "jarl-atoms" },
-    { apiName: "jarl-react", title: "jarl-react" },
+  { apiName: "jarl-atoms", title: "jarl-atoms" },
+  { apiName: "jarl-react", title: "jarl-react" },
 ];
 
 /** True when the current location matches none of the site's known pages. */
 export const notFoundAtom = atom((get) => {
-    const matched = [
-        get(homeRoute).exact,
-        get(docsSectionRoute).exact,
-        get(docPageRoute).exact,
-        get(apiSectionRoute).exact,
-        get(apiPageRoute).exact,
-        get(changelogRoute).exact,
-        get(historyRoute).exact,
-        get(demosIndexRoute).exact,
-        get(basicRoutingDemoRoute).exact,
-        get(basicRoutingDemoPageRoute).exact,
-    ];
-    return !matched.some(Boolean);
+  const matched = [
+    get(homeRoute).exact,
+    get(docsSectionRoute).exact,
+    get(docPageRoute).exact,
+    get(apiSectionRoute).exact,
+    get(apiPageRoute).exact,
+    get(changelogRoute).exact,
+    get(historyRoute).exact,
+    get(demosIndexRoute).exact,
+    get(basicRoutingDemoRoute).exact,
+    get(basicRoutingDemoPageRoute).exact,
+  ];
+  return !matched.some(Boolean);
 });
 
 /** Every concrete path the SSG build should prerender to a static HTML file. */
 export const staticPaths: string[] = [
-    "/",
-    "/docs",
-    ...docPages.map((p) => `/docs/${p.docName}`),
-    "/api",
-    ...apiPages.map((p) => `/api/${p.apiName}`),
-    "/changelog",
-    "/history",
-    "/demos",
-    "/demos/basic-routing",
-    "/demos/basic-routing/about",
+  "/",
+  "/docs",
+  ...docPages.map((p) => `/docs/${p.docName}`),
+  "/api",
+  ...apiPages.map((p) => `/api/${p.apiName}`),
+  "/changelog",
+  "/history",
+  "/demos",
+  "/demos/basic-routing",
+  "/demos/basic-routing/about",
 ];

@@ -1,19 +1,19 @@
 {
-    "extends": "./tsconfig.base.json",
-    "compilerOptions": {
-        "paths": {
-            "jarl-atoms": ["./packages/jarl-atoms/src/index.ts"],
-            "jarl-react": ["./packages/jarl-react/src/index.ts"]
-        },
-        "types": ["node", "vitest/globals", "vite/client"]
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "jarl-atoms": ["./packages/jarl-atoms/src/index.ts"],
+      "jarl-react": ["./packages/jarl-react/src/index.ts"]
     },
-    "include": [
-        "packages/jarl-atoms/src/**/*.ts",
-        "packages/jarl-react/src/**/*.ts",
-        "packages/jarl-react/src/**/*.tsx",
-        "packages/docs/src/**/*.ts",
-        "packages/docs/src/**/*.tsx",
-        "scripts/**/*.ts"
-    ],
-    "exclude": ["node_modules", "**/node_modules", "**/dist/**"]
+    "types": ["node", "vitest/globals", "vite/client"]
+  },
+  "include": [
+    "packages/jarl-atoms/src/**/*.ts",
+    "packages/jarl-react/src/**/*.ts",
+    "packages/jarl-react/src/**/*.tsx",
+    "packages/docs/src/**/*.ts",
+    "packages/docs/src/**/*.tsx",
+    "scripts/**/*.ts"
+  ],
+  "exclude": ["node_modules", "**/node_modules", "**/dist/**"]
 }

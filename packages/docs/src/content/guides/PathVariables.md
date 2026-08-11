@@ -27,19 +27,19 @@ import { Route } from "jarl-react";
 import { productRoute } from "./routes";
 
 const ProductPage = ({ productId }: { productId: string }) => {
-    const [product, setProduct] = useState<Product | null>(null);
-    useEffect(() => {
-        fetch(`/api/products/${productId}`)
-            .then((result) => result.json())
-            .then(setProduct);
-    }, [productId]);
-    return product ? <ProductView product={product} /> : "Loading...";
+  const [product, setProduct] = useState<Product | null>(null);
+  useEffect(() => {
+    fetch(`/api/products/${productId}`)
+      .then((result) => result.json())
+      .then(setProduct);
+  }, [productId]);
+  return product ? <ProductView product={product} /> : "Loading...";
 };
 
 export default () => (
-    <Route on={productRoute} exact>
-        {({ productId }) => <ProductPage productId={productId} />}
-    </Route>
+  <Route on={productRoute} exact>
+    {({ productId }) => <ProductPage productId={productId} />}
+  </Route>
 );
 ```
 
@@ -52,7 +52,7 @@ Linking to a dynamic route works the same way as a static one - just pass the pa
 
 ```tsx
 <Link route={productRoute} to={{ productId: "123" }}>
-    Our Best Product Ever!
+  Our Best Product Ever!
 </Link>
 ```
 

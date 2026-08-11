@@ -1,21 +1,21 @@
 {
-    "compilerOptions": {
-        "target": "ES2020",
-        "useDefineForClassFields": true,
-        "lib": ["ES2020", "DOM", "DOM.Iterable"],
-        "module": "ESNext",
-        "skipLibCheck": true,
-        "moduleResolution": "bundler",
-        "resolveJsonModule": true,
-        "isolatedModules": true,
-        "noEmit": true,
-        "jsx": "react-jsx",
-        "strict": true,
-        "types": ["vite/client"],
-        "paths": {
-            "jarl-atoms": ["../jarl-atoms/src/index.ts"],
-            "jarl-react": ["../jarl-react/src/index.ts"]
-        }
-    },
-    "include": ["src", "scripts"]
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "types": ["vite/client"],
+    "paths": {
+      "jarl-atoms": ["../jarl-atoms/src/index.ts"],
+      "jarl-react": ["../jarl-react/src/index.ts"]
+    }
+  },
+  "include": ["src", "scripts"]
 }

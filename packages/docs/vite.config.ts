@@ -11,21 +11,21 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "../..");
 
 export default defineConfig({
-    root: __dirname,
-    plugins: [react()],
-    resolve: {
-        // Same convention as the packages' own vitest/tsconfig setups: resolve the
-        // workspace packages to their TypeScript *source*, not their built dist/,
-        // so the docs site never builds against a stale bundle or depends on
-        // package build order.
-        alias: {
-            "jarl-atoms": path.resolve(repoRoot, "packages/jarl-atoms/src/index.ts"),
-            "jarl-react": path.resolve(repoRoot, "packages/jarl-react/src/index.ts"),
-        },
+  root: __dirname,
+  plugins: [react()],
+  resolve: {
+    // Same convention as the packages' own vitest/tsconfig setups: resolve the
+    // workspace packages to their TypeScript *source*, not their built dist/,
+    // so the docs site never builds against a stale bundle or depends on
+    // package build order.
+    alias: {
+      "jarl-atoms": path.resolve(repoRoot, "packages/jarl-atoms/src/index.ts"),
+      "jarl-react": path.resolve(repoRoot, "packages/jarl-react/src/index.ts"),
     },
-    server: {
-        fs: {
-            allow: [__dirname, repoRoot],
-        },
+  },
+  server: {
+    fs: {
+      allow: [__dirname, repoRoot],
     },
+  },
 });

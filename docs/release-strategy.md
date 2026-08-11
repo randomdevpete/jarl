@@ -90,11 +90,11 @@ design, via a custom release rule in `.releaserc.json`:
 
 ```json
 {
-    "preset": "conventionalcommits",
-    "releaseRules": [
-        { "breaking": true, "release": "minor" },
-        { "type": "revert", "release": "patch" }
-    ]
+  "preset": "conventionalcommits",
+  "releaseRules": [
+    { "breaking": true, "release": "minor" },
+    { "type": "revert", "release": "patch" }
+  ]
 }
 ```
 
@@ -273,13 +273,13 @@ Actions. For the automated release to actually run, ticket 106 needs to:
   semantic-release itself also refuses to run on PR builds, but the job shouldn't even
   attempt it).
 - Provide these as repository secrets, injected as env vars for that job:
-    - `NPM_TOKEN` — an npm automation/publish token with publish rights to both `jarl-atoms`
-      and `jarl-react` on the registry.
-    - `GH_TOKEN` or `GITHUB_TOKEN` — the default `secrets.GITHUB_TOKEN` GitHub Actions
-      provides is sufficient for `@semantic-release/github`, as long as the job's
-      `permissions:` block grants at least `contents: write` (to push the release commit
-      and tag) and ideally `issues: write` / `pull-requests: write` (so
-      `@semantic-release/github` can comment on issues/PRs referenced by release notes).
+  - `NPM_TOKEN` — an npm automation/publish token with publish rights to both `jarl-atoms`
+    and `jarl-react` on the registry.
+  - `GH_TOKEN` or `GITHUB_TOKEN` — the default `secrets.GITHUB_TOKEN` GitHub Actions
+    provides is sufficient for `@semantic-release/github`, as long as the job's
+    `permissions:` block grants at least `contents: write` (to push the release commit
+    and tag) and ideally `issues: write` / `pull-requests: write` (so
+    `@semantic-release/github` can comment on issues/PRs referenced by release notes).
 - Create and push the one-time `v2.0.0` baseline tag described above, before the first
   release job run — otherwise the first computed version will be wrong (based on the old
   v1.x tag history instead of the v2 baseline).

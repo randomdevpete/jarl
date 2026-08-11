@@ -88,21 +88,21 @@ comment in the source about exactly this.
 
 ```js
 const routing = (mapLocationToProps, mapRoutingToProps, mapResolvedToProps) =>
-    hocFactory(
-        (WrappedComponent) =>
-            class Routing extends Component {
-                static contextTypes = { routing: routingContextShape };
-                render() {
-                    const { isActive, navigate, stringify, redirect, getLocation, getResolved } = this.context.routing;
-                    const location = mapLocationToProps ? mapLocationToProps(getLocation()) : getLocation();
-                    const callbacks = mapRoutingToProps
-                        ? mapRoutingToProps({ isActive, navigate, stringify, redirect }, this.props)
-                        : {};
-                    const resolved = mapResolvedToProps ? mapResolvedToProps(getResolved()) : getResolved();
-                    return <WrappedComponent {...this.props} {...location} {...resolved} {...callbacks} />;
-                }
-            },
-    );
+  hocFactory(
+    (WrappedComponent) =>
+      class Routing extends Component {
+        static contextTypes = { routing: routingContextShape };
+        render() {
+          const { isActive, navigate, stringify, redirect, getLocation, getResolved } = this.context.routing;
+          const location = mapLocationToProps ? mapLocationToProps(getLocation()) : getLocation();
+          const callbacks = mapRoutingToProps
+            ? mapRoutingToProps({ isActive, navigate, stringify, redirect }, this.props)
+            : {};
+          const resolved = mapResolvedToProps ? mapResolvedToProps(getResolved()) : getResolved();
+          return <WrappedComponent {...this.props} {...location} {...resolved} {...callbacks} />;
+        }
+      },
+  );
 ```
 
 This is a very Redux-`connect`-shaped API (deliberately - the README credits
@@ -120,7 +120,7 @@ overkill.
 
 ```jsx
 <Link to={{ page: "search", search: text }}>
-    {({ href, onClick, active }) => <button onClick={onClick}>Search</button>}
+  {({ href, onClick, active }) => <button onClick={onClick}>Search</button>}
 </Link>
 ```
 

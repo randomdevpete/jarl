@@ -20,20 +20,20 @@ import { defineConfig, devices } from "@playwright/test";
  * rewrite. Revisit as a new ticket if/when v2 grows a code-splitting story.
  */
 export default defineConfig({
-    testDir: "./tests",
-    fullyParallel: true,
-    forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 1 : 0,
-    reporter: process.env.CI ? "github" : "list",
-    use: {
-        baseURL: "http://localhost:4173",
-        trace: "on-first-retry",
-    },
-    projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-    webServer: {
-        command: "npm run build && npm run preview",
-        url: "http://localhost:4173",
-        reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
-    },
+  testDir: "./tests",
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 1 : 0,
+  reporter: process.env.CI ? "github" : "list",
+  use: {
+    baseURL: "http://localhost:4173",
+    trace: "on-first-retry",
+  },
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  webServer: {
+    command: "npm run build && npm run preview",
+    url: "http://localhost:4173",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
 });

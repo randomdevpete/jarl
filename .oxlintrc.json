@@ -1,21 +1,21 @@
 {
-    "$schema": "./node_modules/oxlint/configuration_schema.json",
-    "plugins": ["typescript", "unicorn", "oxc"],
-    "categories": {
-        "correctness": "error"
-    },
-    "rules": {
-        "no-unused-vars": [
-            "warn",
-            {
-                "caughtErrors": "none",
-                "ignoreRestSiblings": true
-            }
-        ],
-        "unicorn/no-empty-file": "off"
-    },
-    "ignorePatterns": ["native/**", ".circleci/**"],
-    "env": {
-        "builtin": true
-    }
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {
+    "no-unused-vars": [
+      "warn",
+      {
+        "caughtErrors": "none",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "unicorn/no-empty-file": "off"
+  },
+  "ignorePatterns": ["native/**", ".circleci/**"],
+  "env": {
+    "builtin": true
+  }
 }

@@ -15,7 +15,7 @@ export { useAtom, useAtomValue, useSetAtom };
  * sites and mirrors `useRoute` conventions in other routers.
  */
 export function useRoute<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
-    return useAtomValue(routeAtom);
+  return useAtomValue(routeAtom);
 }
 
 /**
@@ -25,8 +25,8 @@ export function useRoute<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
  * route atom rather than the whole router).
  */
 export function useNavigate<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
-    const setRoute = useSetAtom(routeAtom);
-    return useCallback((to: T) => setRoute(to), [setRoute]);
+  const setRoute = useSetAtom(routeAtom);
+  return useCallback((to: T) => setRoute(to), [setRoute]);
 }
 
 /**
@@ -35,11 +35,11 @@ export function useNavigate<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
  * active too. Mirrors v1's `isActive`.
  */
 export function useIsActive<T extends DefaultParams>(
-    routeAtom: RouteAtom<T>,
-    { exact = false }: { exact?: boolean } = {},
+  routeAtom: RouteAtom<T>,
+  { exact = false }: { exact?: boolean } = {},
 ): boolean {
-    const route = useAtomValue(routeAtom);
-    return exact ? route.exact : route.match;
+  const route = useAtomValue(routeAtom);
+  return exact ? route.exact : route.match;
 }
 
 /**
@@ -49,20 +49,20 @@ export function useIsActive<T extends DefaultParams>(
  * even though the returned href for unrelated params may not change.
  */
 export function useHref<T extends DefaultParams>(routeAtom: RouteAtom<T>, to: T): string {
-    const { reverse } = useAtomValue(routeAtom);
-    return useMemo(() => reverse(to), [reverse, to]);
+  const { reverse } = useAtomValue(routeAtom);
+  return useMemo(() => reverse(to), [reverse, to]);
 }
 
 export type UseLinkResult = {
-    href: string;
-    active: boolean;
-    /** Attach directly to a native element's onClick, or call with no args. */
-    onClick: (event?: { preventDefault?: () => void }) => void;
+  href: string;
+  active: boolean;
+  /** Attach directly to a native element's onClick, or call with no args. */
+  onClick: (event?: { preventDefault?: () => void }) => void;
 };
 
 export type UseLinkOptions = {
-    /** Only report `active` for an exact match, rather than any ancestor route too. */
-    exact?: boolean;
+  /** Only report `active` for an exact match, rather than any ancestor route too. */
+  exact?: boolean;
 };
 
 /**
@@ -71,20 +71,20 @@ export type UseLinkOptions = {
  * components can be built without needing the `Link` component itself.
  */
 export function useLink<T extends DefaultParams>(
-    routeAtom: RouteAtom<T>,
-    to: T,
-    { exact = false }: UseLinkOptions = {},
+  routeAtom: RouteAtom<T>,
+  to: T,
+  { exact = false }: UseLinkOptions = {},
 ): UseLinkResult {
-    const [route, setRoute] = useAtom(routeAtom);
-    const { match, exact: isExact, reverse } = route;
-    const active = exact ? isExact : match;
-    const href = useMemo(() => reverse(to), [reverse, to]);
-    const onClick = useCallback(
-        (event?: { preventDefault?: () => void }) => {
-            event?.preventDefault?.();
-            setRoute(to);
-        },
-        [setRoute, to],
-    );
-    return { href, active, onClick };
+  const [route, setRoute] = useAtom(routeAtom);
+  const { match, exact: isExact, reverse } = route;
+  const active = exact ? isExact : match;
+  const href = useMemo(() => reverse(to), [reverse, to]);
+  const onClick = useCallback(
+    (event?: { preventDefault?: () => void }) => {
+      event?.preventDefault?.();
+      setRoute(to);
+    },
+    [setRoute, to],
+  );
+  return { href, active, onClick };
 }

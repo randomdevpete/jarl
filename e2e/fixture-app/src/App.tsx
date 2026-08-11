@@ -13,17 +13,17 @@ import Redirects from "./pages/Redirects";
 // several independent <Route> elements, which would all render at once
 // since nothing here excludes them from each other.
 const DEMOS: Record<string, ComponentType> = {
-    basicRouting: BasicRouting,
-    advancedRouting: AdvancedRouting,
-    queryStrings: QueryStrings,
-    redirects: Redirects,
+  basicRouting: BasicRouting,
+  advancedRouting: AdvancedRouting,
+  queryStrings: QueryStrings,
+  redirects: Redirects,
 };
 
 const App = () => {
-    const root = useAtomValue(rootAtom);
-    const section = root.match ? root.rest.path[0] : undefined;
-    const Demo = section && DEMOS[section];
-    return Demo ? <Demo /> : <Shell />;
+  const root = useAtomValue(rootAtom);
+  const section = root.match ? root.rest.path[0] : undefined;
+  const Demo = section && DEMOS[section];
+  return Demo ? <Demo /> : <Shell />;
 };
 
 export default App;
