@@ -1,6 +1,6 @@
 {
   "name": "jarl-atoms",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.1",
   "description": "JARL: Atomic Routing Library - framework-agnostic routing atoms",
   "keywords": [
     "atoms",

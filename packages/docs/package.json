@@ -13,8 +13,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "jarl-atoms": "^2.0.0-beta.1",
-    "jarl-react": "^2.0.0-beta.1",
+    "jarl-atoms": "2.0.1",
+    "jarl-react": "2.0.1",
     "jotai": "^2.20.2",
     "marked": "^12.0.2",
     "react": "^19.2.8",
