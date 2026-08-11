@@ -1,26 +1,19 @@
-:root {
-  --bg: #0f1115;
-  --bg-alt: #161922;
-  --fg: #e8eaf0;
-  --fg-muted: #9aa1b4;
-  --accent: #6fd0ff;
-  --accent-strong: #9be5ff;
-  --border: #262b38;
-  --code-bg: #1a1e29;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
+/* Viking dark theme font pairing: Metamorphous (heading) + Inter (body).
+   Swap the pairing by changing this import and the two --font-* variables below. */
+@import url("https://fonts.googleapis.com/css2?family=Metamorphous&family=Inter:wght@400;500;600;700&display=swap");
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: #fbfbfd;
-    --bg-alt: #f1f2f6;
-    --fg: #1a1d24;
-    --fg-muted: #565d6e;
-    --accent: #0a7ea4;
-    --accent-strong: #05586f;
-    --border: #dde1ea;
-    --code-bg: #f1f2f6;
-  }
+:root {
+  --bg: #170f0a;
+  --bg-alt: #241408;
+  --fg: #ff6b52;
+  --fg-muted: #c98a6e;
+  --accent: #ff3b30;
+  --accent-strong: #ff8a75;
+  --border: #4a2a16;
+  --code-bg: #20130a;
+  --font-heading: "Metamorphous", "Cinzel", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 * {
@@ -39,12 +32,24 @@ body {
   line-height: 1.6;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
 a {
   color: var(--accent);
   text-decoration: none;
 }
 
 a:hover {
+  color: var(--accent-strong);
   text-decoration: underline;
 }
 
@@ -73,9 +78,10 @@ a:hover {
 }
 
 .brand {
-  font-weight: 700;
-  font-size: 1.2rem;
-  letter-spacing: 0.03em;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  font-size: 1.3rem;
+  letter-spacing: 0.06em;
   color: var(--fg) !important;
 }
 
