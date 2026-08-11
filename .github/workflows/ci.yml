@@ -191,6 +191,9 @@ jobs:
           # .npmrc. Setting both covers whichever one is actually consulted.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Stops `npm version` re-resolving workspace deps from the registry,
+          # where a first-ever release of an internal package doesn't exist yet.
+          npm_config_workspaces_update: "false"
 
   deploy:
     name: Deploy (placeholder — not yet implemented)

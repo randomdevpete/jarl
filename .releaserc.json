@@ -24,6 +24,7 @@
         "changelogFile": "CHANGELOG.md"
       }
     ],
+    "./scripts/pin-internal-deps.mjs",
     [
       "@semantic-release/npm",
       {
@@ -36,10 +37,17 @@
         "pkgRoot": "packages/jarl-react"
       }
     ],
+    "./scripts/update-lockfile.mjs",
     [
       "@semantic-release/git",
       {
-        "assets": ["CHANGELOG.md", "packages/jarl-atoms/package.json", "packages/jarl-react/package.json"],
+        "assets": [
+          "CHANGELOG.md",
+          "package-lock.json",
+          "packages/jarl-atoms/package.json",
+          "packages/jarl-react/package.json",
+          "packages/docs/package.json"
+        ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ],
