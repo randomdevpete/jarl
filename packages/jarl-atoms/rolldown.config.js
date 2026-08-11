@@ -14,15 +14,15 @@ const external = ["jotai", "jotai/vanilla", "jotai-location"];
 // `index.mts` full of `var [Type] = [...]` rather than real types). The
 // package is `"type": "module"`, so the default `index.js` is already ESM.
 export default defineConfig([
-    {
-        input: "src/index.ts",
-        external,
-        plugins: [dts()],
-        output: { dir: "dist", format: "es" },
-    },
-    {
-        input: "src/index.ts",
-        external,
-        output: { dir: "dist", format: "cjs", entryFileNames: "index.cjs", exports: "named" },
-    },
+  {
+    input: "src/index.ts",
+    external,
+    plugins: [dts()],
+    output: { dir: "dist", format: "es" },
+  },
+  {
+    input: "src/index.ts",
+    external,
+    output: { dir: "dist", format: "cjs", entryFileNames: "index.cjs", exports: "named" },
+  },
 ]);

@@ -1,220 +1,220 @@
 :root {
-    --bg: #0f1115;
-    --bg-alt: #161922;
-    --fg: #e8eaf0;
-    --fg-muted: #9aa1b4;
-    --accent: #6fd0ff;
-    --accent-strong: #9be5ff;
-    --border: #262b38;
-    --code-bg: #1a1e29;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --bg: #0f1115;
+  --bg-alt: #161922;
+  --fg: #e8eaf0;
+  --fg-muted: #9aa1b4;
+  --accent: #6fd0ff;
+  --accent-strong: #9be5ff;
+  --border: #262b38;
+  --code-bg: #1a1e29;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 @media (prefers-color-scheme: light) {
-    :root {
-        --bg: #fbfbfd;
-        --bg-alt: #f1f2f6;
-        --fg: #1a1d24;
-        --fg-muted: #565d6e;
-        --accent: #0a7ea4;
-        --accent-strong: #05586f;
-        --border: #dde1ea;
-        --code-bg: #f1f2f6;
-    }
+  :root {
+    --bg: #fbfbfd;
+    --bg-alt: #f1f2f6;
+    --fg: #1a1d24;
+    --fg-muted: #565d6e;
+    --accent: #0a7ea4;
+    --accent-strong: #05586f;
+    --border: #dde1ea;
+    --code-bg: #f1f2f6;
+  }
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html,
 body {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    background: var(--bg);
-    color: var(--fg);
-    line-height: 1.6;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.6;
 }
 
 a {
-    color: var(--accent);
-    text-decoration: none;
+  color: var(--accent);
+  text-decoration: none;
 }
 
 a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .page {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .site-header {
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-alt);
-    position: sticky;
-    top: 0;
-    z-index: 10;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-alt);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .site-header__inner {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0.9rem 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    flex-wrap: wrap;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .brand {
-    font-weight: 700;
-    font-size: 1.2rem;
-    letter-spacing: 0.03em;
-    color: var(--fg) !important;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: 0.03em;
+  color: var(--fg) !important;
 }
 
 .brand:hover {
-    text-decoration: none;
-    color: var(--accent) !important;
+  text-decoration: none;
+  color: var(--accent) !important;
 }
 
 .main-nav {
-    display: flex;
-    gap: 1.25rem;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
 }
 
 .main-nav a {
-    color: var(--fg-muted);
-    font-size: 0.95rem;
+  color: var(--fg-muted);
+  font-size: 0.95rem;
 }
 
 .main-nav a:hover,
 .main-nav a[data-active] {
-    color: var(--accent);
-    text-decoration: none;
+  color: var(--accent);
+  text-decoration: none;
 }
 
 .site-main {
-    flex: 1;
-    max-width: 960px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 2rem 1.25rem 4rem;
+  flex: 1;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
 }
 
 .site-footer {
-    border-top: 1px solid var(--border);
-    padding: 1.5rem;
-    text-align: center;
-    color: var(--fg-muted);
-    font-size: 0.85rem;
+  border-top: 1px solid var(--border);
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 0.85rem;
 }
 
 .markdown h1:first-child {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .markdown pre {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 1rem;
-    overflow-x: auto;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
 }
 
 .markdown code {
-    background: var(--code-bg);
-    border-radius: 3px;
-    padding: 0.1em 0.35em;
-    font-size: 0.9em;
+  background: var(--code-bg);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+  font-size: 0.9em;
 }
 
 .markdown pre code {
-    background: none;
-    padding: 0;
+  background: none;
+  padding: 0;
 }
 
 .markdown table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1rem 0;
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
 }
 
 .markdown th,
 .markdown td {
-    border: 1px solid var(--border);
-    padding: 0.5rem 0.75rem;
-    text-align: left;
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
 }
 
 .doc-index,
 .demo-index {
-    list-style: none;
-    padding: 0;
+  list-style: none;
+  padding: 0;
 }
 
 .doc-index li,
 .demo-index li {
-    margin: 0.5rem 0;
+  margin: 0.5rem 0;
 }
 
 .demo-box {
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1.5rem;
-    background: var(--bg-alt);
-    margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
+  background: var(--bg-alt);
+  margin: 1.5rem 0;
 }
 
 .demo-box nav {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 0.75rem;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
 }
 
 .demo-box nav a[data-active] {
-    color: var(--accent-strong);
-    font-weight: 600;
+  color: var(--accent-strong);
+  font-weight: 600;
 }
 
 .tag-nav {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .tag-nav a {
-    padding: 0.3rem 0.8rem;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    color: var(--fg-muted);
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--fg-muted);
 }
 
 .tag-nav a[data-active] {
-    color: var(--accent-strong);
-    border-color: var(--accent);
+  color: var(--accent-strong);
+  border-color: var(--accent);
 }
 
 details.source summary {
-    cursor: pointer;
-    color: var(--fg-muted);
-    margin: 1rem 0 0.5rem;
+  cursor: pointer;
+  color: var(--fg-muted);
+  margin: 1rem 0 0.5rem;
 }
 
 details.source pre {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 1rem;
-    overflow-x: auto;
-    font-size: 0.85em;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.85em;
 }

@@ -9,7 +9,7 @@ import { locationAtom } from "jarl-atoms";
 export { staticPaths } from "./router/routes";
 
 export type RenderResult = {
-    html: string;
+  html: string;
 };
 
 /**
@@ -19,16 +19,16 @@ export type RenderResult = {
  * precisely so this holds.
  */
 export const render = (path: string): RenderResult => {
-    const store = createStore();
-    const [rawPathname, rawSearch = ""] = path.split("?");
-    store.set(locationAtom, {
-        pathname: rawPathname || "/",
-        searchParams: new URLSearchParams(rawSearch),
-    });
-    const html = renderToString(
-        <Provider store={store}>
-            <App />
-        </Provider>,
-    );
-    return { html };
+  const store = createStore();
+  const [rawPathname, rawSearch = ""] = path.split("?");
+  store.set(locationAtom, {
+    pathname: rawPathname || "/",
+    searchParams: new URLSearchParams(rawSearch),
+  });
+  const html = renderToString(
+    <Provider store={store}>
+      <App />
+    </Provider>,
+  );
+  return { html };
 };

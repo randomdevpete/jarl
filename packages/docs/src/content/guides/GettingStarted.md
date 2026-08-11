@@ -39,9 +39,9 @@ import { Provider } from "jotai";
 import App from "./App";
 
 createRoot(document.getElementById("root")!).render(
-    <Provider>
-        <App />
-    </Provider>,
+  <Provider>
+    <App />
+  </Provider>,
 );
 ```
 
@@ -55,14 +55,14 @@ import { homeRoute, aboutRoute } from "./routes";
 import { HomePage, AboutPage } from "./pages";
 
 export default () => (
-    <>
-        <Route on={homeRoute} exact>
-            <HomePage />
-        </Route>
-        <Route on={aboutRoute} exact>
-            <AboutPage />
-        </Route>
-    </>
+  <>
+    <Route on={homeRoute} exact>
+      <HomePage />
+    </Route>
+    <Route on={aboutRoute} exact>
+      <AboutPage />
+    </Route>
+  </>
 );
 ```
 
@@ -80,14 +80,14 @@ import { Link } from "jarl-react";
 import { homeRoute, aboutRoute } from "./routes";
 
 export default () => (
-    <nav>
-        <Link route={homeRoute} to={{}} exact>
-            Home
-        </Link>
-        <Link route={aboutRoute} to={{}}>
-            About
-        </Link>
-    </nav>
+  <nav>
+    <Link route={homeRoute} to={{}} exact>
+      Home
+    </Link>
+    <Link route={aboutRoute} to={{}}>
+      About
+    </Link>
+  </nav>
 );
 ```
 

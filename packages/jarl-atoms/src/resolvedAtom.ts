@@ -38,16 +38,16 @@ export type Resolver<T extends DefaultParams, Data> = (values: T, get: Getter) =
  * `await store.get(resolvedAtom)` outside React entirely.
  */
 export const resolvedAtom = <T extends DefaultParams, Data>(
-    routeAtom: RouteAtom<T>,
-    resolver: Resolver<T, Data>,
+  routeAtom: RouteAtom<T>,
+  resolver: Resolver<T, Data>,
 ): Atom<Promise<Data | Redirect | undefined>> =>
-    atom(async (get) => {
-        const route = get(routeAtom);
-        if (!route.match) {
-            return undefined;
-        }
-        return resolver(route.values, get);
-    });
+  atom(async (get) => {
+    const route = get(routeAtom);
+    if (!route.match) {
+      return undefined;
+    }
+    return resolver(route.values, get);
+  });
 
 /**
  * Wires one or more resolvedAtoms up so that if their resolver ever produces
@@ -58,21 +58,21 @@ export const resolvedAtom = <T extends DefaultParams, Data>(
  * Returns an unsubscribe function.
  */
 export const followResolvedRedirects = (
-    store: Store,
-    resolvedAtoms: ReadonlyArray<Atom<Promise<unknown>>>,
+  store: Store,
+  resolvedAtoms: ReadonlyArray<Atom<Promise<unknown>>>,
 ): (() => void) => {
-    const unsubs = resolvedAtoms.map((resolved) => {
-        const check = () => {
-            store.get(resolved).then((value) => {
-                if (isRedirect(value)) {
-                    const [pathname, searchParams] = splitHref(value.to);
-                    store.set(locationAtom, (prev) => ({ ...prev, pathname, searchParams }), { replace: true });
-                }
-            });
-        };
-        const unsub = store.sub(resolved, check);
-        check();
-        return unsub;
-    });
-    return () => unsubs.forEach((unsub) => unsub());
+  const unsubs = resolvedAtoms.map((resolved) => {
+    const check = () => {
+      store.get(resolved).then((value) => {
+        if (isRedirect(value)) {
+          const [pathname, searchParams] = splitHref(value.to);
+          store.set(locationAtom, (prev) => ({ ...prev, pathname, searchParams }), { replace: true });
+        }
+      });
+    };
+    const unsub = store.sub(resolved, check);
+    check();
+    return unsub;
+  });
+  return () => unsubs.forEach((unsub) => unsub());
 };

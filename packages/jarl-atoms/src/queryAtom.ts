@@ -20,29 +20,29 @@ import { appendQueryParam, splitHref } from "./href";
 /** Parses a `URLSearchParams` (or query string) into a plain object. Repeated
  * keys become string arrays, matching the common (non-`qs`) convention. */
 export const parseQuery = (search: URLSearchParams | string): Record<string, string | string[]> => {
-    const params = typeof search === "string" ? new URLSearchParams(search) : search;
-    const query: Record<string, string | string[]> = {};
-    for (const key of params.keys()) {
-        const values = params.getAll(key);
-        query[key] = values.length > 1 ? values : values[0];
-    }
-    return query;
+  const params = typeof search === "string" ? new URLSearchParams(search) : search;
+  const query: Record<string, string | string[]> = {};
+  for (const key of params.keys()) {
+    const values = params.getAll(key);
+    query[key] = values.length > 1 ? values : values[0];
+  }
+  return query;
 };
 
 /** Inverse of parseQuery: serializes a plain object into a query string
  * (without the leading `?`). */
 export const stringifyQuery = (query: Record<string, string | string[] | undefined>): string => {
-    const params = new URLSearchParams();
-    for (const key of Object.keys(query)) {
-        const value = query[key];
-        if (value === undefined) continue;
-        if (Array.isArray(value)) {
-            value.forEach((v) => params.append(key, v));
-        } else {
-            params.set(key, value);
-        }
+  const params = new URLSearchParams();
+  for (const key of Object.keys(query)) {
+    const value = query[key];
+    if (value === undefined) continue;
+    if (Array.isArray(value)) {
+      value.forEach((v) => params.append(key, v));
+    } else {
+      params.set(key, value);
     }
-    return params.toString();
+  }
+  return params.toString();
 };
 
 /**
@@ -52,25 +52,25 @@ export const stringifyQuery = (query: Record<string, string | string[] | undefin
  * spreading `get(queryAtom)` yourself first).
  */
 export const queryAtom = atom(
-    (get) => parseQuery(get(locationAtom).searchParams ?? new URLSearchParams()),
-    (get, set, query: Record<string, string | string[] | undefined>, navOptions?: NavOptions) => {
-        const [pathname] = splitHref(get(locationAtom).pathname || "/");
-        set(
-            locationAtom,
-            (prev) => ({
-                ...prev,
-                pathname,
-                searchParams: new URLSearchParams(stringifyQuery(query)),
-            }),
-            navOptions,
-        );
-    },
+  (get) => parseQuery(get(locationAtom).searchParams ?? new URLSearchParams()),
+  (get, set, query: Record<string, string | string[] | undefined>, navOptions?: NavOptions) => {
+    const [pathname] = splitHref(get(locationAtom).pathname || "/");
+    set(
+      locationAtom,
+      (prev) => ({
+        ...prev,
+        pathname,
+        searchParams: new URLSearchParams(stringifyQuery(query)),
+      }),
+      navOptions,
+    );
+  },
 );
 
 export type QueryParamOptions<Parent extends DefaultParams> = RouteOptions<Parent> & {
-    /** If true, a missing query param is a non-match (like v1's required query
-     * keys); by default a missing param just yields `undefined`. */
-    required?: boolean;
+  /** If true, a missing query param is a non-match (like v1's required query
+   * keys); by default a missing param just yields `undefined`. */
+  required?: boolean;
 };
 
 /**
@@ -82,51 +82,51 @@ export type QueryParamOptions<Parent extends DefaultParams> = RouteOptions<Paren
  * chained on.
  */
 export const queryParamAtom = <T extends string, Parent extends DefaultParams = DefaultParams>(
-    name: T,
-    options?: QueryParamOptions<Parent>,
+  name: T,
+  options?: QueryParamOptions<Parent>,
 ): RouteAtom<{ readonly [key in T]: string | undefined } & Parent> => {
-    const parentAtom = options?.parent || (rootAtom as RouteAtom<Parent>);
-    type Values = { readonly [key in T]: string | undefined };
+  const parentAtom = options?.parent || (rootAtom as RouteAtom<Parent>);
+  type Values = { readonly [key in T]: string | undefined };
 
-    const reverse =
-        (get: Getter) =>
-        (values: Values & Parent): string => {
-            const parent = get(parentAtom);
-            const parentHref = parent.reverse(values as unknown as Parent);
-            return appendQueryParam(parentHref, name, values[name]);
+  const reverse =
+    (get: Getter) =>
+    (values: Values & Parent): string => {
+      const parent = get(parentAtom);
+      const parentHref = parent.reverse(values as unknown as Parent);
+      return appendQueryParam(parentHref, name, values[name]);
+    };
+
+  return atom(
+    (get) => {
+      const parent = get(parentAtom);
+      if (!parent.match) {
+        return {
+          match: false,
+          exact: false,
+          values: undefined,
+          reverse: reverse(get),
         };
-
-    return atom(
-        (get) => {
-            const parent = get(parentAtom);
-            if (!parent.match) {
-                return {
-                    match: false,
-                    exact: false,
-                    values: undefined,
-                    reverse: reverse(get),
-                };
-            }
-            const searchParams = get(locationAtom).searchParams ?? new URLSearchParams();
-            const value = searchParams.has(name) ? searchParams.get(name)! : undefined;
-            if (options?.required && value === undefined) {
-                return {
-                    match: false,
-                    exact: false,
-                    values: undefined,
-                    reverse: reverse(get),
-                };
-            }
-            return {
-                ...parent,
-                reverse: reverse(get),
-                values: { ...parent.values, [name]: value } as Values & Parent,
-            };
-        },
-        (get, set, action, navOptions) => {
-            const path = reverse(get)(action);
-            const [pathname, searchParams] = splitHref(path);
-            set(locationAtom, (prev) => ({ ...prev, pathname, searchParams }), navOptions);
-        },
-    ) as RouteAtom<Values & Parent>;
+      }
+      const searchParams = get(locationAtom).searchParams ?? new URLSearchParams();
+      const value = searchParams.has(name) ? searchParams.get(name)! : undefined;
+      if (options?.required && value === undefined) {
+        return {
+          match: false,
+          exact: false,
+          values: undefined,
+          reverse: reverse(get),
+        };
+      }
+      return {
+        ...parent,
+        reverse: reverse(get),
+        values: { ...parent.values, [name]: value } as Values & Parent,
+      };
+    },
+    (get, set, action, navOptions) => {
+      const path = reverse(get)(action);
+      const [pathname, searchParams] = splitHref(path);
+      set(locationAtom, (prev) => ({ ...prev, pathname, searchParams }), navOptions);
+    },
+  ) as RouteAtom<Values & Parent>;
 };

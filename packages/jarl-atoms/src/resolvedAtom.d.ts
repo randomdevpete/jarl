@@ -11,7 +11,10 @@ export type Resolver<T extends DefaultParams, Data> = (values: T, get: Getter) =
  * closest atomic analogue of v1's synchronous `resolved` object), or simply
  * `await store.get(resolvedAtom)` outside React entirely.
  */
-export declare const resolvedAtom: <T extends DefaultParams, Data>(routeAtom: RouteAtom<T>, resolver: Resolver<T, Data>) => Atom<Promise<Data | Redirect | undefined>>;
+export declare const resolvedAtom: <T extends DefaultParams, Data>(
+  routeAtom: RouteAtom<T>,
+  resolver: Resolver<T, Data>,
+) => Atom<Promise<Data | Redirect | undefined>>;
 /**
  * Wires one or more resolvedAtoms up so that if their resolver ever produces
  * a Redirect, it's actually followed (history.replace to the redirect
@@ -20,4 +23,7 @@ export declare const resolvedAtom: <T extends DefaultParams, Data>(routeAtom: Ro
  * redirect (RoutingProvider.js: "Convert redirect into a Promise rejection").
  * Returns an unsubscribe function.
  */
-export declare const followResolvedRedirects: (store: Store, resolvedAtoms: ReadonlyArray<Atom<Promise<unknown>>>) => (() => void);
+export declare const followResolvedRedirects: (
+  store: Store,
+  resolvedAtoms: ReadonlyArray<Atom<Promise<unknown>>>,
+) => () => void;

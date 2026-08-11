@@ -18,8 +18,8 @@ export const productsRoute = staticRouteAtom("products");
 export const productRoute = paramRouteAtom("productId", { parent: productsRoute });
 
 export const productDataRoute = resolvedAtom(productRoute, async ({ productId }) => {
-    const result = await fetch(`/api/products/${productId}`);
-    return result.json();
+  const result = await fetch(`/api/products/${productId}`);
+  return result.json();
 });
 ```
 
@@ -33,14 +33,14 @@ import { useAtomValue } from "jarl-react";
 import { productDataRoute } from "./routes";
 
 const ProductPage = () => {
-    const product = useAtomValue(productDataRoute);
-    return <ProductView product={product} />;
+  const product = useAtomValue(productDataRoute);
+  return <ProductView product={product} />;
 };
 
 export default () => (
-    <Suspense fallback="Loading...">
-        <ProductPage />
-    </Suspense>
+  <Suspense fallback="Loading...">
+    <ProductPage />
+  </Suspense>
 );
 ```
 
@@ -62,11 +62,11 @@ import { staticRouteAtom, paramRouteAtom, resolvedAtom, redirect } from "jarl-at
 export const productBySlugRoute = paramRouteAtom("productSlug", { parent: productsRoute });
 
 export const productBySlugDataRoute = resolvedAtom(productBySlugRoute, async ({ productSlug }) => {
-    const response = await fetch(`/api/productsBySlug?slug=${productSlug}`);
-    if (!response.ok) {
-        return redirect("/products/not-found");
-    }
-    return response.json();
+  const response = await fetch(`/api/productsBySlug?slug=${productSlug}`);
+  if (!response.ok) {
+    return redirect("/products/not-found");
+  }
+  return response.json();
 });
 ```
 

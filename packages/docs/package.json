@@ -1,30 +1,30 @@
 {
-    "name": "jarl-react-docs",
-    "version": "0.1.0",
-    "private": true,
-    "description": "Docs & demo site for JARL: Atomic Routing Library. Self-contained Vite SSR/SSG build, dogfooding the real jarl-atoms/jarl-react packages for its own navigation.",
-    "type": "module",
-    "scripts": {
-        "docs:dev": "node scripts/dev-server.mjs",
-        "docs:build": "node scripts/build.mjs",
-        "docs:preview": "vite preview --outDir dist --port 4173",
-        "dev": "npm run docs:dev",
-        "build": "npm run docs:build",
-        "typecheck": "tsc --noEmit"
-    },
-    "dependencies": {
-        "jarl-atoms": "^2.0.0-beta.1",
-        "jarl-react": "^2.0.0-beta.1",
-        "jotai": "^2.20.2",
-        "marked": "^12.0.2",
-        "react": "^19.2.8",
-        "react-dom": "^19.2.8"
-    },
-    "devDependencies": {
-        "@types/react": "^19.2.18",
-        "@types/react-dom": "^19.2.4",
-        "@vitejs/plugin-react": "^6.0.5",
-        "typescript": "^6.0.3",
-        "vite": "^8.2.1"
-    }
+  "name": "jarl-react-docs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Docs & demo site for JARL: Atomic Routing Library. Self-contained Vite SSR/SSG build, dogfooding the real jarl-atoms/jarl-react packages for its own navigation.",
+  "type": "module",
+  "scripts": {
+    "docs:dev": "node scripts/dev-server.mjs",
+    "docs:build": "node scripts/build.mjs",
+    "docs:preview": "vite preview --outDir dist --port 4173",
+    "dev": "npm run docs:dev",
+    "build": "npm run docs:build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "jarl-atoms": "^2.0.0-beta.1",
+    "jarl-react": "^2.0.0-beta.1",
+    "jotai": "^2.20.2",
+    "marked": "^12.0.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
+    "typescript": "^6.0.3",
+    "vite": "^8.2.1"
+  }
 }
