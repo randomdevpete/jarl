@@ -1,16 +1,17 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel&family=Source+Sans+3:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cinzel&family=Source+Sans+3:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap");
 
 :root {
   --bg: #170f0a;
   --bg-alt: #241408;
   --fg: #ff6b52;
   --fg-muted: #c98a6e;
-  --accent: #ff3b30;
-  --accent-strong: #ff8a75;
+  --accent: #e8a33d;
+  --accent-strong: #f4c065;
   --border: #4a2a16;
   --code-bg: #20130a;
   --font-heading: "Cinzel", Georgia, serif;
   --font-body: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-family: var(--font-body);
 }
 
@@ -39,6 +40,7 @@ h6 {
   font-family: var(--font-heading);
   font-weight: 400;
   letter-spacing: 0.02em;
+  color: var(--accent);
 }
 
 a {
@@ -76,16 +78,25 @@ a:hover {
 }
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: var(--font-heading);
   font-weight: 400;
   font-size: 1.3rem;
   letter-spacing: 0.06em;
-  color: var(--fg) !important;
+  color: var(--accent) !important;
 }
 
 .brand:hover {
   text-decoration: none;
-  color: var(--accent) !important;
+  color: var(--accent-strong) !important;
+}
+
+.brand__mark {
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.4rem;
 }
 
 .main-nav {
@@ -138,6 +149,7 @@ a:hover {
   border-radius: 3px;
   padding: 0.1em 0.35em;
   font-size: 0.9em;
+  font-family: var(--font-mono);
 }
 
 .markdown pre code {
@@ -221,4 +233,5 @@ details.source pre {
   padding: 1rem;
   overflow-x: auto;
   font-size: 0.85em;
+  font-family: var(--font-mono);
 }
