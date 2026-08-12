@@ -8,6 +8,7 @@ import {
   historyRoute,
   demosIndexRoute,
 } from "../router/routes";
+import { VikingHelmetMark } from "./VikingHelmetMark";
 
 const navLinks = (
   <>
@@ -37,6 +38,7 @@ export const Layout = ({ children }: { children: ReactNode }) => (
     <header className="site-header">
       <div className="site-header__inner">
         <Link route={homeRoute} to={{}} className="brand">
+          <VikingHelmetMark />
           JARL
         </Link>
         <nav className="main-nav">{navLinks}</nav>
