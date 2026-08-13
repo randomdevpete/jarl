@@ -23,7 +23,7 @@ export const primaryRegion = "eu-west-2";
 /** CloudFront only accepts ACM certificates issued in us-east-1. */
 export const certificateRegion = "us-east-1";
 
-/** Vite writes content-hashed bundles here, so they can be cached for as long as CloudFront allows. */
+/** Vite writes content-hashed bundles here; a rebuild renames them, so they never need revalidating. */
 const hashedAssetPathPattern = "/assets/*";
 const hashedAssetLifetime = Duration.days(365);
 
