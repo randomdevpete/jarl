@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    // TS1479 ("masquerading as ESM") is only ever raised under `module: "node16"`
+    // (or "node18") - the compiler's own gate for that diagnostic excludes
+    // "nodenext" even though it resolves identically otherwise. "node16" is the
+    // setting that actually reproduces what a real CJS TS consumer hits.
+    "module": "node16",
+    "moduleResolution": "node16",
+    "strict": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    // Off deliberately: checking the packed .d.cts files is the point of this project.
+    "skipLibCheck": false,
+    // Otherwise TS auto-includes every @types/* package hoisted into the repo
+    // root's node_modules (unrelated React-ecosystem leftovers), some of which
+    // aren't node16-clean themselves and fail this project's compile for it.
+    "types": []
+  },
+  "include": ["src"]
+}

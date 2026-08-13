@@ -33,10 +33,24 @@ always fetches whatever is currently published. To pin a specific version instea
 npm --prefix e2e/registry-smoke install jarl-atoms@2.0.1 jarl-react@2.0.1
 ```
 
-## What this does not cover
+## CommonJS consumer under `node16`/`nodenext` resolution
 
-TypeScript consumers using `moduleResolution: node16`/`nodenext` from a CommonJS package
-cannot import either package: both ship a single ESM-flavoured `dist/index.d.ts` for the
-`require` condition too, which TypeScript rejects with TS1479. The `require` call itself
-works at runtime (`cjs-smoke.cjs` proves it) — only the types are unusable. Fixing it means
-emitting a `dist/index.d.cts` and pointing the `require` condition's `types` at it.
+`cjs-nodenext/` type-checks a CommonJS consumer against `dist/index.d.cts` — the
+declaration file the `require` condition's `types` points at — under
+`moduleResolution: node16` (the only setting that actually raises TS1479 for a
+masquerading-as-ESM package; `nodenext` resolves the same files but the compiler's
+own gate for that diagnostic excludes it).
+
+It runs against **local tarballs**, not the registry: this check exists to catch
+regressions before a release, so it must work against uncommitted `dist/` output,
+and separately the registry can carry a broken version of either package.
+
+```bash
+npm run build --workspace packages/jarl-atoms --workspace packages/jarl-react
+npm --prefix e2e/registry-smoke run test:cjs-nodenext
+```
+
+`cjs-nodenext/pack-local.mjs` packs both packages from the working tree and installs
+the tarballs here. Repeat runs must remove the previously-extracted `node_modules/`
+copies and `package-lock.json` first — npm treats an unchanged `file:` dependency
+spec as satisfied and won't re-read a same-named tarball whose contents changed.
