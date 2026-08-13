@@ -64,8 +64,8 @@ export class JarlStaticSiteStack extends Stack {
       autoDeleteObjects: true,
     });
 
-    // Origin access control, so the bucket stays private: CloudFront signs its origin requests and
-    // the only policy on the bucket grants s3:GetObject to this distribution.
+    // CloudFront signs its origin requests; the bucket policy grants s3:GetObject to this
+    // distribution only, so the bucket itself stays fully private.
     const origin = S3BucketOrigin.withOriginAccessControl(this.bucket);
 
     const sharedBehaviour = {
@@ -125,9 +125,8 @@ export class JarlStaticSiteStack extends Stack {
           responseHeadersPolicy: hashedAssetHeadersPolicy,
         },
       },
-      // The site is prerendered per route rather than client-routed, so an unknown path is a genuine
-      // 404 and not an entry point. S3 answers a missing key with 403 under origin access control,
-      // because the policy grants no s3:ListBucket.
+      // Origin access control grants no s3:ListBucket, so a missing key comes back as 403 rather
+      // than 404 — both need mapping to the real not-found page.
       errorResponses: [403, 404].map((httpStatus) => ({
         httpStatus,
         responseHttpStatus: 404,
