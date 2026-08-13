@@ -1,4 +1,8 @@
-import { useEffect } from "react";
+import { useAtom, useSetAtom } from "jotai";
+import { useEffect, useState } from "react";
+import { locationAtom, queryAtom, stringifyQuery } from "jarl-atoms";
+import { useHref, useRoute } from "jarl-react";
+import { queryStringsSearchAtom } from "../routes";
 
 const useTitle = (title: string) => {
   useEffect(() => {
@@ -6,25 +10,54 @@ const useTitle = (title: string) => {
   }, [title]);
 };
 
-// Mirrors demo/cypress/integration/03QueryStrings.js. `jarl-atoms` does now
-// support query params via `queryAtom`, but this page has not been wired up to
-// it yet, so it still renders only the static shell needed by the "loads home
-// page" and default "light theme" scenarios; the search / ?theme=dark /
-// theme-toggle scenarios remain test.fixme()'d in the spec.
+// Mirrors demo/cypress/integration/03QueryStrings.js.
 const QueryStrings = () => {
-  useTitle("Query Strings - Home - JARL");
+  const search = useRoute(queryStringsSearchAtom);
+  const [query, setQuery] = useAtom(queryAtom);
+  const setLocation = useSetAtom(locationAtom);
+  const searchPath = useHref(queryStringsSearchAtom, {});
+  const q = typeof query.q === "string" ? query.q : undefined;
+  const dark = query.theme === "dark";
+  const [searchText, setSearchText] = useState(q ?? "");
+
+  useTitle(search.match ? "Query Strings - Search - JARL" : "Query Strings - Home - JARL");
+
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    setLocation((prev) => ({
+      ...prev,
+      pathname: searchPath,
+      searchParams: new URLSearchParams(stringifyQuery({ ...query, q: searchText })),
+    }));
+  };
+
+  const toggleTheme = () => {
+    // `theme` first so a toggle from `?q=hello` lands on `?theme=dark&q=hello`,
+    // matching the order the e2e spec asserts on.
+    const { theme: _theme, ...rest } = query;
+    setQuery({ theme: dark ? undefined : "dark", ...rest });
+  };
+
   return (
-    <div data-test="page" style={{ backgroundColor: "rgb(255, 255, 255)" }}>
-      <div data-test="header" style={{ color: "rgb(0, 0, 0)" }}>
-        Home
+    <div data-test="page" style={{ backgroundColor: dark ? "rgb(0, 0, 0)" : "rgb(255, 255, 255)" }}>
+      <div data-test="header" style={{ color: dark ? "rgb(255, 255, 255)" : "rgb(0, 0, 0)" }}>
+        {search.match ? "Search" : "Home"}
       </div>
-      <form onSubmit={(event) => event.preventDefault()}>
-        <input data-test="search-text" type="text" />
+      <form onSubmit={handleSearch}>
+        <input
+          data-test="search-text"
+          type="text"
+          value={searchText}
+          onChange={(event) => setSearchText(event.target.value)}
+        />
         <button data-test="search-button" type="submit">
           Search
         </button>
       </form>
-      <p>Query-string aware routing (search, ?theme=) is not yet wired up in this fixture.</p>
+      {search.match && <p data-test="search-results">{q}</p>}
+      <button type="button" data-test="theme-link" onClick={toggleTheme}>
+        {dark ? "Light theme" : "Dark theme"}
+      </button>
     </div>
   );
 };
