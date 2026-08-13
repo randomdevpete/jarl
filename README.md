@@ -6,6 +6,8 @@ The production grade "batteries included" **controlled component** router.
 
 [![latest npm version](https://img.shields.io/npm/v/jarl-react.svg)](https://www.npmjs.com/package/jarl-react)
 [![downloads](https://img.shields.io/npm/dm/jarl-react.svg)](https://www.npmjs.com/package/jarl-react)
+[![jarl-atoms npm version](https://img.shields.io/npm/v/jarl-atoms.svg)](https://www.npmjs.com/package/jarl-atoms)
+[![jarl-atoms downloads](https://img.shields.io/npm/dm/jarl-atoms.svg)](https://www.npmjs.com/package/jarl-atoms)
 [![dependencies](https://david-dm.org/randomdevpete/jarl.svg?path=packages/jarl-react)](https://david-dm.org/randomdevpete/jarl?path=packages/jarl-react)
 [![CI](https://github.com/randomdevpete/jarl/actions/workflows/ci.yml/badge.svg)](https://github.com/randomdevpete/jarl/actions/workflows/ci.yml)
 [![Cypress end-to-end tests](https://img.shields.io/badge/cypress-dashboard-brightgreen.svg)](https://dashboard.cypress.io/#/projects/ps43vs/runs)
