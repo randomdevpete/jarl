@@ -2,8 +2,11 @@ import { ReactNode } from "react";
 import { RouteAtom, DefaultParams } from "jarl-atoms";
 import { useRoute } from "./hooks";
 
+/** `Route`'s props. */
 export type RouteProps<T extends DefaultParams> = {
+  /** The route atom to render on. */
   on: RouteAtom<T>;
+  /** Plain nodes, or a function receiving the matched route's param values. */
   children?: ReactNode | ((values: T) => ReactNode | undefined);
   /** Only render when this is an exact (leaf) match, not just an ancestor match. */
   exact?: boolean;

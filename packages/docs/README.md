@@ -37,11 +37,17 @@ static not-found document (S3 + CloudFront, etc).
   the top-level site navigation and the `/demos/basic-routing` live demo dogfood this
   router.
 * `src/pages/` - one component per page (Home, Docs, Api, Changelog, History, Demos).
-* `src/content/` - hand-written markdown (History, API reference). `Home` and
-  `Changelog` instead import the repo's root `README.md`/`CHANGELOG.md` directly
-  (via Vite's `?raw` imports) as a single source of truth, and `Docs` similarly imports
-  the existing guide markdown from `demo/source/docs/guides/`.
+* `src/content/` - hand-written markdown (History, guides, and the orientation section
+  of each API page). `Home` and `Changelog` instead import the repo's root
+  `README.md`/`CHANGELOG.md` directly (via Vite's `?raw` imports) as a single source of
+  truth, and `Docs` similarly imports the existing guide markdown from
+  `demo/source/docs/guides/`.
+* `src/content/generated/` - the API reference itself, generated from the doc comments
+  in `packages/jarl-atoms` and `packages/jarl-react`. Gitignored and rebuilt on every
+  `docs:build`, and on every source change while `docs:dev` is running.
 * `src/entry-client.tsx` / `src/entry-server.tsx` - hydration and SSR render entry
   points.
 * `scripts/dev-server.mjs` / `scripts/build.mjs` - the custom SSR dev server and SSG
   build script (plain Node + Vite's JS API, no framework).
+* `scripts/apiReference.mjs` / `scripts/apiReferencePlugin.mjs` - the API reference
+  generator and the Vite plugin that runs it.

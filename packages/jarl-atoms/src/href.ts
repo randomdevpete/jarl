@@ -2,6 +2,7 @@
 // query string. Shared by routeAtom (plain paths) and queryAtom (paths with
 // query params attached) so both go through the same parsing rules.
 
+/** A URL path, optionally with a query string attached (`/products/12?page=2`). */
 export type Path = string;
 
 // Removes any double slashes
@@ -9,6 +10,7 @@ const removeSlashDupes = (path: string) => path.replace(/\/\/+/g, "/");
 // Maybe remove the trailing slash from the end
 const removeTrailingSlash = (path: string) => (path.length > 1 ? path.substring(0, path.length - 1) : path);
 
+/** Normalizes a pathname to a leading slash, no repeated slashes and no trailing slash. */
 export const normalizePathname = (pathname: string): string => removeTrailingSlash(removeSlashDupes(`/${pathname}/`));
 
 /**
@@ -21,9 +23,8 @@ export const splitHref = (href: Path): [pathname: string, searchParams: URLSearc
 };
 
 /**
- * Appends/overwrites a single query param onto an existing href, returning
- * the combined href. Used when composing queryParamAtom on top of a parent
- * route atom's reverse() output.
+ * Appends/overwrites a single query param onto an existing href, returning the combined
+ * href. Passing `undefined` as the value removes the param.
  */
 export const appendQueryParam = (href: Path, key: string, value: string | undefined): Path => {
   const [pathname, searchParams] = splitHref(href);
