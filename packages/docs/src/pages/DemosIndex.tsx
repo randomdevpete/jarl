@@ -1,4 +1,5 @@
 import { Link } from "jarl-react";
+import LinkList from "../lib/LinkList";
 import { basicRoutingDemoRoute } from "../router/routes";
 
 export const DemosIndex = () => (
@@ -11,7 +12,7 @@ export const DemosIndex = () => (
       </Link>
       , and the <a href="/history">v1 History</a> page for why v1 didn&apos;t work this way).
     </p>
-    <ul className="demo-index">
+    <LinkList>
       <li>
         <Link route={basicRoutingDemoRoute} to={{}}>
           Basic routing
@@ -19,7 +20,7 @@ export const DemosIndex = () => (
         &mdash; a nested router-within-a-router built from <code>staticRouteAtom</code>/<code>paramRouteAtom</code> and
         the atoms-based <code>Link</code>/<code>Route</code> components.
       </li>
-    </ul>
+    </LinkList>
   </>
 );
 

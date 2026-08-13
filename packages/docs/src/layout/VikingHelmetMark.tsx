@@ -1,5 +1,13 @@
-export const VikingHelmetMark = ({ className = "brand__mark" }: { className?: string }) => (
-  <svg viewBox="0 0 48 40" className={className} aria-hidden="true" focusable="false">
+import styled from "@emotion/styled";
+
+const HelmetSvg = styled.svg`
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.4rem;
+`;
+
+export const VikingHelmetMark = ({ className }: { className?: string }) => (
+  <HelmetSvg viewBox="0 0 48 40" className={className} aria-hidden="true" focusable="false">
     <path
       fill="currentColor"
       fillRule="evenodd"
@@ -7,7 +15,7 @@ export const VikingHelmetMark = ({ className = "brand__mark" }: { className?: st
     />
     <path fill="currentColor" d="M10 22C4 18 0 10 1 3c2.5 7 7.5 12.5 12 16.5-1 2.5-2 5-3 9.5Z" />
     <path fill="currentColor" d="M38 22c6-4 10-12 9-19-2.5 7-7.5 12.5-12 16.5 1 2.5 2 5 3 9.5Z" />
-  </svg>
+  </HelmetSvg>
 );
 
 export default VikingHelmetMark;

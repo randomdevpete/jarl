@@ -1,5 +1,8 @@
 import { renderToString } from "react-dom/server";
 import { createStore, Provider } from "jotai";
+import { CacheProvider } from "@emotion/react";
+import createCache from "@emotion/cache";
+import createEmotionServer from "@emotion/server/create-instance";
 import App from "./App";
 import { locationAtom } from "jarl-atoms";
 
@@ -10,13 +13,15 @@ export { staticPaths } from "./router/routes";
 
 export type RenderResult = {
   html: string;
+  /** `<style>` markup for every rule the page uses, to substitute into the template's `<!--app-head-->`. */
+  head: string;
 };
 
 /**
  * Renders the app for a given path, on the server. Each call gets its own jotai
- * store, so prerendering many routes in one process can't leak state between
- * them — `jarl-atoms`' `locationAtom` keeps its server-side override per-store
- * precisely so this holds.
+ * store and its own emotion cache, so prerendering many routes in one process
+ * can't leak state or styles between them — `jarl-atoms`' `locationAtom` keeps
+ * its server-side override per-store precisely so this holds.
  */
 export const render = (path: string): RenderResult => {
   const store = createStore();
@@ -25,10 +30,15 @@ export const render = (path: string): RenderResult => {
     pathname: rawPathname || "/",
     searchParams: new URLSearchParams(rawSearch),
   });
+  // The default key is what the browser-side cache adopts server-rendered styles under.
+  const cache = createCache({ key: "css" });
+  const { extractCriticalToChunks, constructStyleTagsFromChunks } = createEmotionServer(cache);
   const html = renderToString(
-    <Provider store={store}>
-      <App />
-    </Provider>,
+    <CacheProvider value={cache}>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </CacheProvider>,
   );
-  return { html };
+  return { html, head: constructStyleTagsFromChunks(extractCriticalToChunks(html)) };
 };
