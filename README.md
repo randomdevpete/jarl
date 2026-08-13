@@ -189,6 +189,15 @@ npm run test:e2e:install   # once, to install the suite's deps and browsers
 npm run test:e2e
 ```
 
+To check the packages as actually published on npm — installed from the registry into a
+clean consumer project, with no workspace linking (see
+[`e2e/registry-smoke`](./e2e/registry-smoke)):
+
+```
+npm run test:smoke:install
+npm run test:smoke
+```
+
 ## Releases & versioning
 
 `jarl-atoms` and `jarl-react` are versioned and released together via
