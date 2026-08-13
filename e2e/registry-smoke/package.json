@@ -8,7 +8,8 @@
     "test": "npm run typecheck && npm run test:entrypoints && vitest run",
     "test:entrypoints": "node ./esm-smoke.mjs && node ./cjs-smoke.cjs",
     "test:unit": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:cjs-nodenext": "npm --prefix cjs-nodenext run test"
   },
   "dependencies": {
     "jarl-atoms": "latest",

@@ -17,6 +17,7 @@
     "test:e2e": "npm --prefix e2e run test",
     "test:smoke:install": "npm --prefix e2e/registry-smoke install",
     "test:smoke": "npm --prefix e2e/registry-smoke run test",
+    "test:smoke:local": "npm run build --workspace packages/jarl-atoms --workspace packages/jarl-react && npm --prefix e2e/registry-smoke run test:cjs-nodenext",
     "ci-publish": "npm publish --workspace packages/jarl-atoms --workspace packages/jarl-react",
     "notify": "node ./scripts/notify.ts",
     "lint": "oxlint .",
