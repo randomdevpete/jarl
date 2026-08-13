@@ -1,0 +1,30 @@
+{
+  "name": "jarl-registry-smoke",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Consumes the published jarl-atoms/jarl-react from the npm registry, exactly as a third-party project would, and exercises routing, navigation, redirects and the atoms API against the real build artifacts.",
+  "type": "module",
+  "scripts": {
+    "test": "npm run typecheck && npm run test:entrypoints && vitest run",
+    "test:entrypoints": "node ./esm-smoke.mjs && node ./cjs-smoke.cjs",
+    "test:unit": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "jarl-atoms": "latest",
+    "jarl-react": "latest"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "jsdom": "^30.0.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}
