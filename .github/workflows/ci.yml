@@ -97,9 +97,7 @@ jobs:
   registry-smoke:
     name: Registry smoke test (published packages)
     runs-on: ubuntu-latest
-    # Tests whatever is currently published, not this commit, so it is
-    # meaningless on a PR build and would report a red unrelated to the push.
-    # Dispatch it by hand after a release instead.
+    # Tests the published packages, not this commit — pointless on a PR build; run by hand after a release.
     if: github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
