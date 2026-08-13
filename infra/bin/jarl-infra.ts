@@ -21,5 +21,7 @@ const account = process.env.CDK_DEFAULT_ACCOUNT;
 const stackPropsIn = (region: string) => ({ env: { account, region }, crossRegionReferences: true });
 
 const staticSite = new JarlStaticSiteStack(app, "JarlStaticSite", stackPropsIn(primaryRegion));
+// Instantiation order is this way round for the prop below; CloudFormation's deploy order is the
+// reverse, since JarlStaticSite's template ends up referencing JarlSsr's origin.
 new JarlSsrStack(app, "JarlSsr", { ...stackPropsIn(primaryRegion), distribution: staticSite.distribution });
 new JarlDomainStack(app, "JarlDomain", stackPropsIn(certificateRegion));
