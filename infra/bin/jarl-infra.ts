@@ -20,6 +20,6 @@ const account = process.env.CDK_DEFAULT_ACCOUNT;
 // The certificate is pinned to another region, so every stack has to export across one.
 const stackPropsIn = (region: string) => ({ env: { account, region }, crossRegionReferences: true });
 
-new JarlStaticSiteStack(app, "JarlStaticSite", stackPropsIn(primaryRegion));
-new JarlSsrStack(app, "JarlSsr", stackPropsIn(primaryRegion));
+const staticSite = new JarlStaticSiteStack(app, "JarlStaticSite", stackPropsIn(primaryRegion));
+new JarlSsrStack(app, "JarlSsr", { ...stackPropsIn(primaryRegion), distribution: staticSite.distribution });
 new JarlDomainStack(app, "JarlDomain", stackPropsIn(certificateRegion));
