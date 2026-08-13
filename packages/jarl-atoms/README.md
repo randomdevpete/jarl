@@ -13,6 +13,10 @@ jotai, e.g. from a vanilla store in a non-React app or on the server.
 
 ## Install
 
+`jotai` is a peer dependency: install it alongside `jarl-atoms` so your app and this
+package share the same copy - atoms created here are only usable with the same jotai
+instance a consuming component's `<Provider>` (or `createStore()`) uses.
+
 ```bash
 npm install jarl-atoms jotai
 ```

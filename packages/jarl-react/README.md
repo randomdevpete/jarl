@@ -7,6 +7,15 @@ JARL: Atomic Routing Library.
 `jarl-react` is the React bindings package of JARL (components + hooks), built on top of
 the framework-agnostic routing atoms in `jarl-atoms`.
 
+## Install
+
+`jotai` is a peer dependency, shared with `jarl-atoms`: install it directly and import
+`Provider`, `useAtom` etc. from `jotai` itself - `jarl-react` doesn't re-export them.
+
+```bash
+npm install jarl-react jarl-atoms jotai
+```
+
 For documentation and demos go here:
 
 [JARL demos and documentation](https://jarl.downplay.co)
