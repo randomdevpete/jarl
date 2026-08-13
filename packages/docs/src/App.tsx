@@ -1,4 +1,5 @@
 import { useAtomValue } from "jotai";
+import GlobalStyles from "./GlobalStyles";
 import Layout from "./layout/Layout";
 import { Route } from "jarl-react";
 import {
@@ -26,39 +27,42 @@ import NotFound from "./pages/NotFound";
 export const App = () => {
   const notFound = useAtomValue(notFoundAtom);
   return (
-    <Layout>
-      <Route on={homeRoute} exact>
-        <Home />
-      </Route>
-      <Route on={docsSectionRoute} exact>
-        <DocsIndex />
-      </Route>
-      <Route on={docPageRoute} exact>
-        {({ docName }) => <DocPage docName={docName} />}
-      </Route>
-      <Route on={apiSectionRoute} exact>
-        <ApiIndex />
-      </Route>
-      <Route on={apiPageRoute} exact>
-        {({ apiName }) => <ApiPage apiName={apiName} />}
-      </Route>
-      <Route on={changelogRoute} exact>
-        <Changelog />
-      </Route>
-      <Route on={historyRoute} exact>
-        <History />
-      </Route>
-      <Route on={demosIndexRoute} exact>
-        <DemosIndex />
-      </Route>
-      <Route on={basicRoutingDemoRoute} exact>
-        <BasicRoutingDemo />
-      </Route>
-      <Route on={basicRoutingDemoPageRoute} exact>
-        <BasicRoutingDemo />
-      </Route>
-      {notFound && <NotFound />}
-    </Layout>
+    <>
+      <GlobalStyles />
+      <Layout>
+        <Route on={homeRoute} exact>
+          <Home />
+        </Route>
+        <Route on={docsSectionRoute} exact>
+          <DocsIndex />
+        </Route>
+        <Route on={docPageRoute} exact>
+          {({ docName }) => <DocPage docName={docName} />}
+        </Route>
+        <Route on={apiSectionRoute} exact>
+          <ApiIndex />
+        </Route>
+        <Route on={apiPageRoute} exact>
+          {({ apiName }) => <ApiPage apiName={apiName} />}
+        </Route>
+        <Route on={changelogRoute} exact>
+          <Changelog />
+        </Route>
+        <Route on={historyRoute} exact>
+          <History />
+        </Route>
+        <Route on={demosIndexRoute} exact>
+          <DemosIndex />
+        </Route>
+        <Route on={basicRoutingDemoRoute} exact>
+          <BasicRoutingDemo />
+        </Route>
+        <Route on={basicRoutingDemoPageRoute} exact>
+          <BasicRoutingDemo />
+        </Route>
+        {notFound && <NotFound />}
+      </Layout>
+    </>
   );
 };
 
