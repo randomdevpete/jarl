@@ -20,10 +20,8 @@ export function useRoute<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
 }
 
 /**
- * Returns a stable `navigate` function bound to a specific route atom.
- * Calling it with param values pushes a new location (mirrors v1's
- * `navigate` callback injected by the `routing` HOC, but scoped to one
- * route atom rather than the whole router).
+ * Returns a stable `navigate` function bound to one route atom. Calling it with param values
+ * pushes a new location.
  */
 export function useNavigate<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
   const setRoute = useSetAtom(routeAtom);
@@ -31,9 +29,8 @@ export function useNavigate<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
 }
 
 /**
- * Returns whether a route atom currently matches - optionally requiring an
- * exact (leaf) match rather than matching because a descendant route is
- * active too. Mirrors v1's `isActive`.
+ * Returns whether a route atom currently matches - optionally requiring an exact (leaf) match,
+ * rather than matching because a descendant route is active too.
  */
 export function useIsActive<T extends DefaultParams>(
   routeAtom: RouteAtom<T>,
@@ -43,16 +40,16 @@ export function useIsActive<T extends DefaultParams>(
 }
 
 /**
- * Reverses a route atom's pattern with the given param values into a URL
- * path. Mirrors v1's `stringify`. Note this still subscribes to the route
- * atom (reverse depends on ancestor state), so it re-renders on navigation
- * even though the returned href for unrelated params may not change.
+ * Reverses a route atom's pattern with the given param values into a URL path. Still subscribes
+ * to the route atom, since `reverse` depends on ancestor state, so it re-renders on navigation
+ * even when the returned href doesn't change.
  */
 export function useHref<T extends DefaultParams>(routeAtom: RouteAtom<T>, to: T): string {
   const { reverse } = useAtomValue(routeAtom);
   return useMemo(() => reverse(to), [reverse, to]);
 }
 
+/** Everything a link-like component needs: where it points, whether it's active, and how to follow it. */
 export type UseLinkResult = {
   href: string;
   active: boolean;
@@ -60,6 +57,7 @@ export type UseLinkResult = {
   onClick: (event?: { preventDefault?: () => void }) => void;
 };
 
+/** How strictly a link reports itself active. */
 export type UseLinkOptions = {
   /** Only report `active` for an exact match, rather than any ancestor route too. */
   exact?: boolean;

@@ -2,12 +2,14 @@ import { AnchorHTMLAttributes, ElementType, ReactNode } from "react";
 import { DefaultParams, RouteAtom } from "jarl-atoms";
 import { useLink, UseLinkOptions } from "./hooks";
 
+/** What `Link`'s function-as-child form receives. */
 export type LinkChildrenRenderProps = {
   href: string;
   active: boolean;
   onClick: () => void;
 };
 
+/** `Link`'s own props, plus any standard anchor attribute, which is forwarded to the rendered element. */
 export type LinkProps<T extends DefaultParams> = {
   /** The route atom this link points at. */
   route: RouteAtom<T>;
@@ -18,12 +20,8 @@ export type LinkProps<T extends DefaultParams> = {
   /** Element (or component) to render as. Ignored when `children` is a function. */
   element?: ElementType;
   /**
-   * Standard React children, or a render-prop function receiving
-   * `{ href, active, onClick }` for full control over rendering. Kept for
-   * parity with v1's function-as-child API and for cases that need to
-   * render something other than an anchor with custom internal markup;
-   * prefer `useLink` directly in new code that wants the same escape
-   * hatch without going through `Link` at all.
+   * Standard React children, or a render-prop function receiving `{ href, active, onClick }` for
+   * full control over rendering. Prefer `useLink` directly for markup that isn't anchor-shaped.
    */
   children?: ReactNode | ((props: LinkChildrenRenderProps) => ReactNode);
 } & UseLinkOptions &

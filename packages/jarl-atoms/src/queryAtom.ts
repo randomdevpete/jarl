@@ -67,9 +67,9 @@ export const queryAtom = atom(
   },
 );
 
+/** `RouteOptions` plus whether the param must be present for the route to match. */
 export type QueryParamOptions<Parent extends DefaultParams> = RouteOptions<Parent> & {
-  /** If true, a missing query param is a non-match (like v1's required query
-   * keys); by default a missing param just yields `undefined`. */
+  /** Makes a missing query param a non-match; by default it just yields `undefined`. */
   required?: boolean;
 };
 

@@ -25,27 +25,26 @@ import { Getter, atom, createStore } from "jotai/vanilla";
 import { Path, splitHref } from "./href";
 import { DefaultParams, NavOptions, RouteAtom, RouteOptions, locationAtom, rootAtom } from "./routeAtom";
 
-/** Marks a value as "actually, redirect to this instead". Returned from a
- * resolvedAtom loader to defer a redirect decision until after data loads,
- * mirroring v1's `resolve: () => redirect(...)`. */
+/** A sentinel object meaning "actually, redirect to this instead". */
 export class Redirect {
   constructor(public readonly to: Path) {}
 }
 
+/**
+ * Constructs a `Redirect` sentinel object - typically returned from a `resolvedAtom` loader to
+ * defer a redirect decision until after data has loaded.
+ */
 export const redirect = (to: Path): Redirect => new Redirect(to);
 
+/** Narrows a value to `Redirect`. */
 export const isRedirect = (value: unknown): value is Redirect => value instanceof Redirect;
 
 /**
- * A RouteAtom-shaped leaf that matches whenever its parent matches (it
- * swallows any remaining path, like v1's redirect routes have no children of
- * their own), and whose `reverse()`/write resolve to the redirect target
- * rather than to itself. `to` may be a static path or a function of `get`
- * for a target computed from other atoms (other matched params, auth state
- * threaded in via `context`, etc.)
+ * A leaf route that matches whenever its parent does, swallowing any remaining path, and whose
+ * `reverse()`/write resolve to the redirect target rather than to itself. `to` may be a static
+ * path or a function of `get`, for a target computed from other atoms.
  *
- * On its own, matching a redirectAtom doesn't navigate anywhere - see
- * `followRedirects` below to actually make that happen.
+ * Reading it is pure: matching one navigates nowhere on its own, see `followRedirects`.
  */
 export const redirectAtom = <Parent extends DefaultParams = DefaultParams>(
   to: Path | ((get: Getter) => Path),
@@ -88,15 +87,13 @@ export const redirectAtom = <Parent extends DefaultParams = DefaultParams>(
   );
 };
 
+/** A jotai store, as returned by jotai's own `createStore()`. */
 export type Store = ReturnType<typeof createStore>;
 
 /**
- * Wires one or more redirectAtoms up to actually navigate: subscribes to
- * each, and whenever it starts matching, writes to it (triggering the
- * replace-navigation defined above). Call once per redirectAtom you want
- * "live" (e.g. from the React bindings package's root Provider), analogous
- * to v1's RoutingProvider automatically following redirects found during
- * doNavigation. Returns an unsubscribe function.
+ * Makes redirect atoms actually navigate: subscribes to each, and replace-navigates the moment
+ * one starts matching. Call once, near the root of an app, for every redirect atom you want
+ * live. Returns an unsubscribe function.
  */
 export const followRedirects = (store: Store, redirectAtoms: ReadonlyArray<RouteAtom<any>>): (() => void) => {
   const unsubs = redirectAtoms.map((redirectRouteAtom) => {
