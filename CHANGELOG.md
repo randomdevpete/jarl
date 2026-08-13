@@ -55,7 +55,7 @@
 *   PRs and master untagged builds will deploy a staging demo site
 *   Build number added on docs site
 *   Really fixed prod deployment
-*   Created a Discord server: https://discord.gg/BVcQ6Z
+*   Created a Discord server: https://discord.gg/6yGq39rJ63
 *   Added a Discord bot to make build announcments in #build
 
 ## v1.0.0-alpha.11
