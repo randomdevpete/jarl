@@ -1,0 +1,20 @@
+{
+  "name": "jarl-cjs-nodenext-smoke",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Type-checks jarl-atoms/jarl-react from a node16-resolution CommonJS consumer, against locally packed tarballs rather than the registry.",
+  "scripts": {
+    "pack-local": "node ./pack-local.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "npm run pack-local && npm run typecheck"
+  },
+  "dependencies": {
+    "jarl-atoms": "file:./tarballs/jarl-atoms.tgz",
+    "jarl-react": "file:./tarballs/jarl-react.tgz"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "react": "^19.2.8",
+    "typescript": "^5.9.3"
+  }
+}
