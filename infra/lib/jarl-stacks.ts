@@ -178,22 +178,15 @@ export class JarlStaticSiteStack extends Stack {
   }
 }
 
-/** Paths CloudFront sends to the SSR server. Every route `packages/docs` prerenders sits outside it. */
+/** No route `packages/docs` prerenders sits under this pattern. */
 const ssrPathPattern = "/ssr/*";
 
 const ssrPort = 3000;
 const ssrHealthCheckPath = "/healthz";
-
-/** Where a deploy lands the built server, and the unit that runs it. */
 const ssrInstallDirectory = "/opt/jarl-ssr";
 const ssrServiceName = "jarl-ssr";
 
-/**
- * Installs the runtime and the service that will run the SSR server, but starts nothing: the bundle
- * arrives from a deploy, which drops it in {@link ssrInstallDirectory} and starts the unit.
- * `node-22` rather than `node`, which AL2023 leaves as an `alternatives` symlink onto whichever
- * major happens to be active.
- */
+/** Installs the runtime and the service that runs the SSR server; a deploy is what starts it. */
 const ssrInstanceSetup = `set -euo pipefail
 dnf install -y nodejs22
 install -d -o ec2-user -g ec2-user ${ssrInstallDirectory}
@@ -207,6 +200,7 @@ User=ec2-user
 WorkingDirectory=${ssrInstallDirectory}
 Environment=NODE_ENV=production
 Environment=PORT=${ssrPort}
+# node-22, not node: AL2023 leaves that as an alternatives symlink onto whichever major is active.
 ExecStart=/usr/bin/node-22 ${ssrInstallDirectory}/server.js
 Restart=always
 RestartSec=5
@@ -253,9 +247,8 @@ export class JarlSsrStack extends Stack {
     const userData = UserData.forLinux();
     userData.addCommands(ssrInstanceSetup);
 
-    // Public subnet purely for egress: dnf, npm and the SSM agent reach out through the internet
-    // gateway. Nothing reaches in — no key pair, no port 22, and the only ingress rule below is the
-    // load balancer's. A shell is `aws ssm start-session --target <JarlSsrInstanceId>`.
+    // Public subnet only for outbound access (dnf, npm, SSM) — no key pair, no port 22; the only
+    // ingress is the load balancer's rule below.
     const instance = new Instance(this, "SsrInstance", {
       vpc,
       vpcSubnets: { subnetType: SubnetType.PUBLIC },
@@ -283,9 +276,8 @@ export class JarlSsrStack extends Stack {
       vpcSubnets: { subnetType: SubnetType.PRIVATE_ISOLATED },
     });
 
-    // CloudFront reaches a VPC origin through service-managed network interfaces placed in this VPC,
-    // so their traffic arrives from inside the CIDR. Tightening it further needs the CloudFront
-    // managed prefix list, whose id only a credentialed lookup can resolve.
+    // CloudFront's VPC-origin ENIs sit inside this VPC, so ingress is only as narrow as the CIDR;
+    // the tighter CloudFront-managed prefix list needs a credentialed lookup, which synth must avoid.
     loadBalancer.connections.allowFrom(Peer.ipv4(vpc.vpcCidrBlock), Port.HTTP);
 
     // Registering an instance target wires no security group rules of its own.
@@ -316,6 +308,8 @@ export class JarlSsrStack extends Stack {
       protocolPolicy: OriginProtocolPolicy.HTTP_ONLY,
     });
 
+    // JarlStaticSiteStack's errorResponses are distribution-wide: a 403/404 from the server still
+    // serves the static build's 404.html, not anything from this origin.
     props.distribution.addBehavior(ssrPathPattern, VpcOrigin.withVpcOrigin(vpcOrigin), {
       viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
