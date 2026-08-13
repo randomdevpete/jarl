@@ -99,6 +99,19 @@ a:hover {
   height: 1.4rem;
 }
 
+.home-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.home-heading__mark {
+  flex-shrink: 0;
+  width: 3.6rem;
+  height: 3rem;
+  color: var(--accent);
+}
+
 .main-nav {
   display: flex;
   gap: 1.25rem;
@@ -146,6 +159,7 @@ a:hover {
 
 .markdown code {
   background: var(--code-bg);
+  color: var(--accent);
   border-radius: 3px;
   padding: 0.1em 0.35em;
   font-size: 0.9em;
@@ -228,6 +242,7 @@ details.source summary {
 
 details.source pre {
   background: var(--code-bg);
+  color: var(--accent);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 1rem;
