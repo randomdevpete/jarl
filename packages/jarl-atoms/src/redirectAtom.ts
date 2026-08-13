@@ -36,7 +36,6 @@ export class Redirect {
  */
 export const redirect = (to: Path): Redirect => new Redirect(to);
 
-/** Narrows a value to `Redirect`. */
 export const isRedirect = (value: unknown): value is Redirect => value instanceof Redirect;
 
 /**
