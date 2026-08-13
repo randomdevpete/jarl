@@ -15,6 +15,8 @@
     "ci-test": "npm run ci-test --workspaces --if-present",
     "test:e2e:install": "npm --prefix e2e install && npx --prefix e2e playwright install --with-deps chromium",
     "test:e2e": "npm --prefix e2e run test",
+    "test:smoke:install": "npm --prefix e2e/registry-smoke install",
+    "test:smoke": "npm --prefix e2e/registry-smoke run test",
     "ci-publish": "npm publish --workspace packages/jarl-atoms --workspace packages/jarl-react",
     "notify": "node ./scripts/notify.ts",
     "lint": "oxlint .",

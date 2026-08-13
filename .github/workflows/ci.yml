@@ -94,6 +94,26 @@ jobs:
       - name: Run e2e tests
         run: npm run test:e2e
 
+  registry-smoke:
+    name: Registry smoke test (published packages)
+    runs-on: ubuntu-latest
+    # Tests whatever is currently published, not this commit, so it is
+    # meaningless on a PR build and would report a red unrelated to the push.
+    # Dispatch it by hand after a release instead.
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install the smoke consumer from the registry
+        run: npm run test:smoke:install
+
+      - name: Run the smoke consumer
+        run: npm run test:smoke
+
   release:
     name: Release (semantic-release)
     runs-on: ubuntu-latest
