@@ -11,18 +11,16 @@ import { normalizePathname, splitHref, Path } from "./href";
 
 export type { Path };
 
+/** The param values a route binds. Empty for routes that bind none, such as a static segment. */
 export type DefaultParams = {};
 
 /**
- * Options that can be passed as an (optional) extra argument when writing to
- * a RouteAtom, e.g. `set(routeAtom, values, { replace: true })`. Mirrors
- * jotai-location's own applyLocation options, so a `replace` navigation here
- * results in `history.replaceState` rather than `history.pushState` - used
- * by redirectAtom to avoid polluting browser history with a route that's
- * about to be replaced anyway.
+ * Extra argument when writing to a RouteAtom, e.g. `set(routeAtom, values, { replace: true })`.
+ * `replace` navigates with `history.replaceState` rather than `history.pushState`.
  */
 export type NavOptions = { replace?: boolean };
 
+/** The param name a single pattern segment binds, honouring its `?`, `*` and `+` suffixes. */
 export type ExtractRouteOptionalParam<PathType extends Path> = PathType extends `${infer Param}?`
   ? { readonly [k in Param]: string | undefined }
   : PathType extends `${infer Param}*`
@@ -31,6 +29,7 @@ export type ExtractRouteOptionalParam<PathType extends Path> = PathType extends 
       ? { readonly [k in Param]: string }
       : { readonly [k in PathType]: string };
 
+/** The full param object a `:name`-style path pattern binds. */
 export type ExtractRouteParams<PathType extends string> = string extends PathType
   ? DefaultParams
   : PathType extends `${infer _Start}:${infer ParamWithOptionalRegExp}/${infer Rest}`
@@ -43,17 +42,10 @@ export type ExtractRouteParams<PathType extends string> = string extends PathTyp
         : ExtractRouteOptionalParam<ParamWithOptionalRegExp>
       : {};
 
-// Exported so queryAtom/redirectAtom/resolvedAtom can compose on top of the
-// same underlying location without each creating their own history binding.
-/**
- * The location shape jotai-location's `atomWithLocation` reads and writes.
- * Declared here rather than imported: jotai-location exports its `Location`
- * type only from `jotai-location/dist/atomWithLocation`, not from the package
- * entry point, so the inferred type of `locationAtom` below can't be *named*
- * when emitting declarations (TS2883) - and reaching into the package's dist/
- * internals to name it would be worse. Structurally identical, so assignment
- * both ways still typechecks.
- */
+// Declared rather than imported: jotai-location exports its structurally identical `Location`
+// only from jotai-location/dist/atomWithLocation, so locationAtom's inferred type can't be
+// named when emitting declarations (TS2883).
+/** The location every route atom reads: pathname, query params and hash. */
 export type JarlLocation = {
   pathname?: string;
   searchParams?: URLSearchParams;
@@ -95,9 +87,7 @@ const serverLocationAtom = atom<JarlLocation | null>(null);
  * ```
  *
  * Each store keeps its own override, so prerendering many routes in one process
- * can't leak location between them. Without this, seeding a location server-side
- * throws `ReferenceError: window is not defined` and the router can't SSR at all
- * — which is what the docs site (packages/docs) needs in order to prerender.
+ * can't leak location between them.
  */
 export const locationAtom: WritableAtom<JarlLocation, [SetStateAction<JarlLocation>, { replace?: boolean }?], void> =
   atom(
@@ -121,6 +111,11 @@ export const locationAtom: WritableAtom<JarlLocation, [SetStateAction<JarlLocati
     },
   );
 
+/**
+ * What reading any route atom gives you. `match`/`exact` say whether and how completely it
+ * matches the current location, `values` holds the params it and its ancestors bound, `rest`
+ * the path segments left for its children, and `reverse` turns param values back into a URL.
+ */
 export type RouteReturn<T extends DefaultParams = DefaultParams> = {
   reverse: (values: T) => string;
 } & (
@@ -140,16 +135,25 @@ export type RouteReturn<T extends DefaultParams = DefaultParams> = {
 // jotai's WritableAtom takes its write-side arguments as a tuple (Args) plus
 // a Result type, rather than the single-Update-type shape older jotai
 // versions used — hence `[T]` (a single-argument tuple) and `void` here.
+/** A route: read it for its `RouteReturn` match state, write param values to it to navigate. */
 export type RouteAtom<T extends DefaultParams> = WritableAtom<RouteReturn<T>, [T, NavOptions?], void>;
 
 // Earlier design sketches (a tuple-shaped RouteReturn, a pattern-string-driven
 // routeAtom overload, and the type plumbing they'd need) were explored here
 // and are preserved with context in ../DESIGN-NOTES.md rather than dropped.
 
+/** Common options for every route atom constructor. */
 export type RouteOptions<Parent extends DefaultParams> = {
+  /** Route this one nests under, matching the segment after its parent's. Defaults to `rootAtom`. */
   parent?: RouteAtom<Parent>;
 };
 
+/**
+ * The primitive every other route atom is built from. `matchPath` decides whether the next
+ * unconsumed path segment matches, and to what param values; `makePath` is its inverse, used by
+ * `reverse`. Reach for it directly when `staticRouteAtom`/`paramRouteAtom` don't fit - custom
+ * segment syntax, regex constraints and the like.
+ */
 export const routeAtom = <T extends DefaultParams = DefaultParams, Parent extends DefaultParams = DefaultParams>(
   matchPath: (path: string, get: Getter) => T | undefined,
   makePath: (values: T, get: Getter) => string,
@@ -196,18 +200,12 @@ export const routeAtom = <T extends DefaultParams = DefaultParams, Parent extend
   );
 };
 
+/** Options for `createRootAtom`. */
 export type RootOptions = {
   /**
-   * Scopes this router to a subtree of the URL, mirroring v1's
-   * RoutingProvider `basePath` prop: the prefix is stripped from the
-   * pathname before matching begins, and prepended again by `reverse`/write.
-   *
-   * Unlike v1 (which simply *ignored* navigation events outside basePath,
-   * leaving the router frozen on its last good state) this makes the whole
-   * tree report `match: false` when the current location falls outside
-   * basePath - there's no "previous state" to fall back to in a pull-based
-   * atom, and treating it as a plain non-match is the closer fit for the
-   * atomic model. Documented as a deliberate deviation, see PR body.
+   * Scopes the router to a subtree of the URL: the prefix is stripped from the pathname before
+   * matching begins, and prepended again by `reverse`/write. A location outside `basePath` makes
+   * the whole tree report `match: false`.
    */
   basePath?: Path;
 };
@@ -222,8 +220,8 @@ const stripBasePath = (pathname: string, basePath: string): string | undefined =
 };
 
 /**
- * Creates a root RouteAtom. Call this directly (instead of using the default
- * `rootAtom` export) when the app needs to be scoped under a basePath.
+ * Creates a root RouteAtom. Call this instead of using the default `rootAtom` export when the
+ * app needs to be scoped under a basePath.
  */
 export const createRootAtom = (options?: RootOptions): RouteAtom<DefaultParams> => {
   const basePath = options?.basePath ? normalizePathname(options.basePath) : "";
@@ -265,8 +263,10 @@ export const createRootAtom = (options?: RootOptions): RouteAtom<DefaultParams> 
   );
 };
 
+/** The default root of every route atom chain: matches `/`, and is the implicit `parent`. */
 export const rootAtom = createRootAtom();
 
+/** Matches one fixed path segment: `staticRouteAtom("about")` matches `/about`. */
 export const staticRouteAtom = <Parent extends DefaultParams>(
   name: string,
   options?: RouteOptions<Parent>,
@@ -278,6 +278,10 @@ export const staticRouteAtom = <Parent extends DefaultParams>(
   );
 };
 
+/**
+ * Binds one dynamic path segment to a named value: `paramRouteAtom("productId", { parent:
+ * products })` matches `/products/:productId` and yields `{ productId: "123" }`.
+ */
 export const paramRouteAtom = <T extends string, Parent extends DefaultParams>(
   name: T,
   options?: RouteOptions<Parent>,
@@ -294,6 +298,10 @@ export const paramRouteAtom = <T extends string, Parent extends DefaultParams>(
   );
 };
 
+/**
+ * Reshapes a route's matched `values` into a different shape, and back again for
+ * `reverse`/write - composable middleware over a chain of route atoms.
+ */
 export const transformRouteAtom = <T extends DefaultParams, Return extends DefaultParams>(
   parentAtom: RouteAtom<T>,
   getter: (values: T, get: Getter) => Return | undefined,

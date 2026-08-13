@@ -12,6 +12,12 @@ dist
 cdk.out
 .cdk.staging
 
+# API reference generated from package doc comments (packages/docs/scripts/apiReferencePlugin.mjs)
+packages/docs/src/content/generated/
+
+# Declaration intermediates the packages' dts build drops next to their sources
+packages/*/src/**/*.d.ts
+
 # Babel runtime cache
 babel-cache
 .cache

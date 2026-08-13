@@ -27,15 +27,14 @@ import { DefaultParams, RouteAtom, locationAtom } from "./routeAtom";
 import { Redirect, isRedirect } from "./redirectAtom";
 import type { Store } from "./redirectAtom";
 
+/** Loads the data a matched route needs. Returning a `Redirect` sends the app elsewhere instead. */
 export type Resolver<T extends DefaultParams, Data> = (values: T, get: Getter) => Promise<Data | Redirect>;
 
 /**
- * Runs `resolver` whenever `routeAtom` matches, resolving to `undefined`
- * when it doesn't. Because this is a plain async atom, consumers get to
- * choose how they want to observe it: `useAtomValue` + Suspense, jotai/utils
- * `loadable()` for a non-suspending pending/hasData/hasError view (the
- * closest atomic analogue of v1's synchronous `resolved` object), or simply
- * `await store.get(resolvedAtom)` outside React entirely.
+ * Runs `resolver` whenever `routeAtom` matches, resolving to `undefined` when it doesn't. This
+ * is a plain async atom, so observe it however suits: `useAtomValue` + Suspense, jotai/utils
+ * `loadable()` for a non-suspending pending/hasData/hasError view, or `await
+ * store.get(resolvedAtom)` outside React entirely.
  */
 export const resolvedAtom = <T extends DefaultParams, Data>(
   routeAtom: RouteAtom<T>,
@@ -50,12 +49,8 @@ export const resolvedAtom = <T extends DefaultParams, Data>(
   });
 
 /**
- * Wires one or more resolvedAtoms up so that if their resolver ever produces
- * a Redirect, it's actually followed (history.replace to the redirect
- * target) - the async-loading equivalent of `followRedirects`. Mirrors v1's
- * `doNavigation` treating a resolve's Redirect result as an abort-and-
- * redirect (RoutingProvider.js: "Convert redirect into a Promise rejection").
- * Returns an unsubscribe function.
+ * Follows any `Redirect` a resolver produces, replace-navigating to its target - the
+ * async-loading counterpart of `followRedirects`. Returns an unsubscribe function.
  */
 export const followResolvedRedirects = (
   store: Store,

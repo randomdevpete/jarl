@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { apiReferencePlugin } from "./scripts/apiReferencePlugin.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // The repo root two levels up (packages/docs -> packages -> repo root). The docs site
@@ -12,7 +13,7 @@ const repoRoot = path.resolve(__dirname, "../..");
 
 export default defineConfig({
   root: __dirname,
-  plugins: [react()],
+  plugins: [react(), apiReferencePlugin()],
   resolve: {
     // Same convention as the packages' own vitest/tsconfig setups: resolve the
     // workspace packages to their TypeScript *source*, not their built dist/,
