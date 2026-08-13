@@ -39,10 +39,11 @@ comes from.
 
 ## Concrete Example
 
-Add to your project:
+Add to your project (`jotai` is a peer dependency of both packages - install it
+alongside so there's exactly one copy in your tree):
 
 ```
-npm install jarl-atoms jarl-react
+npm install jarl-atoms jarl-react jotai
 ```
 
 Declare some route atoms:
