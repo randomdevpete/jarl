@@ -7,12 +7,12 @@
  * can exercise realistic nested/param routes.
  *
  * NOTE: this file only *composes* the primitives jarl-atoms exports
- * (rootAtom, staticRouteAtom, paramRouteAtom). It does not add routing
- * features to the library. Ticket 56 has since implemented query strings,
- * redirects/resolve and basePath, but this fixture doesn't consume them yet,
- * so those scenarios remain `test.fixme()` in their specs - see the PR body.
+ * (rootAtom, staticRouteAtom, paramRouteAtom, redirectAtom, resolvedAtom). It
+ * does not add routing features to the library.
  */
-import { rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { atom } from "jotai/vanilla";
+import { loadable } from "jotai/utils";
+import { rootAtom, staticRouteAtom, paramRouteAtom, redirectAtom, resolvedAtom, redirect } from "jarl-atoms";
 
 // --- Shell (demo/cypress/integration/00DemosShell.js) ---
 export { rootAtom };
@@ -42,16 +42,12 @@ export const productGalleryImageAtom = paramRouteAtom("imageId", {
 });
 
 // --- Query Strings (03QueryStrings.js) ---
-// Most of this suite is test.fixme()'d - the v2 route atoms don't read or
-// write query/search params in this fixture yet (`queryAtom` exists).
 export const queryStringsAtom = staticRouteAtom("queryStrings");
 export const queryStringsSearchAtom = staticRouteAtom("search", {
   parent: queryStringsAtom,
 });
 
 // --- Redirects (04Redirects.js) ---
-// Most of this suite is test.fixme()'d - there is no redirect/resolve
-// support wired up in this fixture yet (`redirectAtom` exists).
 export const redirectsAtom = staticRouteAtom("redirects");
 export const redirectsMovedAtom = staticRouteAtom("moved", {
   parent: redirectsAtom,
@@ -65,3 +61,37 @@ export const redirectsContentAtom = staticRouteAtom("content", {
 export const redirectsContentSlugAtom = paramRouteAtom("slug", {
   parent: redirectsContentAtom,
 });
+
+// Unconditional: visiting /redirects/moved always bounces back to the
+// landing page. Read via its `match`, not `followRedirects` - see the
+// comment on `reasonSearchParams` in Redirects.tsx for why the actual
+// navigation is handled there instead.
+export const redirectsMovedRedirectAtom = redirectAtom("/redirects", {
+  parent: redirectsMovedAtom,
+});
+
+export const isAdminAuthenticatedAtom = atom(false);
+
+// A little JARL etymology, mirroring the flavour of the v1 demo content.
+const CONTENT: Record<string, string> = {
+  "about-us": "A jarl was a Norse or Danish chief, a rank of nobility above a freeman and below a king.",
+};
+
+export const redirectsAdminDataAtom = resolvedAtom(redirectsAdminAtom, async (_values, get) => {
+  if (!get(isAdminAuthenticatedAtom)) {
+    return redirect("/redirects");
+  }
+  return { body: "This is the super secret admin page." };
+});
+
+export const redirectsContentDataAtom = resolvedAtom(redirectsContentSlugAtom, async ({ slug }) => {
+  const body = CONTENT[slug];
+  if (!body) {
+    return redirect("/redirects");
+  }
+  return { body };
+});
+
+// loadable() lets the pages read these without a Suspense boundary.
+export const redirectsAdminDataLoadableAtom = loadable(redirectsAdminDataAtom);
+export const redirectsContentDataLoadableAtom = loadable(redirectsContentDataAtom);
