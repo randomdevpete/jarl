@@ -1,4 +1,5 @@
-import { CfnOutput, Duration, RemovalPolicy, Stack, type StackProps } from "aws-cdk-lib";
+import { CfnOutput, Duration, Fn, RemovalPolicy, Stack, type StackProps } from "aws-cdk-lib";
+import { Certificate, CertificateValidation, type ICertificate } from "aws-cdk-lib/aws-certificatemanager";
 import {
   AllowedMethods,
   CachePolicy,
@@ -36,6 +37,8 @@ import {
 import { ApplicationLoadBalancer, ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { InstanceTarget } from "aws-cdk-lib/aws-elasticloadbalancingv2-targets";
 import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { ARecord, AaaaRecord, type IHostedZone, PublicHostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
+import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
 import { BlockPublicAccess, Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
 import type { Construct } from "constructs";
 
@@ -71,12 +74,19 @@ function handler(event) {
 }
 `;
 
-/** Private S3 bucket for the `packages/docs` build, fronted by the CloudFront distribution the other two stacks attach to. */
+export interface JarlStaticSiteStackProps extends StackProps {
+  /** {@link JarlDomainStack.hostedZone} — the distribution's alias records are created in it. */
+  readonly hostedZone: IHostedZone;
+  /** {@link JarlDomainStack.certificate} — CloudFront rejects one issued outside {@link certificateRegion}. */
+  readonly certificate: ICertificate;
+}
+
+/** Private S3 bucket for the `packages/docs` build, and the CloudFront distribution serving it at {@link siteDomainName}. */
 export class JarlStaticSiteStack extends Stack {
   readonly bucket: Bucket;
   readonly distribution: Distribution;
 
-  constructor(scope: Construct, id: string, props: StackProps) {
+  constructor(scope: Construct, id: string, props: JarlStaticSiteStackProps) {
     super(scope, id, props);
 
     this.bucket = new Bucket(this, "SiteBucket", {
@@ -134,6 +144,8 @@ export class JarlStaticSiteStack extends Stack {
 
     this.distribution = new Distribution(this, "SiteDistribution", {
       comment: siteDomainName,
+      domainNames: [siteDomainName],
+      certificate: props.certificate,
       defaultRootObject: "index.html",
       httpVersion: HttpVersion.HTTP2_AND_3,
       priceClass: PriceClass.PRICE_CLASS_100,
@@ -158,6 +170,12 @@ export class JarlStaticSiteStack extends Stack {
         ttl: Duration.minutes(5),
       })),
     });
+
+    // These live here rather than in JarlDomainStack: they need the distribution, which needs that
+    // stack's certificate, so owning both ends there would make the two stacks depend on each other.
+    const aliasTarget = RecordTarget.fromAlias(new CloudFrontTarget(this.distribution));
+    new ARecord(this, "SiteAliasRecord", { zone: props.hostedZone, target: aliasTarget });
+    new AaaaRecord(this, "SiteAliasRecordIpv6", { zone: props.hostedZone, target: aliasTarget });
 
     new CfnOutput(this, "SiteBucketName", {
       value: this.bucket.bucketName,
@@ -333,4 +351,37 @@ export class JarlSsrStack extends Stack {
 }
 
 /** Route53 hosted zone for {@link siteDomainName} and the certificate CloudFront serves it under. */
-export class JarlDomainStack extends Stack {}
+export class JarlDomainStack extends Stack {
+  readonly hostedZone: PublicHostedZone;
+  readonly certificate: Certificate;
+
+  constructor(scope: Construct, id: string, props: StackProps) {
+    super(scope, id, props);
+
+    // Created rather than looked up: HostedZone.fromLookup reads the account, and synth must not.
+    this.hostedZone = new PublicHostedZone(this, "SiteZone", { zoneName: siteDomainName });
+
+    // CloudFormation writes the validation record into the zone and then waits on ACM, so this
+    // resource blocks until randomdev.co.uk delegates to the name servers output below.
+    this.certificate = new Certificate(this, "SiteCertificate", {
+      domainName: siteDomainName,
+      validation: CertificateValidation.fromDns(this.hostedZone),
+    });
+
+    new CfnOutput(this, "ZoneNameServers", {
+      value: Fn.join(", ", this.hostedZone.hostedZoneNameServers ?? []),
+      description: `Delegate ${siteDomainName} to these NS records at the randomdev.co.uk registrar`,
+      exportName: "JarlZoneNameServers",
+    });
+
+    new CfnOutput(this, "HostedZoneId", {
+      value: this.hostedZone.hostedZoneId,
+      exportName: "JarlHostedZoneId",
+    });
+
+    new CfnOutput(this, "SiteCertificateArn", {
+      value: this.certificate.certificateArn,
+      exportName: "JarlSiteCertificateArn",
+    });
+  }
+}

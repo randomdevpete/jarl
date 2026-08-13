@@ -21,17 +21,22 @@ All three are declared in [`lib/jarl-stacks.ts`](./lib/jarl-stacks.ts) and insta
 | `JarlSsrStack` | EC2 instance running the docs SSR server, behind an internal load balancer the distribution reaches as a second origin |
 | `JarlDomainStack` | Route53 hosted zone for the domain, and the ACM certificate CloudFront serves it under |
 
-`JarlStaticSiteStack` owns the single CloudFront distribution; the other two attach to it rather than
-creating their own. It exposes its `bucket` and `distribution` as public readonly members for them to
-build on, and exports `JarlSiteBucketName`, `JarlDistributionId` and `JarlDistributionDomainName` for
-anything reaching them from outside the app. `JarlSsrStack` adds a `/ssr/*` behaviour pointing at its
-own origin while every other path keeps hitting S3; `JarlDomainStack` supplies the alias records and
-the certificate.
+`JarlStaticSiteStack` owns the single CloudFront distribution; the other two meet it there rather than
+creating a front of their own. It exposes its `bucket` and `distribution` as public readonly members
+for them to build on, and exports `JarlSiteBucketName`, `JarlDistributionId` and
+`JarlDistributionDomainName` for anything reaching them from outside the app. `JarlSsrStack` adds a
+`/ssr/*` behaviour pointing at its own origin while every other path keeps hitting S3;
+`JarlDomainStack` hands over the hosted zone and the certificate the distribution is created with.
 
-Attaching to the distribution rather than being attached to it inverts the deploy order: the
-distribution holds the references, so CloudFormation needs `JarlSsr` (and later `JarlDomain`) in
-place before `JarlStaticSite` can be updated to point at them. `cdk deploy --all` works this out from
-the templates; deploying stacks one at a time does not.
+`JarlStaticSite` therefore deploys last, whichever way the wiring runs: its template references
+`JarlSsr`'s origin and `JarlDomain`'s certificate, so CloudFormation needs both in place before it can
+be created or updated. `cdk deploy --all` works this out from the templates; deploying stacks one at a
+time does not.
+
+The alias records break that pattern. `jarl.randomdev.co.uk`'s A and AAAA records are created in
+`JarlStaticSiteStack`, not `JarlDomainStack`, because they need the distribution and the distribution
+needs `JarlDomainStack`'s certificate — owning both ends in the DNS stack would make the two stacks
+depend on each other.
 
 ### Serving the docs build
 
@@ -95,6 +100,46 @@ sudo systemctl restart jarl-ssr
 It must answer `GET /healthz`, which is the target group's health check; the load balancer serves no
 traffic to it until it does.
 
+### Domain and certificate
+
+`jarl.randomdev.co.uk` gets its own Route53 public hosted zone, created by the stack rather than
+looked up: `HostedZone.fromLookup` reads the account at synth time, and synth here has to work with no
+credentials. The certificate covers that one name, is issued in `us-east-1`, and is validated by DNS
+into the new zone. The distribution is created with the name as an alternate domain name and that
+certificate as its viewer certificate; two apex records, A and AAAA, alias it.
+
+**The parent domain is registered elsewhere.** `randomdev.co.uk` is at GoDaddy, so nothing in this app
+can delegate the subdomain to Route53 — that is a manual step at the registrar, using the name servers
+Route53 assigns the new zone. The `JarlZoneNameServers` output carries them, `JarlHostedZoneId` and
+`JarlSiteCertificateArn` the other two identifiers worth having to hand.
+
+**The first deploy waits for that delegation, so do it in two passes.** CloudFormation writes ACM's
+validation record into the hosted zone and then blocks on the certificate until ACM can resolve it
+over public DNS, which cannot happen until the parent delegates. Deploy the domain stack on its own
+first:
+
+```bash
+npx cdk deploy JarlDomain
+```
+
+It creates the zone immediately and then sits on the certificate. While it waits, read the name
+servers straight off the zone — the `JarlZoneNameServers` output only becomes readable once the stack
+finishes, which is after the thing it is needed for:
+
+```bash
+aws route53 list-resource-record-sets --hosted-zone-id "$(aws route53 list-hosted-zones-by-name \
+  --dns-name jarl.randomdev.co.uk --query 'HostedZones[0].Id' --output text)" \
+  --query "ResourceRecordSets[?Type=='NS'].ResourceRecords[].Value" --output text
+```
+
+Enter those as the NS records for the `jarl` subdomain at GoDaddy. ACM validates within minutes of the
+delegation propagating and the stack completes; `npm run deploy` then brings up the other two. Do the
+delegation while the deploy is waiting rather than after it — CloudFormation eventually gives up and
+rolls the stack back, taking the zone (and the name servers just delegated to) with it.
+
+Later deploys never pause here: the zone, its delegation and the issued certificate all persist, and
+ACM renews automatically through the validation record left in the zone.
+
 ## Accounts and regions
 
 One AWS account, one environment. There is no staging/production split, and no account ID is
@@ -133,6 +178,9 @@ npm run deploy      # deploy all three stacks
 npm run destroy     # tear them all down
 npm run typecheck   # tsc over bin/ and lib/
 ```
+
+On a fresh account `deploy` is not the first thing to run: see the two-pass first deploy under
+[Domain and certificate](#domain-and-certificate).
 
 Deploying from CI is not wired up yet; the `deploy` job in `.github/workflows/ci.yml` is still a
 disabled placeholder.
