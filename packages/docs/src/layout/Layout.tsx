@@ -9,6 +9,7 @@ import {
   demosIndexRoute,
 } from "../router/routes";
 import { VikingHelmetMark } from "./VikingHelmetMark";
+import { Brand, MainNav, Page, SiteFooter, SiteHeader, SiteHeaderInner, SiteMain } from "./Layout.styles";
 
 const navLinks = (
   <>
@@ -34,23 +35,23 @@ const navLinks = (
 );
 
 export const Layout = ({ children }: { children: ReactNode }) => (
-  <div className="page">
-    <header className="site-header">
-      <div className="site-header__inner">
-        <Link route={homeRoute} to={{}} className="brand">
+  <Page>
+    <SiteHeader>
+      <SiteHeaderInner>
+        <Brand route={homeRoute} to={{}}>
           <VikingHelmetMark />
           JARL
-        </Link>
-        <nav className="main-nav">{navLinks}</nav>
-      </div>
-    </header>
-    <main className="site-main">{children}</main>
-    <footer className="site-footer">
+        </Brand>
+        <MainNav>{navLinks}</MainNav>
+      </SiteHeaderInner>
+    </SiteHeader>
+    <SiteMain>{children}</SiteMain>
+    <SiteFooter>
       <p>
         JARL: Atomic Routing Library &mdash; <a href="https://github.com/randomdevpete/jarl">GitHub</a>
       </p>
-    </footer>
-  </div>
+    </SiteFooter>
+  </Page>
 );
 
 export default Layout;

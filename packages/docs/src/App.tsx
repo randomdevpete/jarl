@@ -1,3 +1,4 @@
+import GlobalStyles from "./GlobalStyles";
 import Layout from "./layout/Layout";
 import { Route, Switch } from "jarl-react";
 import {
@@ -22,40 +23,43 @@ import BasicRoutingDemo from "./pages/BasicRoutingDemo";
 import NotFound from "./pages/NotFound";
 
 export const App = () => (
-  <Layout>
-    <Switch fallback={<NotFound />}>
-      <Route on={homeRoute} exact>
-        <Home />
-      </Route>
-      <Route on={docsSectionRoute} exact>
-        <DocsIndex />
-      </Route>
-      <Route on={docPageRoute} exact>
-        {({ docName }) => <DocPage docName={docName} />}
-      </Route>
-      <Route on={apiSectionRoute} exact>
-        <ApiIndex />
-      </Route>
-      <Route on={apiPageRoute} exact>
-        {({ apiName }) => <ApiPage apiName={apiName} />}
-      </Route>
-      <Route on={changelogRoute} exact>
-        <Changelog />
-      </Route>
-      <Route on={historyRoute} exact>
-        <History />
-      </Route>
-      <Route on={demosIndexRoute} exact>
-        <DemosIndex />
-      </Route>
-      <Route on={basicRoutingDemoRoute} exact>
-        <BasicRoutingDemo />
-      </Route>
-      <Route on={basicRoutingDemoPageRoute} exact>
-        <BasicRoutingDemo />
-      </Route>
-    </Switch>
-  </Layout>
+  <>
+    <GlobalStyles />
+    <Layout>
+      <Switch fallback={<NotFound />}>
+        <Route on={homeRoute} exact>
+          <Home />
+        </Route>
+        <Route on={docsSectionRoute} exact>
+          <DocsIndex />
+        </Route>
+        <Route on={docPageRoute} exact>
+          {({ docName }) => <DocPage docName={docName} />}
+        </Route>
+        <Route on={apiSectionRoute} exact>
+          <ApiIndex />
+        </Route>
+        <Route on={apiPageRoute} exact>
+          {({ apiName }) => <ApiPage apiName={apiName} />}
+        </Route>
+        <Route on={changelogRoute} exact>
+          <Changelog />
+        </Route>
+        <Route on={historyRoute} exact>
+          <History />
+        </Route>
+        <Route on={demosIndexRoute} exact>
+          <DemosIndex />
+        </Route>
+        <Route on={basicRoutingDemoRoute} exact>
+          <BasicRoutingDemo />
+        </Route>
+        <Route on={basicRoutingDemoPageRoute} exact>
+          <BasicRoutingDemo />
+        </Route>
+      </Switch>
+    </Layout>
+  </>
 );
 
 export default App;

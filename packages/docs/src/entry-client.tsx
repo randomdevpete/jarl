@@ -1,7 +1,6 @@
 import { hydrateRoot } from "react-dom/client";
 import { Provider } from "jotai";
 import App from "./App";
-import "./main.css";
 
 const root = document.getElementById("root");
 if (!root) {

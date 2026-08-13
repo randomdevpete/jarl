@@ -41,25 +41,29 @@ async function main() {
   const template = await fs.readFile(templatePath, "utf-8");
 
   const entryServerUrl = pathToFileURL(path.join(ssrOutDir, "entry-server.js")).href;
-  /** @type {{ render: (path: string) => { html: string }, staticPaths: string[] }} */
+  /** @type {{ render: (path: string) => { html: string, head: string }, staticPaths: string[] }} */
   const { render, staticPaths } = await import(entryServerUrl);
+
+  // Emotion's extracted <style> markup goes in <head>, so a prerendered page is fully
+  // styled from the first paint rather than after hydration.
+  const fillTemplate = (routePath) => {
+    const { html, head } = render(routePath);
+    return template.replace("<!--app-head-->", head).replace("<!--app-html-->", html);
+  };
 
   // eslint-disable-next-line no-console
   console.log(`[docs:build] prerendering ${staticPaths.length} routes...`);
   await Promise.all(
     staticPaths.map(async (routePath) => {
-      const { html } = render(routePath);
-      const page = template.replace("<!--app-html-->", html);
       const outFile = routePath === "/" ? path.join(outDir, "index.html") : path.join(outDir, routePath, "index.html");
       await fs.mkdir(path.dirname(outFile), { recursive: true });
-      await fs.writeFile(outFile, page, "utf-8");
+      await fs.writeFile(outFile, fillTemplate(routePath), "utf-8");
     }),
   );
 
   // A 404.html at the root - the convention most static hosts (S3 + CloudFront,
   // GitHub Pages, etc.) use for their "not found" error document.
-  const notFoundHtml = render("/__not_found__").html;
-  await fs.writeFile(path.join(outDir, "404.html"), template.replace("<!--app-html-->", notFoundHtml), "utf-8");
+  await fs.writeFile(path.join(outDir, "404.html"), fillTemplate("/__not_found__"), "utf-8");
 
   // The SSR bundle is a build-time-only tool; the deployable output is dist/ (static
   // files only).
