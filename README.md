@@ -9,7 +9,7 @@ The production grade "batteries included" **controlled component** router.
 [![dependencies](https://david-dm.org/randomdevpete/jarl.svg?path=packages/jarl-react)](https://david-dm.org/randomdevpete/jarl?path=packages/jarl-react)
 [![CI](https://github.com/randomdevpete/jarl/actions/workflows/ci.yml/badge.svg)](https://github.com/randomdevpete/jarl/actions/workflows/ci.yml)
 [![Cypress end-to-end tests](https://img.shields.io/badge/cypress-dashboard-brightgreen.svg)](https://dashboard.cypress.io/#/projects/ps43vs/runs)
-[![Join the conversation on Discord](https://img.shields.io/discord/437254750946459648.svg)](https://discord.gg/BVcQ6Z)
+[![Join the conversation on Discord](https://img.shields.io/discord/437254750946459648.svg)](https://discord.gg/6yGq39rJ63)
 
 If you just want the docs: [JARL demos and documentation](http://jarl.downplay.co)
 
@@ -209,7 +209,7 @@ for the full details.
 
 ## Community
 
-We have a dedicated Discord server with CI announcements in #build: https://discord.gg/BVcQ6Z
+We have a dedicated Discord server with CI announcements in #build: https://discord.gg/6yGq39rJ63
 
 Or, come and join the conversation at Reactiflux: https://discordapp.com/invite/KWHrBDe
 

@@ -57,7 +57,7 @@ https://github.com/randomdevpete/jarl
 
 For questions and support, drop into our Discord:
 
-https://discord.gg/SHSXU3
+https://discord.gg/6yGq39rJ63
 
 ## Copyright
 
