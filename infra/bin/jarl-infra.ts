@@ -20,8 +20,13 @@ const account = process.env.CDK_DEFAULT_ACCOUNT;
 // The certificate is pinned to another region, so every stack has to export across one.
 const stackPropsIn = (region: string) => ({ env: { account, region }, crossRegionReferences: true });
 
-const staticSite = new JarlStaticSiteStack(app, "JarlStaticSite", stackPropsIn(primaryRegion));
-// Instantiation order is this way round for the prop below; CloudFormation's deploy order is the
-// reverse, since JarlStaticSite's template ends up referencing JarlSsr's origin.
+const domain = new JarlDomainStack(app, "JarlDomain", stackPropsIn(certificateRegion));
+
+const staticSite = new JarlStaticSiteStack(app, "JarlStaticSite", {
+  ...stackPropsIn(primaryRegion),
+  hostedZone: domain.hostedZone,
+  certificate: domain.certificate,
+});
+
+// Instantiated last but deployed before JarlStaticSite, whose template references this origin.
 new JarlSsrStack(app, "JarlSsr", { ...stackPropsIn(primaryRegion), distribution: staticSite.distribution });
-new JarlDomainStack(app, "JarlDomain", stackPropsIn(certificateRegion));
