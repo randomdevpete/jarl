@@ -17,6 +17,8 @@ JARL ("JARL: Atomic Routing Library") is a controlled-component router for React
 - `e2e/registry-smoke/` — a consumer project that installs both packages from the npm
   registry and uses them unlinked, so the published tarballs get exercised. Also a
   separate npm project; run it after a release, not against working-tree changes.
+- `infra/` — AWS CDK app provisioning the hosting for jarl.randomdev.co.uk. Also a separate
+  npm project, kept out of the workspaces so it is never published: `infra/README.md`.
 
 The two packages are deliberately separate import paths: `jarl-react` does **not** re-export
 `jarl-atoms`. Consumers get route atoms from `jarl-atoms` and the React bindings from
@@ -36,7 +38,7 @@ npm run ci-test        # CI test run
 npm run lint            # oxlint across the repo
 npm run format           # oxfmt across the repo
 npm run dev / npm start   # run the docs site's Vite dev server
-npm run typecheck         # tsc over packages/ and scripts/ (e2e typechecks separately)
+npm run typecheck         # tsc over packages/ and scripts/ (e2e and infra typecheck separately)
 npm run test:e2e          # Playwright suite (see test:e2e:install)
 npm run test:smoke        # published-package smoke test (see test:smoke:install)
 npm run release           # semantic-release (needs NPM_TOKEN + GH_TOKEN — CI only)
