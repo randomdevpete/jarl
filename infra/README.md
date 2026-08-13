@@ -25,6 +25,25 @@ All three are declared in [`lib/jarl-stacks.ts`](./lib/jarl-stacks.ts) and insta
 creating their own. `JarlSsrStack` adds a cache behaviour routing dynamic paths to its instance while
 static paths keep hitting S3, and `JarlDomainStack` supplies the alias records and the certificate.
 Build them in that order — the two dependants both need the distribution to exist first.
+`JarlStaticSiteStack` exposes its `bucket` and `distribution` as public readonly members for those
+two to attach to, and exports `JarlSiteBucketName`, `JarlDistributionId` and
+`JarlDistributionDomainName` for anything reaching them from outside the app.
+
+### Serving the docs build
+
+The bucket is private — no public policy, no website endpoint. CloudFront reaches it through origin
+access control, which is also why a missing key comes back as a 403 rather than a 404.
+
+`packages/docs` prerenders one `<route>/index.html` per route, so requests arrive for paths S3 has no
+object at: a viewer-request CloudFront Function appends `index.html` to any URI whose last segment is
+empty or has no file extension. The site is a set of prerendered pages rather than a client-routed
+app, so both 403 and 404 from the origin serve the build's own `404.html` **with a 404 status** — not
+a rewrite to `index.html`.
+
+Two cache behaviours: `/assets/*` holds Vite's content-hashed bundles and is cached for a year at the
+edge and in the browser (`Cache-Control: public, max-age=31536000, immutable`, added by CloudFront
+since the uploaded objects carry no headers of their own); everything else is HTML, cached five
+minutes by default and an hour at most. Both compress.
 
 ## Accounts and regions
 
@@ -67,6 +86,22 @@ npm run typecheck   # tsc over bin/ and lib/
 
 Deploying from CI is not wired up yet; the `deploy` job in `.github/workflows/ci.yml` is still a
 disabled placeholder.
+
+## Publishing site content
+
+`cdk deploy` provisions an empty bucket. Content is uploaded separately rather than through a CDK
+`BucketDeployment`, so a synth never depends on the docs site having been built:
+
+```bash
+npm run build --workspace packages/docs
+aws s3 sync packages/docs/dist "s3://$(aws cloudformation describe-stacks \
+  --stack-name JarlStaticSite --query 'Stacks[0].Outputs[?ExportName==`JarlSiteBucketName`].OutputValue' \
+  --output text)" --delete
+aws cloudfront create-invalidation --distribution-id <JarlDistributionId> --paths '/*'
+```
+
+Run both steps: `--delete` retires pages dropped from the build, and the invalidation is what makes
+new HTML visible before the five-minute page TTL expires.
 
 ## Checks
 
