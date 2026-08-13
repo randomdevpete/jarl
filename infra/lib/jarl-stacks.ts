@@ -7,11 +7,35 @@ import {
   FunctionCode,
   FunctionEventType,
   HttpVersion,
+  OriginProtocolPolicy,
+  OriginRequestPolicy,
   PriceClass,
   ResponseHeadersPolicy,
   ViewerProtocolPolicy,
+  VpcOrigin as VpcOriginResource,
+  VpcOriginEndpoint,
 } from "aws-cdk-lib/aws-cloudfront";
-import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
+import { S3BucketOrigin, VpcOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
+import {
+  AmazonLinuxCpuType,
+  BlockDeviceVolume,
+  EbsDeviceVolumeType,
+  Instance,
+  InstanceClass,
+  InstanceSize,
+  InstanceType,
+  IpAddresses,
+  MachineImage,
+  Peer,
+  Port,
+  SecurityGroup,
+  SubnetType,
+  UserData,
+  Vpc,
+} from "aws-cdk-lib/aws-ec2";
+import { ApplicationLoadBalancer, ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import { InstanceTarget } from "aws-cdk-lib/aws-elasticloadbalancingv2-targets";
+import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { BlockPublicAccess, Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
 import type { Construct } from "constructs";
 
@@ -154,8 +178,165 @@ export class JarlStaticSiteStack extends Stack {
   }
 }
 
+/** Paths CloudFront sends to the SSR server. Every route `packages/docs` prerenders sits outside it. */
+const ssrPathPattern = "/ssr/*";
+
+const ssrPort = 3000;
+const ssrHealthCheckPath = "/healthz";
+
+/** Where a deploy lands the built server, and the unit that runs it. */
+const ssrInstallDirectory = "/opt/jarl-ssr";
+const ssrServiceName = "jarl-ssr";
+
+/**
+ * Installs the runtime and the service that will run the SSR server, but starts nothing: the bundle
+ * arrives from a deploy, which drops it in {@link ssrInstallDirectory} and starts the unit.
+ * `node-22` rather than `node`, which AL2023 leaves as an `alternatives` symlink onto whichever
+ * major happens to be active.
+ */
+const ssrInstanceSetup = `set -euo pipefail
+dnf install -y nodejs22
+install -d -o ec2-user -g ec2-user ${ssrInstallDirectory}
+cat >/etc/systemd/system/${ssrServiceName}.service <<'UNIT'
+[Unit]
+Description=jarl docs SSR server
+After=network-online.target
+
+[Service]
+User=ec2-user
+WorkingDirectory=${ssrInstallDirectory}
+Environment=NODE_ENV=production
+Environment=PORT=${ssrPort}
+ExecStart=/usr/bin/node-22 ${ssrInstallDirectory}/server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl daemon-reload
+systemctl enable ${ssrServiceName}
+`;
+
+export interface JarlSsrStackProps extends StackProps {
+  /** {@link JarlStaticSiteStack.distribution} — this stack adds its behaviour to it rather than creating a front. */
+  readonly distribution: Distribution;
+}
+
 /** EC2 instance running the docs SSR server, attached to the distribution as a second origin. */
-export class JarlSsrStack extends Stack {}
+export class JarlSsrStack extends Stack {
+  constructor(scope: Construct, id: string, props: JarlSsrStackProps) {
+    super(scope, id, props);
+
+    // Two AZs because a load balancer needs two, and no NAT gateway: one would cost more per month
+    // than the instance it serves. The internet gateway is also a prerequisite of VPC origins.
+    const vpc = new Vpc(this, "SsrVpc", {
+      ipAddresses: IpAddresses.cidr("10.0.0.0/16"),
+      maxAzs: 2,
+      natGateways: 0,
+      subnetConfiguration: [
+        { name: "Public", subnetType: SubnetType.PUBLIC, cidrMask: 24 },
+        { name: "Isolated", subnetType: SubnetType.PRIVATE_ISOLATED, cidrMask: 24 },
+      ],
+    });
+
+    const instanceRole = new Role(this, "SsrInstanceRole", {
+      assumedBy: new ServicePrincipal("ec2.amazonaws.com"),
+      managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore")],
+    });
+
+    const instanceSecurityGroup = new SecurityGroup(this, "SsrInstanceSecurityGroup", {
+      vpc,
+      description: "jarl SSR server: load balancer ingress only",
+    });
+
+    const userData = UserData.forLinux();
+    userData.addCommands(ssrInstanceSetup);
+
+    // Public subnet purely for egress: dnf, npm and the SSM agent reach out through the internet
+    // gateway. Nothing reaches in — no key pair, no port 22, and the only ingress rule below is the
+    // load balancer's. A shell is `aws ssm start-session --target <JarlSsrInstanceId>`.
+    const instance = new Instance(this, "SsrInstance", {
+      vpc,
+      vpcSubnets: { subnetType: SubnetType.PUBLIC },
+      instanceType: InstanceType.of(InstanceClass.BURSTABLE4_GRAVITON, InstanceSize.SMALL),
+      machineImage: MachineImage.latestAmazonLinux2023({ cpuType: AmazonLinuxCpuType.ARM_64 }),
+      securityGroup: instanceSecurityGroup,
+      role: instanceRole,
+      userData,
+      userDataCausesReplacement: true,
+      blockDevices: [
+        {
+          deviceName: "/dev/xvda",
+          volume: BlockDeviceVolume.ebs(20, {
+            encrypted: true,
+            volumeType: EbsDeviceVolumeType.GP3,
+            deleteOnTermination: true,
+          }),
+        },
+      ],
+    });
+
+    const loadBalancer = new ApplicationLoadBalancer(this, "SsrLoadBalancer", {
+      vpc,
+      internetFacing: false,
+      vpcSubnets: { subnetType: SubnetType.PRIVATE_ISOLATED },
+    });
+
+    // CloudFront reaches a VPC origin through service-managed network interfaces placed in this VPC,
+    // so their traffic arrives from inside the CIDR. Tightening it further needs the CloudFront
+    // managed prefix list, whose id only a credentialed lookup can resolve.
+    loadBalancer.connections.allowFrom(Peer.ipv4(vpc.vpcCidrBlock), Port.HTTP);
+
+    // Registering an instance target wires no security group rules of its own.
+    instance.connections.allowFrom(loadBalancer, Port.tcp(ssrPort));
+
+    // `open` would put an 0.0.0.0/0 rule on the listener's port, undoing the rule above.
+    const listener = loadBalancer.addListener("SsrListener", {
+      protocol: ApplicationProtocol.HTTP,
+      open: false,
+    });
+
+    listener.addTargets("SsrTarget", {
+      port: ssrPort,
+      protocol: ApplicationProtocol.HTTP,
+      targets: [new InstanceTarget(instance, ssrPort)],
+      deregistrationDelay: Duration.seconds(10),
+      healthCheck: {
+        path: ssrHealthCheckPath,
+        interval: Duration.seconds(30),
+        healthyThresholdCount: 2,
+      },
+    });
+
+    // The load balancer terminates nothing, so CloudFront has to speak plain HTTP to it; the default
+    // policy would follow the viewer onto port 443, where there is no listener.
+    const vpcOrigin = new VpcOriginResource(this, "SsrVpcOrigin", {
+      endpoint: VpcOriginEndpoint.applicationLoadBalancer(loadBalancer),
+      protocolPolicy: OriginProtocolPolicy.HTTP_ONLY,
+    });
+
+    props.distribution.addBehavior(ssrPathPattern, VpcOrigin.withVpcOrigin(vpcOrigin), {
+      viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+      cachePolicy: CachePolicy.CACHING_DISABLED,
+      originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
+      compress: true,
+    });
+
+    new CfnOutput(this, "SsrInstanceId", {
+      value: instance.instanceId,
+      description: `Deploy target: upload the server to ${ssrInstallDirectory}, then restart ${ssrServiceName}`,
+      exportName: "JarlSsrInstanceId",
+    });
+
+    new CfnOutput(this, "SsrPathPattern", {
+      value: ssrPathPattern,
+      description: "Distribution paths served by the SSR instance rather than S3",
+      exportName: "JarlSsrPathPattern",
+    });
+  }
+}
 
 /** Route53 hosted zone for {@link siteDomainName} and the certificate CloudFront serves it under. */
 export class JarlDomainStack extends Stack {}
