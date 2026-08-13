@@ -8,6 +8,10 @@ yarn-error.log*
 # Build files
 dist
 
+# CDK synthesized templates and asset staging
+cdk.out
+.cdk.staging
+
 # Babel runtime cache
 babel-cache
 .cache
