@@ -1,0 +1,27 @@
+{
+  "name": "jarl-infra",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AWS CDK app provisioning the hosting for jarl.randomdev.co.uk. Standalone npm project, deliberately not a workspace of the monorepo root.",
+  "type": "module",
+  "scripts": {
+    "synth": "cdk synth",
+    "diff": "cdk diff",
+    "deploy": "cdk deploy --all",
+    "destroy": "cdk destroy --all",
+    "bootstrap": "cdk bootstrap",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.264.0",
+    "constructs": "^10.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "aws-cdk": "2.1136.0",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  }
+}
