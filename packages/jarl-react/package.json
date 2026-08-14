@@ -1,6 +1,6 @@
 {
   "name": "jarl-react",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "JARL: Atomic Routing Library - React bindings for jarl-atoms",
   "keywords": [
     "components",
@@ -47,7 +47,7 @@
     "lint": "oxlint src --max-warnings 0"
   },
   "dependencies": {
-    "jarl-atoms": "2.0.1",
+    "jarl-atoms": "2.1.0",
     "jotai": "^2.20.2"
   },
   "devDependencies": {

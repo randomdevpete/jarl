@@ -1,3 +1,5 @@
+## [2.1.0](https://github.com/randomdevpete/jarl/compare/v2.0.1...v2.1.0) (2026-08-14)
+
 ## [2.0.1](https://github.com/randomdevpete/jarl/compare/v2.0.0...v2.0.1) (2026-08-11)
 
 # JARL: Version History
