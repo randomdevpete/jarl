@@ -34,6 +34,61 @@ Renders its children only while the given route atom matches the current locatio
 | `children` | `Node` \| `Function` | no       | Plain nodes, or a function receiving the matched route's `values`.                      |
 | `exact`    | `Boolean`            | no       | Only render on an exact (leaf) match, not just because a descendant route also matches. |
 
+## `<Switch children fallback>`
+
+Renders only the first of its `<Route>` children that is currently active, or `fallback` when
+none of them is.
+
+| prop       | type   | required | description                              |
+| ---------- | ------ | -------- | ---------------------------------------- |
+| `children` | `Node` | no       | `<Route>` elements, in precedence order. |
+| `fallback` | `Node` | no       | Rendered when no child route is active.  |
+
+```jsx
+<Switch fallback={<NotFound />}>
+  <Route on={homeRoute} exact>
+    <Home />
+  </Route>
+  <Route on={usersRoute}>
+    <UsersSection />
+  </Route>
+</Switch>
+```
+
+Each child is judged by its own rule - a child with `exact` counts only on a leaf match, one
+without counts on an ancestor match too - so `<Switch>` renders whichever child would have
+rendered on its own. All it adds is that later children stop once one has.
+
+That makes nesting the natural thing: a non-`exact` `<Route>` is a section, and a `<Switch>`
+inside it catches the URLs that fall through _within_ that section, without the outer `fallback`
+firing too.
+
+### `<Switch>` or `notAtom`?
+
+[`notAtom`](/api/jarl-atoms) answers the same catch-all question one layer down, as a boolean
+atom over a list of route atoms. The two are complements rather than rivals:
+
+- **`<Switch>` gives you precedence.** Overlapping siblings - `staticRouteAtom("new")` and
+  `paramRouteAtom("id")` under the same parent - are _both_ exact matches at `/users/new`. In a
+  `<Switch>` the earlier one wins. `notAtom` cannot express that at all.
+- **`<Switch>` derives its route list from its own children.** `notAtom(...)` needs every route
+  at that level restated as an argument and kept in step with the JSX by hand, which is what
+  makes a per-section not-found expensive once there is more than one section.
+- **`notAtom` works where there is no JSX.** It is a plain atom: read it outside rendering (say,
+  to decide an HTTP status while prerendering) or outside React entirely.
+
+### Sharp edges
+
+Children must be `<Route>` elements. Conditional children (`{flag && <Route ... />}`) are fine,
+but a fragment or any other wrapper around a group of routes throws - `<Switch>` cannot see
+through it, and quietly ignoring the routes inside would be worse. Nest a `<Switch>` inside a
+`<Route>` rather than grouping children.
+
+The catch-all is a `fallback` prop rather than a trailing `<Route>` with no `on`, as in
+react-router's original `<Switch>`. A pathless route would mean weakening `on` to optional for
+every user of `<Route>` to serve one position in one parent, and a catch-all only ever belongs
+last, so encoding it in child order buys nothing.
+
 ## Hooks
 
 All hooks take a route atom (from `jarl-atoms`) as their first argument.

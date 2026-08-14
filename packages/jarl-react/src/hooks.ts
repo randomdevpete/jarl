@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { DefaultParams, RouteAtom } from "jarl-atoms";
+import { isActive } from "./isActive";
 
 // Re-export jotai's own primitive hooks. Per jotai convention (see
 // jotai-location, jotai-utils, etc), a bindings package built on atoms
@@ -38,8 +39,7 @@ export function useIsActive<T extends DefaultParams>(
   routeAtom: RouteAtom<T>,
   { exact = false }: { exact?: boolean } = {},
 ): boolean {
-  const route = useAtomValue(routeAtom);
-  return exact ? route.exact : route.match;
+  return isActive(useAtomValue(routeAtom), exact);
 }
 
 /**
@@ -76,8 +76,8 @@ export function useLink<T extends DefaultParams>(
   { exact = false }: UseLinkOptions = {},
 ): UseLinkResult {
   const [route, setRoute] = useAtom(routeAtom);
-  const { match, exact: isExact, reverse } = route;
-  const active = exact ? isExact : match;
+  const { reverse } = route;
+  const active = isActive(route, exact);
   const href = useMemo(() => reverse(to), [reverse, to]);
   const onClick = useCallback(
     (event?: { preventDefault?: () => void }) => {

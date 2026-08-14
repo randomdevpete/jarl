@@ -40,6 +40,14 @@ Binds a single dynamic path segment to a named value, e.g. `paramRouteAtom("prod
 parent: productsRoute })` matches `/products/:productId`-shaped URLs and yields `{ productId:
 "123" }`.
 
+## `notAtom(...routeAtoms)`
+
+A boolean atom, true when none of the given route atoms is an exact match - a catch-all for a
+route list, in atom form. It checks `exact` rather than `match` because an ancestor route (or
+`rootAtom` itself) can match without being the leaf that rendered. In React, prefer
+[`<Switch fallback>`](/api/jarl-react), which reads the same route list off its own children;
+reach for `notAtom` where the boolean is wanted outside rendering, or outside React entirely.
+
 ## `transformRouteAtom(parentAtom, getter, setter)`
 
 Reshapes a route atom's matched `values` into a different shape (and back, for `reverse`/write) -
