@@ -1,6 +1,5 @@
-import { useAtomValue } from "jotai";
 import Layout from "./layout/Layout";
-import { Route } from "jarl-react";
+import { Route, Switch } from "jarl-react";
 import {
   homeRoute,
   docsSectionRoute,
@@ -12,7 +11,6 @@ import {
   demosIndexRoute,
   basicRoutingDemoRoute,
   basicRoutingDemoPageRoute,
-  notFoundAtom,
 } from "./router/routes";
 import Home from "./pages/Home";
 import { DocsIndex, DocPage } from "./pages/Docs";
@@ -23,10 +21,9 @@ import DemosIndex from "./pages/DemosIndex";
 import BasicRoutingDemo from "./pages/BasicRoutingDemo";
 import NotFound from "./pages/NotFound";
 
-export const App = () => {
-  const notFound = useAtomValue(notFoundAtom);
-  return (
-    <Layout>
+export const App = () => (
+  <Layout>
+    <Switch fallback={<NotFound />}>
       <Route on={homeRoute} exact>
         <Home />
       </Route>
@@ -57,9 +54,8 @@ export const App = () => {
       <Route on={basicRoutingDemoPageRoute} exact>
         <BasicRoutingDemo />
       </Route>
-      {notFound && <NotFound />}
-    </Layout>
-  );
-};
+    </Switch>
+  </Layout>
+);
 
 export default App;
