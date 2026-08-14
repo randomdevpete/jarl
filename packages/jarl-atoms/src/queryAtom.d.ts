@@ -11,15 +11,11 @@ export declare const stringifyQuery: (query: Record<string, string | string[] | 
  * (pass `undefined` for a key to remove it, keep other current keys by
  * spreading `get(queryAtom)` yourself first).
  */
-export declare const queryAtom: import("jotai").WritableAtom<
-  Record<string, string | string[]>,
-  [query: Record<string, string | string[] | undefined>, navOptions?: NavOptions | undefined],
-  void
->;
+export declare const queryAtom: import("jotai").WritableAtom<Record<string, string | string[]>, [query: Record<string, string | string[] | undefined>, navOptions?: NavOptions | undefined], void>;
 export type QueryParamOptions<Parent extends DefaultParams> = RouteOptions<Parent> & {
-  /** If true, a missing query param is a non-match (like v1's required query
-   * keys); by default a missing param just yields `undefined`. */
-  required?: boolean;
+    /** If true, a missing query param is a non-match (like v1's required query
+     * keys); by default a missing param just yields `undefined`. */
+    required?: boolean;
 };
 /**
  * A single named query param, composable exactly like a path RouteAtom:
@@ -29,7 +25,4 @@ export type QueryParamOptions<Parent extends DefaultParams> = RouteOptions<Paren
  * path matching continues unaffected by however many query params are
  * chained on.
  */
-export declare const queryParamAtom: <T extends string, Parent extends DefaultParams = DefaultParams>(
-  name: T,
-  options?: QueryParamOptions<Parent>,
-) => RouteAtom<{ readonly [key in T]: string | undefined } & Parent>;
+export declare const queryParamAtom: <T extends string, Parent extends DefaultParams = DefaultParams>(name: T, options?: QueryParamOptions<Parent>) => RouteAtom<{ readonly [key in T]: string | undefined; } & Parent>;
