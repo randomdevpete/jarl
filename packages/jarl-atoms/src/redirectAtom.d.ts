@@ -5,8 +5,8 @@ import { DefaultParams, RouteAtom, RouteOptions } from "./routeAtom";
  * resolvedAtom loader to defer a redirect decision until after data loads,
  * mirroring v1's `resolve: () => redirect(...)`. */
 export declare class Redirect {
-  readonly to: Path;
-  constructor(to: Path);
+    readonly to: Path;
+    constructor(to: Path);
 }
 export declare const redirect: (to: Path) => Redirect;
 export declare const isRedirect: (value: unknown) => value is Redirect;
@@ -21,10 +21,7 @@ export declare const isRedirect: (value: unknown) => value is Redirect;
  * On its own, matching a redirectAtom doesn't navigate anywhere - see
  * `followRedirects` below to actually make that happen.
  */
-export declare const redirectAtom: <Parent extends DefaultParams = DefaultParams>(
-  to: Path | ((get: Getter) => Path),
-  options?: RouteOptions<Parent>,
-) => RouteAtom<Parent>;
+export declare const redirectAtom: <Parent extends DefaultParams = DefaultParams>(to: Path | ((get: Getter) => Path), options?: RouteOptions<Parent>) => RouteAtom<Parent>;
 export type Store = ReturnType<typeof createStore>;
 /**
  * Wires one or more redirectAtoms up to actually navigate: subscribes to
@@ -34,4 +31,4 @@ export type Store = ReturnType<typeof createStore>;
  * to v1's RoutingProvider automatically following redirects found during
  * doNavigation. Returns an unsubscribe function.
  */
-export declare const followRedirects: (store: Store, redirectAtoms: ReadonlyArray<RouteAtom<any>>) => () => void;
+export declare const followRedirects: (store: Store, redirectAtoms: ReadonlyArray<RouteAtom<any>>) => (() => void);
