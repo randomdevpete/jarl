@@ -4,6 +4,7 @@
 // in jotai/react). The React components and hooks that consume these atoms
 // live in the sibling `jarl-react` package.
 export * from "./routeAtom";
+export * from "./notAtom";
 export * from "./href";
 export * from "./queryAtom";
 export * from "./redirectAtom";

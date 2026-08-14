@@ -5,8 +5,7 @@
  * router - and, since the site is prerendered, it doubles as the SSR/SSG proof case for
  * `jarl-atoms`' server-seedable `locationAtom`.
  */
-import { atom } from "jotai";
-import { rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { notAtom, rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 
 export const homeRoute = rootAtom;
 
@@ -42,22 +41,22 @@ export const apiPages: { apiName: ApiName; title: string }[] = [
   { apiName: "jarl-react", title: "jarl-react" },
 ];
 
+/** Every leaf route the site's top-level navigation renders. */
+export const allRoutes = [
+  homeRoute,
+  docsSectionRoute,
+  docPageRoute,
+  apiSectionRoute,
+  apiPageRoute,
+  changelogRoute,
+  historyRoute,
+  demosIndexRoute,
+  basicRoutingDemoRoute,
+  basicRoutingDemoPageRoute,
+];
+
 /** True when the current location matches none of the site's known pages. */
-export const notFoundAtom = atom((get) => {
-  const matched = [
-    get(homeRoute).exact,
-    get(docsSectionRoute).exact,
-    get(docPageRoute).exact,
-    get(apiSectionRoute).exact,
-    get(apiPageRoute).exact,
-    get(changelogRoute).exact,
-    get(historyRoute).exact,
-    get(demosIndexRoute).exact,
-    get(basicRoutingDemoRoute).exact,
-    get(basicRoutingDemoPageRoute).exact,
-  ];
-  return !matched.some(Boolean);
-});
+export const notFoundAtom = notAtom(...allRoutes);
 
 /** Every concrete path the SSG build should prerender to a static HTML file. */
 export const staticPaths: string[] = [
