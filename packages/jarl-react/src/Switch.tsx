@@ -35,13 +35,7 @@ const useStableProps = (props: SwitchChildProps[]): SwitchChildProps[] => {
 
 /**
  * Renders only the first of its `<Route>` children that is currently active,
- * or `fallback` when none of them is - first-match routing over a list of
- * routes already written as JSX, and a catch-all for the level it sits at.
- *
- * Each child is judged by its own rule: one with `exact` counts only on a leaf
- * match, one without counts on an ancestor match too. `<Switch>` therefore
- * renders whichever child would have rendered on its own, and adds only that
- * later children stop once one has.
+ * or `fallback` when none of them is.
  *
  * Children must be `<Route>` elements; conditional children (`{flag && <Route
  * ... />}`) are fine, but a fragment or wrapper around a group of routes hides
