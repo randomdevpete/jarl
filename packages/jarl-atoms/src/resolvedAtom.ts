@@ -23,9 +23,10 @@
 
 import { Atom, Getter, atom } from "jotai/vanilla";
 import { splitHref } from "./href";
-import { DefaultParams, RouteAtom, locationAtom } from "./routeAtom";
+import { locationAtom } from "./locationAtom";
 import { Redirect, isRedirect } from "./redirectAtom";
 import type { Store } from "./redirectAtom";
+import { DefaultParams, RouteAtom } from "./types";
 
 /** Loads the data a matched route needs. Returning a `Redirect` sends the app elsewhere instead. */
 export type Resolver<T extends DefaultParams, Data> = (values: T, get: Getter) => Promise<Data | Redirect>;

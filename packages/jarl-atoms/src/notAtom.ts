@@ -1,5 +1,5 @@
 import { Atom, atom } from "jotai/vanilla";
-import { RouteAtom } from "./routeAtom";
+import { RouteAtom } from "./types";
 
 /**
  * Matches when none of the given route atoms are an exact match - the

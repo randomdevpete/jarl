@@ -23,7 +23,9 @@
 
 import { Getter, atom, createStore } from "jotai/vanilla";
 import { Path, splitHref } from "./href";
-import { DefaultParams, NavOptions, RouteAtom, RouteOptions, locationAtom, rootAtom } from "./routeAtom";
+import { locationAtom } from "./locationAtom";
+import { rootAtom } from "./rootAtom";
+import { DefaultParams, NavOptions, RouteAtom, RouteOptions } from "./types";
 
 /** A sentinel object meaning "actually, redirect to this instead". */
 export class Redirect {

@@ -14,8 +14,10 @@
 // regression, just not a superset either.
 
 import { Getter, atom } from "jotai/vanilla";
-import { DefaultParams, NavOptions, RouteAtom, RouteOptions, locationAtom, rootAtom } from "./routeAtom";
 import { appendQueryParam, splitHref } from "./href";
+import { locationAtom } from "./locationAtom";
+import { rootAtom } from "./rootAtom";
+import { DefaultParams, NavOptions, RouteAtom, RouteOptions } from "./types";
 
 /** Parses a `URLSearchParams` (or query string) into a plain object. Repeated
  * keys become string arrays, matching the common (non-`qs`) convention. */
