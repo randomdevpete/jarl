@@ -11,12 +11,7 @@ import {
   historyRoute,
   demosIndexRoute,
   basicRoutingDemoRoute,
-  basicRoutingDemoPageRoute,
   blogRoutingDemoRoute,
-  blogYearRoute,
-  blogMonthRoute,
-  blogDayRoute,
-  blogPostRoute,
 } from "./router/routes";
 import Home from "./pages/Home";
 import { DocsIndex, DocPage } from "./pages/Docs";
@@ -57,25 +52,12 @@ export const App = () => (
         <Route on={demosIndexRoute} exact>
           <DemosIndex />
         </Route>
-        <Route on={basicRoutingDemoRoute} exact>
+        {/* Demos are self-contained apps: one static mount each, matched non-exact,
+            with everything under it routed inside the demo component. */}
+        <Route on={basicRoutingDemoRoute}>
           <BasicRoutingDemo />
         </Route>
-        <Route on={basicRoutingDemoPageRoute} exact>
-          <BasicRoutingDemo />
-        </Route>
-        <Route on={blogRoutingDemoRoute} exact>
-          <BlogRoutingDemo />
-        </Route>
-        <Route on={blogYearRoute} exact>
-          <BlogRoutingDemo />
-        </Route>
-        <Route on={blogMonthRoute} exact>
-          <BlogRoutingDemo />
-        </Route>
-        <Route on={blogDayRoute} exact>
-          <BlogRoutingDemo />
-        </Route>
-        <Route on={blogPostRoute} exact>
+        <Route on={blogRoutingDemoRoute}>
           <BlogRoutingDemo />
         </Route>
       </Switch>
