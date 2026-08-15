@@ -161,11 +161,8 @@ const PostPage = ({ year, month, day, slug }: { year: number; month: number; day
 };
 
 /**
- * Demo of a classic /blog/:year/:month/:day/:slug tree, composed from three
- * `numericRouteAtom`s chained as parent/child rather than a single date primitive. Each level
- * validates its own segment's range (via `numericRouteAtom`'s `min`/`max`) plus, once matched,
- * that the date is real and posts actually exist there - falling back to `BlogNotFound` either
- * way, and to the `Switch`'s own fallback when no level's URL shape matches at all.
+ * Demo of a classic /blog/:year/:month/:day/:slug tree: URL-shape 404s via the Switch
+ * fallback, content-level 404s via isValidCalendarDate and empty-list checks.
  */
 export const BlogRoutingApp = () => (
   <>
