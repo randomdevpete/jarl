@@ -290,11 +290,8 @@ jobs:
           aws cloudfront create-invalidation --distribution-id "$dist_id" --paths '/*'
 
       - name: Roll SSR server
-        # Ships packages/docs/dist-ssr (built by the "Build packages and docs site" step
-        # above) onto the JarlSsr instance and restarts jarl-ssr, over SSM Run Command — the
-        # instance takes no inbound traffic beyond the load balancer, so there is no SSH path
-        # to push onto it directly. Fails the job if the restart command doesn't succeed, or
-        # if the server isn't answering through CloudFront afterwards.
+        # Uses SSM Run Command (no SSH inbound). Fails if the systemctl restart or the
+        # /ssr/ health check doesn't succeed within 2 minutes.
         run: |
           bundle_bucket=$(aws cloudformation describe-stacks --stack-name JarlSsr \
             --query 'Stacks[0].Outputs[?ExportName==`JarlSsrBundleBucketName`].OutputValue' --output text)
