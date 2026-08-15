@@ -1,6 +1,7 @@
 import { createStore } from "jotai/vanilla";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { locationAtom } from "../locationAtom";
+import { numericRouteAtom } from "../numericRouteAtom";
 import { paramRouteAtom } from "../paramRouteAtom";
 import { createRootAtom, rootAtom } from "../rootAtom";
 import { routeAtom } from "../routeAtom";
@@ -144,6 +145,72 @@ describe("paramRouteAtom", () => {
     const tabResult = store.get(tab);
     assertMatch(tabResult);
     expect(tabResult.exact).toBe(true);
+  });
+});
+
+describe("numericRouteAtom", () => {
+  it("matches a numeric segment and converts it to a number", () => {
+    const store = createStore();
+    const year = numericRouteAtom("year");
+    seed(store, "/2024");
+
+    const result = store.get(year);
+    assertMatch(result);
+    expect(result.values).toEqual({ year: 2024 });
+  });
+
+  it("does not match a non-numeric segment", () => {
+    const store = createStore();
+    const year = numericRouteAtom("year");
+    seed(store, "/soon");
+
+    expect(store.get(year).match).toBe(false);
+  });
+
+  it("does not match a value below min", () => {
+    const store = createStore();
+    const month = numericRouteAtom("month", { min: 1, max: 12 });
+    seed(store, "/0");
+
+    expect(store.get(month).match).toBe(false);
+  });
+
+  it("does not match a value above max", () => {
+    const store = createStore();
+    const month = numericRouteAtom("month", { min: 1, max: 12 });
+    seed(store, "/13");
+
+    expect(store.get(month).match).toBe(false);
+  });
+
+  it("matches values within an inclusive min/max range", () => {
+    const store = createStore();
+    const month = numericRouteAtom("month", { min: 1, max: 12 });
+    seed(store, "/12");
+
+    const result = store.get(month);
+    assertMatch(result);
+    expect(result.values).toEqual({ month: 12 });
+  });
+
+  it("builds hrefs from a number through reverse()", () => {
+    const store = createStore();
+    const blog = staticRouteAtom("blog");
+    const year = numericRouteAtom("year", { parent: blog });
+
+    expect(store.get(year).reverse({ year: 2024 })).toBe("/blog/2024");
+  });
+
+  it("composes with a parent route the same way paramRouteAtom does", () => {
+    const store = createStore();
+    const blog = staticRouteAtom("blog");
+    const year = numericRouteAtom("year", { parent: blog });
+    seed(store, "/blog/2024");
+
+    const result = store.get(year);
+    assertMatch(result);
+    expect(result.values).toEqual({ year: 2024 });
+    expect(result.exact).toBe(true);
   });
 });
 
