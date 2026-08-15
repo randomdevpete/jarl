@@ -35,7 +35,7 @@ const documentStyles = css`
   kbd,
   samp {
     font-family: ${theme.fontMono};
-    /* 0.875em matches the mono's x-height to the body face so inline code sits level with prose */
+    /* Mono x-height matches the body face at 0.875em */
     font-size: 0.875em;
     background: ${theme.codeBg};
     color: ${theme.accent};
