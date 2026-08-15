@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { theme } from "../theme";
+import { blogRoutingDemoRoute } from "../router/routes";
 import { BlogRoutingApp } from "../demos/BlogRoutingApp";
 import demoSource from "../demos/BlogRoutingApp.tsx?raw";
 
@@ -47,7 +48,7 @@ export const BlogRoutingDemo = () => (
   <>
     <h1>Live demo: blog routing (atoms)</h1>
     <DemoBox>
-      <BlogRoutingApp />
+      <BlogRoutingApp rootAtom={blogRoutingDemoRoute} />
     </DemoBox>
     <SourceDisclosure>
       <summary>View source</summary>
