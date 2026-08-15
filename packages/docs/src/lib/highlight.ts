@@ -6,8 +6,7 @@ import json from "highlight.js/lib/languages/json";
 import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
 
-// Registered against `highlight.js/lib/core` (not the full `highlight.js` bundle) so only
-// these grammars ship in the client bundle rather than every language highlight.js knows.
+// Import from core (not full bundle) to optimize bundle size.
 hljs.registerLanguage("javascript", javascript);
 hljs.registerLanguage("js", javascript);
 hljs.registerLanguage("jsx", javascript);
