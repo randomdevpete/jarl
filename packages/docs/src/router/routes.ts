@@ -5,8 +5,10 @@
  * router - and, since the site is prerendered, it doubles as the SSR/SSG proof case for
  * `jarl-atoms`' server-seedable `locationAtom`.
  */
-import { rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { atom } from "jotai";
+import { asyncRouteAtom, notAtom, rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 import { blogStaticPaths } from "../demos/blogPosts";
+import { articleSlugs, findArticle } from "../demos/asyncArticles";
 
 export const homeRoute = rootAtom;
 
@@ -30,6 +32,42 @@ export const basicRoutingDemoPageRoute = paramRouteAtom("page", { parent: basicR
 // Blog routing demo: just the static mount point. The demo's own /:year/:month/:day/:slug
 // tree lives inside BlogRoutingApp, parented on whatever root atom it is handed.
 export const blogRoutingDemoRoute = staticRouteAtom("blog-routing", { parent: demosIndexRoute });
+
+// Async-lookup demo: /demos/async-lookup/:slug exists only if the demo's fake database has an
+// article at that slug, and the article it found rides along on the route's own values. Its
+// nested atoms stay module-level, unlike the blog demo's, because the server render needs them:
+// `asyncRoutes` preloads the lookup and `notFoundAtom` reads its match for the status code.
+export const asyncLookupDemoRoute = staticRouteAtom("async-lookup", { parent: demosIndexRoute });
+export const asyncLookupSlugRoute = paramRouteAtom("slug", { parent: asyncLookupDemoRoute });
+export const asyncArticleRoute = asyncRouteAtom(asyncLookupSlugRoute, "article", ({ slug }) => findArticle(slug));
+
+/** Every async route on the site: preloaded before a server render, kept live on the client. */
+export const asyncRoutes = [asyncArticleRoute];
+
+const exactRouteMissedAtom = notAtom(
+  homeRoute,
+  docsSectionRoute,
+  docPageRoute,
+  apiSectionRoute,
+  apiPageRoute,
+  changelogRoute,
+  historyRoute,
+  demosIndexRoute,
+  basicRoutingDemoRoute,
+  basicRoutingDemoPageRoute,
+  blogRoutingDemoRoute,
+  asyncLookupDemoRoute,
+  asyncArticleRoute,
+);
+
+/**
+ * Whether the current location has nothing behind it, which is what makes a server render's
+ * *status code* right and not just its HTML. Everything under the blog demo's mount counts as
+ * found - that demo routes its own subtree and renders its own not-found views. The async demo
+ * gets no such blanket, and lists `asyncArticleRoute` rather than `asyncLookupSlugRoute`: an
+ * unknown slug is a genuine miss, even though the demo page still renders its own not-found view.
+ */
+export const notFoundAtom = atom((get) => get(exactRouteMissedAtom) && !get(blogRoutingDemoRoute).match);
 
 export type DocName = "getting-started" | "data-loading" | "path-variables";
 
@@ -59,4 +97,6 @@ export const staticPaths: string[] = [
   "/demos/basic-routing",
   "/demos/basic-routing/about",
   ...blogStaticPaths(),
+  "/demos/async-lookup",
+  ...articleSlugs().map((slug) => `/demos/async-lookup/${slug}`),
 ];

@@ -12,6 +12,7 @@ import {
   demosIndexRoute,
   basicRoutingDemoRoute,
   blogRoutingDemoRoute,
+  asyncLookupDemoRoute,
 } from "./router/routes";
 import Home from "./pages/Home";
 import { DocsIndex, DocPage } from "./pages/Docs";
@@ -21,6 +22,7 @@ import History from "./pages/History";
 import DemosIndex from "./pages/DemosIndex";
 import BasicRoutingDemo from "./pages/BasicRoutingDemo";
 import BlogRoutingDemo from "./pages/BlogRoutingDemo";
+import AsyncLookupDemo from "./pages/AsyncLookupDemo";
 import NotFound from "./pages/NotFound";
 
 export const App = () => (
@@ -59,6 +61,9 @@ export const App = () => (
         </Route>
         <Route on={blogRoutingDemoRoute}>
           <BlogRoutingDemo />
+        </Route>
+        <Route on={asyncLookupDemoRoute}>
+          <AsyncLookupDemo />
         </Route>
       </Switch>
     </Layout>
