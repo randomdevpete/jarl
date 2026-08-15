@@ -5,7 +5,8 @@
  * router - and, since the site is prerendered, it doubles as the SSR/SSG proof case for
  * `jarl-atoms`' server-seedable `locationAtom`.
  */
-import { rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { rootAtom, staticRouteAtom, paramRouteAtom, numericRouteAtom } from "jarl-atoms";
+import { blogStaticPaths } from "../demos/blogPosts";
 
 export const homeRoute = rootAtom;
 
@@ -25,6 +26,14 @@ export const demosIndexRoute = staticRouteAtom("demos");
 // mirrors the shape of the old demo/source/demos/basicRouting example.
 export const basicRoutingDemoRoute = staticRouteAtom("basic-routing", { parent: demosIndexRoute });
 export const basicRoutingDemoPageRoute = paramRouteAtom("page", { parent: basicRoutingDemoRoute });
+
+// Blog routing demo: a classic /blog/:year/:month/:day/:slug tree, hand-composed from
+// numericRouteAtom rather than a single dedicated date primitive.
+export const blogRoutingDemoRoute = staticRouteAtom("blog-routing", { parent: demosIndexRoute });
+export const blogYearRoute = numericRouteAtom("year", { parent: blogRoutingDemoRoute });
+export const blogMonthRoute = numericRouteAtom("month", { parent: blogYearRoute, min: 1, max: 12 });
+export const blogDayRoute = numericRouteAtom("day", { parent: blogMonthRoute, min: 1, max: 31 });
+export const blogPostRoute = paramRouteAtom("slug", { parent: blogDayRoute });
 
 export type DocName = "getting-started" | "data-loading" | "path-variables";
 
@@ -53,4 +62,5 @@ export const staticPaths: string[] = [
   "/demos",
   "/demos/basic-routing",
   "/demos/basic-routing/about",
+  ...blogStaticPaths(),
 ];

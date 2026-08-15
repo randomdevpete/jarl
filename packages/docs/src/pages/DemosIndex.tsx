@@ -1,6 +1,6 @@
 import { Link } from "jarl-react";
 import LinkList from "../lib/LinkList";
-import { basicRoutingDemoRoute } from "../router/routes";
+import { basicRoutingDemoRoute, blogRoutingDemoRoute } from "../router/routes";
 
 export const DemosIndex = () => (
   <>
@@ -19,6 +19,13 @@ export const DemosIndex = () => (
         </Link>{" "}
         &mdash; a nested router-within-a-router built from <code>staticRouteAtom</code>/<code>paramRouteAtom</code> and
         the atoms-based <code>Link</code>/<code>Route</code> components.
+      </li>
+      <li>
+        <Link route={blogRoutingDemoRoute} to={{}}>
+          Blog routing
+        </Link>{" "}
+        &mdash; a classic <code>/blog/:year/:month/:day/:slug</code> tree, hand-composed from{" "}
+        <code>numericRouteAtom</code> chained as parent/child, with 404s for out-of-range and non-existent dates.
       </li>
     </LinkList>
   </>

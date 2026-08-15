@@ -12,6 +12,11 @@ import {
   demosIndexRoute,
   basicRoutingDemoRoute,
   basicRoutingDemoPageRoute,
+  blogRoutingDemoRoute,
+  blogYearRoute,
+  blogMonthRoute,
+  blogDayRoute,
+  blogPostRoute,
 } from "./router/routes";
 import Home from "./pages/Home";
 import { DocsIndex, DocPage } from "./pages/Docs";
@@ -20,6 +25,7 @@ import Changelog from "./pages/Changelog";
 import History from "./pages/History";
 import DemosIndex from "./pages/DemosIndex";
 import BasicRoutingDemo from "./pages/BasicRoutingDemo";
+import BlogRoutingDemo from "./pages/BlogRoutingDemo";
 import NotFound from "./pages/NotFound";
 
 export const App = () => (
@@ -56,6 +62,21 @@ export const App = () => (
         </Route>
         <Route on={basicRoutingDemoPageRoute} exact>
           <BasicRoutingDemo />
+        </Route>
+        <Route on={blogRoutingDemoRoute} exact>
+          <BlogRoutingDemo />
+        </Route>
+        <Route on={blogYearRoute} exact>
+          <BlogRoutingDemo />
+        </Route>
+        <Route on={blogMonthRoute} exact>
+          <BlogRoutingDemo />
+        </Route>
+        <Route on={blogDayRoute} exact>
+          <BlogRoutingDemo />
+        </Route>
+        <Route on={blogPostRoute} exact>
+          <BlogRoutingDemo />
         </Route>
       </Switch>
     </Layout>

@@ -25,6 +25,7 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",
