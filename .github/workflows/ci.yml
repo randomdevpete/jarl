@@ -223,9 +223,9 @@ jobs:
     # nothing in infra/ changed), then the content publish from infra/README.md
     # "Publishing site content" — the bucket is deliberately filled by
     # `aws s3 sync`, not a CDK BucketDeployment, so synth never depends on the
-    # docs build. The SSR instance intentionally isn't rolled here: no server
-    # bundle exists yet (see "Serving server-rendered routes" in
-    # infra/README.md), so there is nothing to restart until one does.
+    # docs build. Last, "Roll SSR server" ships packages/docs/dist-ssr onto the
+    # JarlSsr instance over SSM Run Command and restarts it — see "Rolling the
+    # SSR server" in infra/README.md.
     #
     # Same fork guard as `release`: a fork's master would match on.push, but
     # the OIDC role trusts only randomdevpete/jarl, so don't even attempt it.
@@ -288,3 +288,53 @@ jobs:
             --query 'Stacks[0].Outputs[?ExportName==`JarlDistributionId`].OutputValue' --output text)
           aws s3 sync packages/docs/dist "s3://$bucket" --delete
           aws cloudfront create-invalidation --distribution-id "$dist_id" --paths '/*'
+
+      - name: Roll SSR server
+        # Ships packages/docs/dist-ssr (built by the "Build packages and docs site" step
+        # above) onto the JarlSsr instance and restarts jarl-ssr, over SSM Run Command — the
+        # instance takes no inbound traffic beyond the load balancer, so there is no SSH path
+        # to push onto it directly. Fails the job if the restart command doesn't succeed, or
+        # if the server isn't answering through CloudFront afterwards.
+        run: |
+          bundle_bucket=$(aws cloudformation describe-stacks --stack-name JarlSsr \
+            --query 'Stacks[0].Outputs[?ExportName==`JarlSsrBundleBucketName`].OutputValue' --output text)
+          instance_id=$(aws cloudformation describe-stacks --stack-name JarlSsr \
+            --query 'Stacks[0].Outputs[?ExportName==`JarlSsrInstanceId`].OutputValue' --output text)
+
+          tar czf /tmp/jarl-ssr-bundle.tar.gz -C packages/docs/dist-ssr .
+          aws s3 cp /tmp/jarl-ssr-bundle.tar.gz "s3://$bundle_bucket/jarl-ssr-bundle.tar.gz"
+
+          cat > /tmp/roll-ssr.sh <<SCRIPT
+          set -euo pipefail
+          aws s3 cp --region eu-west-2 s3://$bundle_bucket/jarl-ssr-bundle.tar.gz /tmp/jarl-ssr-bundle.tar.gz
+          rm -rf /opt/jarl-ssr/*
+          tar xzf /tmp/jarl-ssr-bundle.tar.gz -C /opt/jarl-ssr
+          chown -R ec2-user:ec2-user /opt/jarl-ssr
+          rm /tmp/jarl-ssr-bundle.tar.gz
+          systemctl restart jarl-ssr
+          SCRIPT
+          jq -n --rawfile script /tmp/roll-ssr.sh '{commands: [$script]}' > /tmp/ssm-params.json
+
+          command_id=$(aws ssm send-command --document-name AWS-RunShellScript \
+            --targets "Key=InstanceIds,Values=$instance_id" --parameters file:///tmp/ssm-params.json \
+            --query 'Command.CommandId' --output text)
+
+          if ! aws ssm wait command-executed --command-id "$command_id" --instance-id "$instance_id"; then
+            aws ssm get-command-invocation --command-id "$command_id" --instance-id "$instance_id" \
+              --query '{Status: Status, Stdout: StandardOutputContent, Stderr: StandardErrorContent}'
+            echo "::error::jarl-ssr roll command failed on $instance_id — see invocation output above"
+            exit 1
+          fi
+
+          status=""
+          for attempt in $(seq 1 24); do
+            status=$(curl -s -o /dev/null -w '%{http_code}' https://jarl.randomdev.co.uk/ssr/ || true)
+            if [ "$status" = "200" ]; then
+              break
+            fi
+            sleep 5
+          done
+          if [ "$status" != "200" ]; then
+            echo "::error::jarl-ssr did not answer /ssr/ with 200 after the roll (last status: $status)"
+            exit 1
+          fi

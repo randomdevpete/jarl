@@ -11,7 +11,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
-    "types": ["vite/client"],
+    "types": ["node", "vite/client"],
     "paths": {
       "jarl-atoms": ["../jarl-atoms/src/index.ts"],
       "jarl-react": ["../jarl-react/src/index.ts"]

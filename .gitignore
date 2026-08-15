@@ -7,6 +7,7 @@ yarn-error.log*
 
 # Build files
 dist
+dist-ssr
 
 # CDK synthesized templates and asset staging
 cdk.out
