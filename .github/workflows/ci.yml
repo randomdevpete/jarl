@@ -214,19 +214,76 @@ jobs:
           npm_config_workspaces_update: "false"
 
   deploy:
-    name: Deploy (placeholder — not yet implemented)
+    name: Deploy (infra + site content)
     runs-on: ubuntu-latest
-    needs: [build-and-test]
-    # Deploy target is undecided as of ticket 60 — probably AWS, served as a
-    # subdomain of the randomdev business site (ticket 58 builds the site
-    # this will eventually deploy; ticket 50 is the parent v2 epic tracking
-    # the hosting decision). Intentionally disabled via `if: false` so it
-    # never runs and never reports a false pass/fail — this job is where the
-    # real deploy steps will hang once the target service is chosen.
-    if: false
+    needs: [build-and-test, e2e]
+    # Deploys https://jarl.randomdev.co.uk on every master push once the test
+    # jobs pass: `cdk deploy --all` for the three stacks (a fast no-op when
+    # nothing in infra/ changed), then the content publish from infra/README.md
+    # "Publishing site content" — the bucket is deliberately filled by
+    # `aws s3 sync`, not a CDK BucketDeployment, so synth never depends on the
+    # docs build. The SSR instance intentionally isn't rolled here: no server
+    # bundle exists yet (see "Serving server-rendered routes" in
+    # infra/README.md), so there is nothing to restart until one does.
+    #
+    # Same fork guard as `release`: a fork's master would match on.push, but
+    # the OIDC role trusts only randomdevpete/jarl, so don't even attempt it.
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/master' &&
+      github.repository == 'randomdevpete/jarl'
+    # Two deploys interleaving would race CloudFormation and the sync; queue
+    # them instead. cancel-in-progress stays false so a deploy that already
+    # started always runs to completion.
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    permissions:
+      # The AWS credentials come from GitHub's OIDC provider assuming the
+      # ticket-278 deploy role — no long-lived keys. id-token is what lets
+      # configure-aws-credentials mint the web identity token.
+      id-token: write
+      contents: read
     steps:
-      - name: Deploy target not yet decided
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build packages and docs site
+        run: npm run build
+
+      - name: Install infra dependencies
+        # infra/ is a standalone npm project (see its README), never installed
+        # by the root `npm ci`.
+        run: npm ci --prefix infra
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Deploy stacks
+        working-directory: infra
+        # --require-approval never: CI has no terminal to confirm the IAM/SG
+        # changes cdk pauses on interactively. JarlDomain's us-east-1 placement
+        # rides on each stack's own `env`, not this job's default region.
+        run: npx cdk deploy --all --require-approval never
+
+      - name: Publish site content
+        # Straight from infra/README.md: --delete retires pages dropped from
+        # the build, and the invalidation makes new HTML visible ahead of the
+        # five-minute page TTL.
         run: |
-          echo "Placeholder job — no deploy steps written yet."
-          echo "See docs/legacy-ci.md for what the old Now (Zeit) deploy did,"
-          echo "and ticket 58/60 on the TODOS board for the new target."
+          bucket=$(aws cloudformation describe-stacks --stack-name JarlStaticSite \
+            --query 'Stacks[0].Outputs[?ExportName==`JarlSiteBucketName`].OutputValue' --output text)
+          dist_id=$(aws cloudformation describe-stacks --stack-name JarlStaticSite \
+            --query 'Stacks[0].Outputs[?ExportName==`JarlDistributionId`].OutputValue' --output text)
+          aws s3 sync packages/docs/dist "s3://$bucket" --delete
+          aws cloudfront create-invalidation --distribution-id "$dist_id" --paths '/*'
