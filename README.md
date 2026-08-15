@@ -1,8 +1,6 @@
-# JARL
+# JARL: Atomic Routing Library
 
-JARL: Atomic Routing Library.
-
-The production grade "batteries included" **controlled component** router.
+Routing for the atomic age
 
 [![latest npm version](https://img.shields.io/npm/v/jarl-react.svg)](https://www.npmjs.com/package/jarl-react)
 [![downloads](https://img.shields.io/npm/dm/jarl-react.svg)](https://www.npmjs.com/package/jarl-react)
