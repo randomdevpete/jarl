@@ -50,6 +50,75 @@ resolver's `Promise` is still pending, transparently handled by `Suspense`) by t
 jotai/utils' `loadable()` wraps any async atom into a synchronous `{ state: "hasData" | "loading"
 | "hasError", ... }` value instead.
 
+## Routes that only exist if the data does
+
+Sometimes the lookup _is_ the route. Whether `/blog/some-slug` is a page at all is a question only
+the database can answer, and answering it twice - once to decide, once to render - is a wasted
+call. `asyncRouteAtom` wraps a route atom so that its match depends on a lookup, and binds
+whatever the lookup found to the route's own values:
+
+```ts
+import { staticRouteAtom, paramRouteAtom, asyncRouteAtom } from "jarl-atoms";
+import { db } from "./db";
+
+export const blogRoute = staticRouteAtom("blog");
+export const slugRoute = paramRouteAtom("slug", { parent: blogRoute });
+
+export const postRoute = asyncRouteAtom(slugRoute, "post", ({ slug }) => db.findPost(slug));
+
+/** Every async route in the app, in one list to preload, hydrate and follow. */
+export const asyncRoutes = [postRoute];
+```
+
+`undefined` back from the lookup means the route doesn't match, so a `Switch` fallback (or
+`notAtom`) renders your not-found case. A hit matches, with the loaded object typed onto `values`:
+
+```tsx
+<Switch fallback={<NotFound />}>
+  <Route on={postRoute} exact>
+    {({ post }) => <PostView post={post} />}
+  </Route>
+</Switch>
+```
+
+`post` here is a `Post`, not an `unknown` you have to narrow, and `PostView` fetches nothing of
+its own.
+
+### Server rendering
+
+Route matching is synchronous everywhere in JARL, so the lookup has to have settled before a
+render can read it. On the server that is a single `await`, and it is what lets the response
+carry a real 404 status rather than a 200 whose body happens to say "not found":
+
+```tsx
+const store = createStore();
+store.set(locationAtom, { pathname, searchParams });
+
+const routeData = await preloadRoutes(store, asyncRoutes);
+const html = renderToString(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+);
+const status = store.get(notFoundAtom) ? 404 : 200;
+```
+
+`notFoundAtom` there is `notAtom(...everyRouteYouRender)` - listing `postRoute` rather than
+`slugRoute`, so an unknown slug counts as a miss.
+
+`preloadRoutes` returns one snapshot per route, in the order given. Serialise them into the page
+and the client picks up where the server left off, without repeating the lookup:
+
+```tsx
+hydrateAsyncRoutes(store, asyncRoutes, window.__ROUTE_DATA__ ?? []);
+followAsyncRoutes(store, asyncRoutes);
+hydrateRoot(root, <Provider store={store}>{<App />}</Provider>);
+```
+
+`followAsyncRoutes` keeps the routes settled from then on, re-running each lookup as the location
+changes. While one is in flight, `postRoute.pending` is `true` - render a spinner on it, or the
+not-found case will flash before the answer arrives.
+
 ## Redirecting
 
 Sometimes a route shouldn't render at all, and should instead send the visitor somewhere else -
