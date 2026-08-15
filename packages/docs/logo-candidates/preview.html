@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>jarl logo candidates</title>
+    <style>
+      body {
+        background: #170f0a;
+        color: #c98a6e;
+        font-family: Georgia, serif;
+        padding: 24px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        margin-bottom: 40px;
+      }
+      .label {
+        width: 140px;
+        font-size: 14px;
+        color: #ff6b52;
+      }
+      img {
+        display: block;
+      }
+      .fav {
+        width: 16px;
+        height: 16px;
+      }
+      .fav32 {
+        width: 32px;
+        height: 32px;
+      }
+      .mid {
+        width: 64px;
+      }
+      .big {
+        width: 128px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 28px;
+        color: #e8a33d;
+        letter-spacing: 2px;
+      }
+      .brand img {
+        width: 34px;
+      }
+      .tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #2a2a2e;
+        color: #ddd;
+        font: 12px sans-serif;
+        padding: 4px 10px;
+        border-radius: 8px 8px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row" id="a"></div>
+    <div class="row" id="a2"></div>
+    <div class="row" id="a3"></div>
+    <div class="row" id="b"></div>
+    <div class="row" id="c"></div>
+    <div class="row" id="d"></div>
+    <script>
+      const files = {
+        a: "a-spectacle-helm.svg",
+        a2: "a2-nasal-helm.svg",
+        a3: "a3-spectacle-helm.svg",
+        b: "b-shield-boss.svg",
+        c: "c-longship.svg",
+        d: "d-jera-rune.svg",
+      };
+      for (const [id, file] of Object.entries(files)) {
+        document.getElementById(id).innerHTML = `
+      <div class="label">${file}</div>
+      <span class="tab"><img class="fav" src="${file}"> jarl docs</span>
+      <img class="fav32" src="${file}">
+      <img class="mid" src="${file}">
+      <img class="big" src="${file}">
+      <span class="brand"><img src="${file}"> JARL</span>
+    `;
+      }
+    </script>
+  </body>
+</html>

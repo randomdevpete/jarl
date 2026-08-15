@@ -11,10 +11,8 @@ export const VikingHelmetMark = ({ className }: { className?: string }) => (
     <path
       fill="currentColor"
       fillRule="evenodd"
-      d="M24 6C13 6 6 15 6 26v6c0 3.3 2.7 6 6 6h24c3.3 0 6-2.7 6-6v-6C42 15 35 6 24 6ZM24 14c-6.6 0-11 5.3-11 12v6c0 1.1 0.9 2 2 2h4V22h10v12h4c1.1 0 2-0.9 2-2v-6c0-6.7-4.4-12-11-12Z"
+      d="M24 2C13.4 2 7 10.4 7 21v10h12v5a2.5 2.5 0 0 0 2.5 2.5h5a2.5 2.5 0 0 0 2.5-2.5v-5h12V21C41 10.4 34.6 2 24 2ZM11 32v-5a4 4 0 0 1 8 0v5ZM29 32v-5a4 4 0 0 1 8 0v5Z"
     />
-    <path fill="currentColor" d="M10 22C4 18 0 10 1 3c2.5 7 7.5 12.5 12 16.5-1 2.5-2 5-3 9.5Z" />
-    <path fill="currentColor" d="M38 22c6-4 10-12 9-19-2.5 7-7.5 12.5-12 16.5 1 2.5 2 5 3 9.5Z" />
   </HelmetSvg>
 );
 
