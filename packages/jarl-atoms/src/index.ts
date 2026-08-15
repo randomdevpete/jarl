@@ -9,6 +9,7 @@ export * from "./routeAtom";
 export * from "./rootAtom";
 export * from "./staticRouteAtom";
 export * from "./paramRouteAtom";
+export * from "./numericRouteAtom";
 export * from "./transformRouteAtom";
 export * from "./notAtom";
 export * from "./href";
