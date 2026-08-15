@@ -8,7 +8,8 @@ export const theme = {
   accentStrong: "#f4c065",
   border: "#4a2a16",
   codeBg: "#20130a",
-  fontHeading: '"Cinzel", Georgia, serif',
-  fontBody: '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-  fontMono: '"Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+  fontHeading: '"alverata", "Alverata", "Cinzel", Georgia, serif',
+  fontBody:
+    '"alegreya-sans", "Alegreya Sans", "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  fontMono: '"input-mono", "Input Mono", "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
 } as const;
