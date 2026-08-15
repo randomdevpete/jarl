@@ -13,7 +13,7 @@ const Home = () => {
   useTitle("About - JARL");
   return (
     <div data-test="content">
-      <h1>JARL</h1>
+      <h1>JARL: Atomic Routing Library</h1>
       <p>Routing for the atomic age</p>
       <p data-test="version">v{__JARL_VERSION__}</p>
     </div>
