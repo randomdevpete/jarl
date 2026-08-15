@@ -2,8 +2,18 @@ import styled from "@emotion/styled";
 import { marked } from "marked";
 import { useMemo } from "react";
 import { theme } from "../theme";
+import { escapeHtml, highlightToHtml } from "./highlight";
 
 marked.setOptions({ gfm: true });
+marked.use({
+  renderer: {
+    code(code, infostring) {
+      const lang = (infostring ?? "").trim().split(/\s+/)[0];
+      const languageAttr = lang ? ` data-language="${escapeHtml(lang)}"` : "";
+      return `<pre class="hljs"${languageAttr}><code>${highlightToHtml(code, lang)}</code></pre>`;
+    },
+  },
+});
 
 const MarkdownBody = styled.div`
   h1:first-child {

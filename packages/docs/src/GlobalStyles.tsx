@@ -60,6 +60,74 @@ const documentStyles = css`
     padding: 0;
   }
 
+  /* Syntax-highlighted code blocks, built by \`lib/highlight.ts\` (Markdown fences and demo
+     view-source blocks alike) - see that file for the languages registered. */
+  .hljs-comment,
+  .hljs-quote {
+    color: ${theme.syntax.comment};
+    font-style: italic;
+  }
+
+  .hljs-keyword,
+  .hljs-doctag,
+  .hljs-meta {
+    color: ${theme.syntax.keyword};
+  }
+
+  .hljs-string,
+  .hljs-regexp,
+  .hljs-template-tag,
+  .hljs-meta .hljs-string {
+    color: ${theme.syntax.string};
+  }
+
+  .hljs-number,
+  .hljs-literal,
+  .hljs-symbol,
+  .hljs-bullet {
+    color: ${theme.syntax.constant};
+  }
+
+  .hljs-title,
+  .hljs-name,
+  .hljs-section,
+  .hljs-selector-tag {
+    color: ${theme.syntax.entity};
+  }
+
+  /* Tiered scopes chain classes rather than dot them: \`title.class_\` emits
+     \`hljs-title class_\`, so the selector below chains two classes too. */
+  .hljs-type,
+  .hljs-built_in,
+  .hljs-title.class_,
+  .hljs-selector-class,
+  .hljs-selector-id,
+  .hljs-template-variable {
+    color: ${theme.syntax.steel};
+  }
+
+  .hljs-attr,
+  .hljs-attribute,
+  .hljs-property,
+  .hljs-variable,
+  .hljs-params {
+    color: ${theme.syntax.constant};
+  }
+
+  .hljs-tag,
+  .hljs-punctuation,
+  .hljs-operator {
+    color: ${theme.syntax.punctuation};
+  }
+
+  .hljs-emphasis {
+    font-style: italic;
+  }
+
+  .hljs-strong {
+    font-weight: 700;
+  }
+
   a {
     color: ${theme.accent};
     text-decoration: none;
