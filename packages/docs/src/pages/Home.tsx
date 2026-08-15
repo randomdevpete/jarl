@@ -16,8 +16,8 @@ const HomeHeading = styled.h1`
 `;
 
 const HomeMark = styled(VikingHelmetMark)`
-  width: 3.6rem;
-  height: 3rem;
+  width: 3.2rem;
+  height: 3.2rem;
   color: ${theme.accent};
 `;
 
