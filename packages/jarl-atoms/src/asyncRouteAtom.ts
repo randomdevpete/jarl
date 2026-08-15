@@ -1,9 +1,3 @@
-// Route matching is synchronous everywhere else in this package - `Switch`,
-// `Route` and `notAtom` all read a RouteAtom with a plain `get`. A route whose
-// existence only a database can answer therefore can't decide its own match
-// inline; the lookup has to be settled into the store first, and that settling
-// step is what a server render awaits before producing HTML.
-
 import { Atom, Getter, WritableAtom, atom } from "jotai/vanilla";
 import { locationAtom } from "./locationAtom";
 import { Redirect, Store, isRedirect } from "./redirectAtom";
