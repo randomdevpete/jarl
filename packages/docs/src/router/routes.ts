@@ -71,12 +71,24 @@ export const notFoundAtom = notAtom(
   asyncArticleRoute,
 );
 
-export type DocName = "getting-started" | "data-loading" | "path-variables";
+export type DocName =
+  | "getting-started"
+  | "data-loading"
+  | "path-variables"
+  | "custom-route-atoms"
+  | "location-and-base-paths"
+  | "switch-and-not-found"
+  | "hooks-and-links";
 
-export const docPages: { docName: DocName; title: string }[] = [
-  { docName: "getting-started", title: "Getting Started" },
-  { docName: "data-loading", title: "Data Loading" },
-  { docName: "path-variables", title: "Path Variables" },
+/** A guide's nav entry: which page it renders, its link text, and which index section groups it. */
+export const docPages: { docName: DocName; title: string; section: string }[] = [
+  { docName: "getting-started", title: "Getting Started", section: "Guides" },
+  { docName: "data-loading", title: "Data Loading", section: "Guides" },
+  { docName: "path-variables", title: "Path Variables", section: "Guides" },
+  { docName: "custom-route-atoms", title: "Custom Route Atoms", section: "Atoms" },
+  { docName: "location-and-base-paths", title: "Location & Base Paths", section: "Atoms" },
+  { docName: "switch-and-not-found", title: "Switch & Not Found", section: "Components" },
+  { docName: "hooks-and-links", title: "Hooks & Links", section: "Components" },
 ];
 
 export type ApiName = "jarl-atoms" | "jarl-react";
