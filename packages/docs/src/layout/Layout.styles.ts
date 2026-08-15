@@ -61,6 +61,29 @@ export const MainNav = styled.nav`
   }
 `;
 
+export const Toolbar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+`;
+
+export const ToolbarLink = styled.a`
+  display: flex;
+  align-items: center;
+  color: ${theme.fgMuted};
+
+  &:hover {
+    color: ${theme.accent};
+  }
+`;
+
+export const ToolbarIcon = styled.svg`
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+`;
+
 export const SiteMain = styled.main`
   flex: 1;
   max-width: ${contentWidth};
