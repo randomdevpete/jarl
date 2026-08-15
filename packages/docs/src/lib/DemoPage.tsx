@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import styled from "@emotion/styled";
 import { theme } from "../theme";
+import CodeBlock from "./CodeBlock";
 
 const DemoBox = styled.div`
   border: 1px solid ${theme.border};
@@ -46,9 +47,7 @@ export const DemoPage = ({ title, source, children }: DemoPageProps) => (
     <DemoBox>{children}</DemoBox>
     <SourceDisclosure>
       <summary>View source</summary>
-      <pre>
-        <code>{source}</code>
-      </pre>
+      <CodeBlock code={source} lang="tsx" />
     </SourceDisclosure>
   </>
 );
