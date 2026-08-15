@@ -65,11 +65,9 @@ from the distribution: requests arrive over HTTP/2 or HTTP/3 having been redirec
 edge, and the custom error responses are distribution-wide, so a 404 or 403 from the server is served
 as the static build's `404.html`.
 
-**Today it has nothing behind it.** `packages/docs` prerenders every route in `staticPaths` to a
-static file; its only SSR server (`scripts/dev-server.mjs`) is a Vite dev-mode server, not something
-to run in production. The instance therefore comes up with a runtime and an empty service, and
-`/ssr/*` returns a 502 until a server bundle is deployed onto it. What this stack provides now is the
-compute and the routing, so the app can land without touching the front.
+`packages/docs` prerenders every route in `staticPaths` to a static file; `/ssr/*` exists for whatever
+isn't, and nothing today matches it - the server behind it renders through the same `App` component
+tree, so an unmatched path gets the same not-found page a prerendered route would.
 
 The traffic path is `viewer → CloudFront → VPC origin → internal ALB → instance:3000`:
 
@@ -90,7 +88,7 @@ The traffic path is `viewer → CloudFront → VPC origin → internal ALB → i
 - **No API Gateway.** As a front for an EC2 origin it would need a VPC link to a load balancer — so
   it removes nothing — or a public HTTP proxy integration, which means exposing the instance.
 
-Deploying a server bundle means putting it in `/opt/jarl-ssr` (entry point `server.js`, listening on
+Deploying a server bundle means putting it in `/opt/jarl-ssr` (entry point `server.mjs`, listening on
 `$PORT`) and starting the unit:
 
 ```bash
@@ -99,6 +97,17 @@ sudo systemctl restart jarl-ssr
 
 It must answer `GET /healthz`, which is the target group's health check; the load balancer serves no
 traffic to it until it does.
+
+### Rolling the SSR server
+
+`scripts/build.mjs` builds `packages/docs/dist-ssr/` alongside the static `dist/` - `server.mjs` (a
+plain Node HTTP server: `GET /healthz`, everything under `/ssr` rendered through `entry-server.tsx`'s
+`render`) and `template.html` (the same hashed-asset template every prerendered route fills). The
+`deploy` job in `.github/workflows/ci.yml` tars that directory, uploads it to `SsrBundleBucket`
+(`JarlSsrBundleBucketName` output), then runs an `AWS-RunShellScript` document on the instance over
+SSM Run Command that downloads and extracts it into `/opt/jarl-ssr` and restarts `jarl-ssr` - no SSH,
+using only the instance's existing `AmazonSSMManagedInstanceCore` access. The job polls
+`https://jarl.randomdev.co.uk/ssr/` for a 200 afterwards and fails loudly if the roll didn't take.
 
 ### Domain and certificate
 

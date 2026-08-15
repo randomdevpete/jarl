@@ -36,7 +36,7 @@ import {
 } from "aws-cdk-lib/aws-ec2";
 import { ApplicationLoadBalancer, ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import { InstanceTarget } from "aws-cdk-lib/aws-elasticloadbalancingv2-targets";
-import { ManagedPolicy, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { ARecord, AaaaRecord, type IHostedZone, PublicHostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
 import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
 import { BlockPublicAccess, Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
@@ -204,6 +204,9 @@ const ssrHealthCheckPath = "/healthz";
 const ssrInstallDirectory = "/opt/jarl-ssr";
 const ssrServiceName = "jarl-ssr";
 
+/** Created out of band for the GitHub OIDC deploy job; not a CDK-managed role, only its incremental grants below are. */
+const deployRoleName = "jarl-github-actions-deploy";
+
 /** Installs the runtime and the service that runs the SSR server; a deploy is what starts it. */
 const ssrInstanceSetup = `set -euo pipefail
 dnf install -y nodejs22
@@ -219,7 +222,7 @@ WorkingDirectory=${ssrInstallDirectory}
 Environment=NODE_ENV=production
 Environment=PORT=${ssrPort}
 # node-22, not node: AL2023 leaves that as an alternatives symlink onto whichever major is active.
-ExecStart=/usr/bin/node-22 ${ssrInstallDirectory}/server.js
+ExecStart=/usr/bin/node-22 ${ssrInstallDirectory}/server.mjs
 Restart=always
 RestartSec=5
 
@@ -256,6 +259,18 @@ export class JarlSsrStack extends Stack {
       assumedBy: new ServicePrincipal("ec2.amazonaws.com"),
       managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore")],
     });
+
+    // Holds the built server bundle between a deploy uploading it and the roll that fetches
+    // it onto the instance. Reproducible from the docs build like SiteBucket, so nothing here
+    // needs to survive a teardown.
+    const bundleBucket = new Bucket(this, "SsrBundleBucket", {
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      encryption: BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+    bundleBucket.grantRead(instanceRole);
 
     const instanceSecurityGroup = new SecurityGroup(this, "SsrInstanceSecurityGroup", {
       vpc,
@@ -336,10 +351,45 @@ export class JarlSsrStack extends Stack {
       compress: true,
     });
 
+    // The deploy role's baseline permissions (assume-cdk-roles, DescribeStacks, site-bucket S3,
+    // CloudFront invalidation) were granted out of band alongside the role itself; this adds
+    // only what rolling the SSR server needs, as its own policy on the same role.
+    const deployRole = Role.fromRoleName(this, "GithubActionsDeployRole", deployRoleName);
+    bundleBucket.grantPut(deployRole);
+    deployRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        sid: "RollSsrServer",
+        actions: ["ssm:SendCommand"],
+        resources: [
+          Stack.of(this).formatArn({ service: "ec2", resource: "instance", resourceName: instance.instanceId }),
+          Stack.of(this).formatArn({
+            service: "ssm",
+            account: "",
+            resource: "document",
+            resourceName: "AWS-RunShellScript",
+          }),
+        ],
+      }),
+    );
+    deployRole.addToPrincipalPolicy(
+      new PolicyStatement({
+        sid: "ReadSsrRollResult",
+        actions: ["ssm:GetCommandInvocation"],
+        // Doesn't support resource-level permissions - the command ID isn't known until sent.
+        resources: ["*"],
+      }),
+    );
+
     new CfnOutput(this, "SsrInstanceId", {
       value: instance.instanceId,
       description: `Deploy target: upload the server to ${ssrInstallDirectory}, then restart ${ssrServiceName}`,
       exportName: "JarlSsrInstanceId",
+    });
+
+    new CfnOutput(this, "SsrBundleBucketName", {
+      value: bundleBucket.bucketName,
+      description: "Upload target for the packages/docs SSR server bundle",
+      exportName: "JarlSsrBundleBucketName",
     });
 
     new CfnOutput(this, "SsrPathPattern", {
