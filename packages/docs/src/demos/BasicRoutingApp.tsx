@@ -42,10 +42,7 @@ const DemoNotFound = ({ page }: { page: string }) => (
   </div>
 );
 
-/**
- * Nested "Home"/"About" router built from staticRouteAtom/paramRouteAtom and the
- * atoms-based Link/Route components.
- */
+/** Demo of nested routing with atoms-based Link and Route components. */
 export const BasicRoutingApp = () => (
   <>
     <DemoNav />
