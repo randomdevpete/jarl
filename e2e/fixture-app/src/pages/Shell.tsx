@@ -14,7 +14,7 @@ const Home = () => {
   return (
     <div data-test="content">
       <h1>JARL</h1>
-      <p>JARL: Atomic Routing Library.</p>
+      <p>Routing for the atomic age</p>
       <p data-test="version">v{__JARL_VERSION__}</p>
     </div>
   );

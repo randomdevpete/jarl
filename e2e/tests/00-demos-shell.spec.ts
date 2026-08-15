@@ -6,7 +6,7 @@ test.describe("Demos Shell", () => {
     await page.goto("/");
     await expect(page).toHaveTitle(/About/);
     await expect(page.locator("[data-test=content] h1")).toContainText("JARL");
-    await expect(page.locator("[data-test=content] h1 + p")).toContainText("JARL: Atomic Routing Library.");
+    await expect(page.locator("[data-test=content] h1 + p")).toContainText("Routing for the atomic age");
     // The original test compared against the exact package version
     // (with CI build-number wrangling); we just check a version string
     // is rendered at all, which is enough to exercise the fixture.
