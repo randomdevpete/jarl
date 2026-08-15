@@ -10,28 +10,6 @@ const MarkdownBody = styled.div`
     margin-top: 0;
   }
 
-  pre {
-    background: ${theme.codeBg};
-    border: 1px solid ${theme.border};
-    border-radius: 6px;
-    padding: 1rem;
-    overflow-x: auto;
-  }
-
-  code {
-    background: ${theme.codeBg};
-    color: ${theme.accent};
-    border-radius: 3px;
-    padding: 0.1em 0.35em;
-    font-size: 0.9em;
-    font-family: ${theme.fontMono};
-  }
-
-  pre code {
-    background: none;
-    padding: 0;
-  }
-
   table {
     border-collapse: collapse;
     width: 100%;

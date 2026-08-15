@@ -31,6 +31,35 @@ const documentStyles = css`
     color: ${theme.accent};
   }
 
+  code,
+  kbd,
+  samp {
+    font-family: ${theme.fontMono};
+    /* 0.875em matches the mono's x-height to the body face so inline code sits level with prose */
+    font-size: 0.875em;
+    background: ${theme.codeBg};
+    color: ${theme.accent};
+    border-radius: 3px;
+    padding: 0.1em 0.35em;
+  }
+
+  pre {
+    font-family: ${theme.fontMono};
+    font-size: 0.875em;
+    line-height: 1.5;
+    background: ${theme.codeBg};
+    border: 1px solid ${theme.border};
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  pre code {
+    font-size: 1em;
+    background: none;
+    padding: 0;
+  }
+
   a {
     color: ${theme.accent};
     text-decoration: none;

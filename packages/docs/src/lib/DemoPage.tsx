@@ -19,7 +19,7 @@ const DemoBox = styled.div`
 
   nav a[data-active] {
     color: ${theme.accentStrong};
-    font-weight: 600;
+    font-weight: 700;
   }
 `;
 
@@ -28,17 +28,6 @@ const SourceDisclosure = styled.details`
     cursor: pointer;
     color: ${theme.fgMuted};
     margin: 1rem 0 0.5rem;
-  }
-
-  pre {
-    background: ${theme.codeBg};
-    color: ${theme.accent};
-    border: 1px solid ${theme.border};
-    border-radius: 6px;
-    padding: 1rem;
-    overflow-x: auto;
-    font-size: 0.85em;
-    font-family: ${theme.fontMono};
   }
 `;
 
