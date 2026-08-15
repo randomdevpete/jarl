@@ -1,8 +1,9 @@
 import { createStore } from "jotai/vanilla";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { locationAtom, staticRouteAtom } from "../routeAtom";
+import { locationAtom } from "../locationAtom";
 import { queryParamAtom } from "../queryAtom";
 import { Redirect, followRedirects, isRedirect, redirect, redirectAtom } from "../redirectAtom";
+import { staticRouteAtom } from "../staticRouteAtom";
 
 const seed = (store: ReturnType<typeof createStore>, pathname: string, search = "") => {
   store.set(locationAtom, { pathname, searchParams: new URLSearchParams(search) });

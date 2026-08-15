@@ -1,16 +1,12 @@
 import { createStore } from "jotai/vanilla";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  DefaultParams,
-  RouteReturn,
-  createRootAtom,
-  locationAtom,
-  paramRouteAtom,
-  rootAtom,
-  routeAtom,
-  staticRouteAtom,
-  transformRouteAtom,
-} from "../routeAtom";
+import { locationAtom } from "../locationAtom";
+import { paramRouteAtom } from "../paramRouteAtom";
+import { createRootAtom, rootAtom } from "../rootAtom";
+import { routeAtom } from "../routeAtom";
+import { staticRouteAtom } from "../staticRouteAtom";
+import { transformRouteAtom } from "../transformRouteAtom";
+import { DefaultParams, RouteReturn } from "../types";
 
 // RouteReturn is a discriminated union on `match` — asserting it here lets
 // the rest of a test access `.rest`/`.values` on the matched branch without
