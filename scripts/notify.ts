@@ -44,7 +44,7 @@ const createMessage = async (type: string): Promise<void> => {
       break;
     case "deployed": {
       const filePath = findCypressScreenshot();
-      notifyDiscord(`${prefix} Deployed ${version} to http://jarl.downplay.co`, filePath);
+      notifyDiscord(`${prefix} Deployed ${version} to https://jarl.randomdev.co.uk`, filePath);
       break;
     }
     default:

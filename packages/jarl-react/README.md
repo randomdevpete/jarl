@@ -18,7 +18,7 @@ npm install jarl-react jarl-atoms jotai
 
 For documentation and demos go here:
 
-[JARL demos and documentation](https://jarl.downplay.co)
+[JARL demos and documentation](https://jarl.randomdev.co.uk)
 
 For source code and issue tracking, please see the monorepo:
 

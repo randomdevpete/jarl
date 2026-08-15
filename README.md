@@ -11,7 +11,7 @@ Routing for the atomic age
 [![Cypress end-to-end tests](https://img.shields.io/badge/cypress-dashboard-brightgreen.svg)](https://dashboard.cypress.io/#/projects/ps43vs/runs)
 [![Join the conversation on Discord](https://img.shields.io/discord/437254750946459648.svg)](https://discord.gg/6yGq39rJ63)
 
-If you just want the docs: [JARL demos and documentation](http://jarl.downplay.co)
+If you just want the docs: [JARL demos and documentation](https://jarl.randomdev.co.uk)
 
 ## Why another router?
 
@@ -150,7 +150,7 @@ export default SearchForm;
 ```
 
 That's all the basics! Hopefully this gave a flavour of the power and simplicity of this
-routing system. See the [docs site](https://jarl.downplay.co) for query strings, redirects, and
+routing system. See the [docs site](https://jarl.randomdev.co.uk) for query strings, redirects, and
 data loading (resolving promises as part of a route match, `jarl-atoms`' `resolvedAtom`) in more
 depth.
 
@@ -158,9 +158,9 @@ depth.
 
 Detailed documentation, and demos with annotated code samples, can be viewed at the following address:
 
-[JARL demos and documentation](https://jarl.downplay.co)
+[JARL demos and documentation](https://jarl.randomdev.co.uk)
 
-[Changelog](https://jarl.downplay.co/changelog)
+[Changelog](https://jarl.randomdev.co.uk/changelog)
 
 ## Tests & Demos
 
