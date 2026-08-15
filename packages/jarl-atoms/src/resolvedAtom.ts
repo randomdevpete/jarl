@@ -51,7 +51,9 @@ export const resolvedAtom = <T extends DefaultParams, Data>(
 
 /**
  * Follows any `Redirect` a resolver produces, replace-navigating to its target - the
- * async-loading counterpart of `followRedirects`. Returns an unsubscribe function.
+ * async-loading counterpart of `followRedirects`. Call once, near the root of an app, for every
+ * `resolvedAtom` (or `asyncRouteAtom.lookup`) whose resolver can redirect. Returns an unsubscribe
+ * function.
  */
 export const followResolvedRedirects = (
   store: Store,

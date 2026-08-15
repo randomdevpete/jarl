@@ -5,6 +5,7 @@ import { isActive } from "./isActive";
 
 type SwitchChildProps = { on: RouteAtom<DefaultParams>; exact?: boolean };
 
+/** Props for `Switch`: its `<Route>` children, in precedence order, and a fallback for when none match. */
 export type SwitchProps = {
   /** `<Route>` elements, in precedence order. */
   children?: ReactNode;

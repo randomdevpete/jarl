@@ -20,8 +20,9 @@ export function useRoute<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
 }
 
 /**
- * Returns a stable `navigate` function bound to one route atom. Calling it with param values
- * pushes a new location.
+ * Returns a stable `navigate` function bound to one route atom: call it with param values to
+ * push a new location. Always pushes - for a `replace` navigation, use `useSetAtom(routeAtom)`
+ * directly and pass `{ replace: true }` as its second argument.
  */
 export function useNavigate<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
   const setRoute = useSetAtom(routeAtom);
@@ -57,7 +58,7 @@ export type UseLinkResult = {
   onClick: (event?: { preventDefault?: () => void }) => void;
 };
 
-/** How strictly a link reports itself active. */
+/** Options for `useLink`/`Link`: how strictly a link reports itself `active`. */
 export type UseLinkOptions = {
   /** Only report `active` for an exact match, rather than any ancestor route too. */
   exact?: boolean;

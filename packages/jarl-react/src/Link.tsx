@@ -2,7 +2,7 @@ import { AnchorHTMLAttributes, ElementType, ReactNode } from "react";
 import { DefaultParams, RouteAtom } from "jarl-atoms";
 import { useLink, UseLinkOptions } from "./hooks";
 
-/** What `Link`'s function-as-child form receives. */
+/** What `Link`'s function-as-child form receives: the resolved `href`, whether the link is currently active, and a click handler that performs the navigation. */
 export type LinkChildrenRenderProps = {
   href: string;
   active: boolean;

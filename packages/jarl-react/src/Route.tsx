@@ -3,6 +3,7 @@ import { RouteAtom, DefaultParams } from "jarl-atoms";
 import { useRoute } from "./hooks";
 import { isActive } from "./isActive";
 
+/** Props for `Route`: which route atom to render on, its children, and how strictly it must match. */
 export type RouteProps<T extends DefaultParams> = {
   /** The route atom to render on. */
   on: RouteAtom<T>;

@@ -38,6 +38,7 @@ export class Redirect {
  */
 export const redirect = (to: Path): Redirect => new Redirect(to);
 
+/** Type guard for a `Redirect` sentinel, e.g. narrowing a resolver's return value before acting on it. */
 export const isRedirect = (value: unknown): value is Redirect => value instanceof Redirect;
 
 /**
@@ -88,7 +89,7 @@ export const redirectAtom = <Parent extends DefaultParams = DefaultParams>(
   );
 };
 
-/** A jotai store, as returned by jotai's own `createStore()`. */
+/** A jotai store, as returned by jotai's own `createStore()` - what every `follow*`/`preloadRoutes`-style helper reads and writes against. */
 export type Store = ReturnType<typeof createStore>;
 
 /**
