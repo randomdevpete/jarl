@@ -182,8 +182,9 @@ npm run typecheck   # tsc over bin/ and lib/
 On a fresh account `deploy` is not the first thing to run: see the two-pass first deploy under
 [Domain and certificate](#domain-and-certificate).
 
-Deploying from CI is not wired up yet; the `deploy` job in `.github/workflows/ci.yml` is still a
-disabled placeholder.
+CI runs the same thing: the `deploy` job in `.github/workflows/ci.yml` assumes the GitHub OIDC
+deploy role (`AWS_DEPLOY_ROLE_ARN` repo variable) on every master push after the test jobs pass,
+then `cdk deploy --all` and the content publish below.
 
 ## Publishing site content
 
