@@ -53,7 +53,7 @@ Other exports: `queryAtom`/`queryParamAtom` (query-string state, composable
 the same way as path atoms), `redirectAtom`, and `resolvedAtom`. See the full
 docs and demos for the complete model:
 
-[JARL demos and documentation](https://jarl.downplay.co)
+[JARL demos and documentation](https://jarl.randomdev.co.uk)
 
 For source code and issue tracking, please see the monorepo:
 
