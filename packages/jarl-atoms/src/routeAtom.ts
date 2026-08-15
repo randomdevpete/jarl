@@ -1,12 +1,10 @@
 // Heavily borrowed from Wouter
 
 import { Getter, atom } from "jotai/vanilla";
-import { splitHref, Path } from "./href";
+import { splitHref } from "./href";
 import { locationAtom } from "./locationAtom";
 import { rootAtom } from "./rootAtom";
 import { DefaultParams, RouteAtom, RouteOptions } from "./types";
-
-export type { Path };
 
 // Earlier design sketches (a tuple-shaped RouteReturn, a pattern-string-driven
 // routeAtom overload, and the type plumbing they'd need) were explored here
