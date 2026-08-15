@@ -5,8 +5,9 @@
  * router - and, since the site is prerendered, it doubles as the SSR/SSG proof case for
  * `jarl-atoms`' server-seedable `locationAtom`.
  */
-import { rootAtom, staticRouteAtom, paramRouteAtom, numericRouteAtom } from "jarl-atoms";
+import { asyncRouteAtom, notAtom, rootAtom, staticRouteAtom, paramRouteAtom, numericRouteAtom } from "jarl-atoms";
 import { blogStaticPaths } from "../demos/blogPosts";
+import { articleSlugs, findArticle } from "../demos/asyncArticles";
 
 export const homeRoute = rootAtom;
 
@@ -34,6 +35,41 @@ export const blogYearRoute = numericRouteAtom("year", { parent: blogRoutingDemoR
 export const blogMonthRoute = numericRouteAtom("month", { parent: blogYearRoute, min: 1, max: 12 });
 export const blogDayRoute = numericRouteAtom("day", { parent: blogMonthRoute, min: 1, max: 31 });
 export const blogPostRoute = paramRouteAtom("slug", { parent: blogDayRoute });
+
+// Async-lookup demo: /demos/async-lookup/:slug exists only if the demo's fake database has an
+// article at that slug, and the article it found rides along on the route's own values.
+export const asyncLookupDemoRoute = staticRouteAtom("async-lookup", { parent: demosIndexRoute });
+export const asyncLookupSlugRoute = paramRouteAtom("slug", { parent: asyncLookupDemoRoute });
+export const asyncArticleRoute = asyncRouteAtom(asyncLookupSlugRoute, "article", ({ slug }) => findArticle(slug));
+
+/** Every async route on the site: preloaded before a server render, kept live on the client. */
+export const asyncRoutes = [asyncArticleRoute];
+
+/**
+ * Whether the current location has nothing behind it, which is what makes a server render's
+ * *status code* right and not just its HTML. It lists `asyncArticleRoute` rather than
+ * `asyncLookupSlugRoute`: an unknown slug is a genuine miss, even though the demo page still
+ * renders its own not-found view for it.
+ */
+export const notFoundAtom = notAtom(
+  homeRoute,
+  docsSectionRoute,
+  docPageRoute,
+  apiSectionRoute,
+  apiPageRoute,
+  changelogRoute,
+  historyRoute,
+  demosIndexRoute,
+  basicRoutingDemoRoute,
+  basicRoutingDemoPageRoute,
+  blogRoutingDemoRoute,
+  blogYearRoute,
+  blogMonthRoute,
+  blogDayRoute,
+  blogPostRoute,
+  asyncLookupDemoRoute,
+  asyncArticleRoute,
+);
 
 export type DocName = "getting-started" | "data-loading" | "path-variables";
 
@@ -63,4 +99,6 @@ export const staticPaths: string[] = [
   "/demos/basic-routing",
   "/demos/basic-routing/about",
   ...blogStaticPaths(),
+  "/demos/async-lookup",
+  ...articleSlugs().map((slug) => `/demos/async-lookup/${slug}`),
 ];

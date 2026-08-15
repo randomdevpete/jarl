@@ -25,9 +25,9 @@ async function main() {
         let template = await fs.readFile(path.resolve(root, "index.html"), "utf-8");
         template = await vite.transformIndexHtml(url, template);
         const { render } = await vite.ssrLoadModule("/src/entry-server.tsx");
-        const { html, head } = render(url);
+        const { html, head, status } = await render(url);
         const page = template.replace("<!--app-head-->", head).replace("<!--app-html-->", html);
-        res.statusCode = 200;
+        res.statusCode = status;
         res.setHeader("Content-Type", "text/html");
         res.end(page);
       } catch (error) {

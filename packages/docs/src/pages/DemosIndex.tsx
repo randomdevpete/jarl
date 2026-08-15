@@ -1,6 +1,6 @@
 import { Link } from "jarl-react";
 import LinkList from "../lib/LinkList";
-import { basicRoutingDemoRoute, blogRoutingDemoRoute } from "../router/routes";
+import { asyncLookupDemoRoute, basicRoutingDemoRoute, blogRoutingDemoRoute } from "../router/routes";
 
 export const DemosIndex = () => (
   <>
@@ -26,6 +26,14 @@ export const DemosIndex = () => (
         </Link>{" "}
         &mdash; a classic <code>/blog/:year/:month/:day/:slug</code> tree, hand-composed from{" "}
         <code>numericRouteAtom</code> chained as parent/child, with 404s for out-of-range and non-existent dates.
+      </li>
+      <li>
+        <Link route={asyncLookupDemoRoute} to={{}}>
+          Async lookup
+        </Link>{" "}
+        &mdash; a route that exists only if an async database lookup finds it, built on <code>asyncRouteAtom</code>: the
+        article it loads arrives on the route&apos;s own typed state, and a miss is a real 404 in the server-rendered
+        response.
       </li>
     </LinkList>
   </>
