@@ -19,9 +19,7 @@ export const docPageRoute = paramRouteAtom("docName", { parent: docsSectionRoute
 export const apiSectionRoute = staticRouteAtom("api");
 export const apiPageRoute = paramRouteAtom("apiName", { parent: apiSectionRoute });
 
-// Changelog: just the static mount point. The per-version /:version tree lives inside
-// the Changelog component, parented on whatever root atom it is handed - same shape as
-// blogRoutingDemoRoute below.
+// Changelog: static mount point. The per-version tree lives inside the Changelog component.
 export const changelogRoute = staticRouteAtom("changelog");
 
 export const historyRoute = staticRouteAtom("history");

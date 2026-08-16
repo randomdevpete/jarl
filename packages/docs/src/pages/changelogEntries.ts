@@ -7,9 +7,8 @@ const VERSION_RE = /v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)/;
 const DATE_RE = /\((\d{4}-\d{2}-\d{2})\)/;
 
 /**
- * Splits the generated CHANGELOG.md into one entry per `##` version heading, keyed by the
- * version number it contains. Non-version headings (e.g. the "Version History" divider above
- * the older, hand-written entries) close the current entry without starting a new one.
+ * Splits the generated CHANGELOG.md into one entry per `##` version heading.
+ * Non-version headings (e.g. section headers) close the current entry without starting a new one.
  */
 const parseChangelogEntries = (markdown: string): ChangelogEntry[] => {
   const entries: ChangelogEntry[] = [];
