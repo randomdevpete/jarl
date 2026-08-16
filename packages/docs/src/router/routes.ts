@@ -9,6 +9,7 @@ import { atom } from "jotai";
 import { asyncRouteAtom, notAtom, rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 import { blogStaticPaths } from "../demos/blogPosts";
 import { articleSlugs, findArticle } from "../demos/asyncArticles";
+import { changelogStaticPaths } from "../pages/changelogEntries";
 
 export const homeRoute = rootAtom;
 
@@ -18,6 +19,9 @@ export const docPageRoute = paramRouteAtom("docName", { parent: docsSectionRoute
 export const apiSectionRoute = staticRouteAtom("api");
 export const apiPageRoute = paramRouteAtom("apiName", { parent: apiSectionRoute });
 
+// Changelog: just the static mount point. The per-version /:version tree lives inside
+// the Changelog component, parented on whatever root atom it is handed - same shape as
+// blogRoutingDemoRoute below.
 export const changelogRoute = staticRouteAtom("changelog");
 
 export const historyRoute = staticRouteAtom("history");
@@ -67,12 +71,14 @@ const exactRouteMissedAtom = notAtom(
 
 /**
  * Whether the current location has nothing behind it, which is what makes a server render's
- * *status code* right and not just its HTML. Everything under the blog demo's mount counts as
- * found - that demo routes its own subtree and renders its own not-found views. The async demo
- * gets no such blanket, and lists `asyncArticleRoute` rather than `asyncLookupSlugRoute`: an
- * unknown slug is a genuine miss, even though the demo page still renders its own not-found view.
+ * *status code* right and not just its HTML. Everything under the changelog's and the blog demo's
+ * mounts counts as found - both route their own subtree and render their own not-found views. The
+ * async demo gets no such blanket, and lists `asyncArticleRoute` rather than `asyncLookupSlugRoute`:
+ * an unknown slug is a genuine miss, even though the demo page still renders its own not-found view.
  */
-export const notFoundAtom = atom((get) => get(exactRouteMissedAtom) && !get(blogRoutingDemoRoute).match);
+export const notFoundAtom = atom(
+  (get) => get(exactRouteMissedAtom) && !get(changelogRoute).match && !get(blogRoutingDemoRoute).match,
+);
 
 export type DocName = "getting-started" | "data-loading" | "path-variables";
 
@@ -96,7 +102,7 @@ export const staticPaths: string[] = [
   ...docPages.map((p) => `/docs/${p.docName}`),
   "/api",
   ...apiPages.map((p) => `/api/${p.apiName}`),
-  "/changelog",
+  ...changelogStaticPaths(),
   "/history",
   "/demos",
   "/demos/basic-routing",
