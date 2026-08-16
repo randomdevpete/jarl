@@ -47,17 +47,17 @@ export const App = () => (
         <Route on={apiPageRoute} exact>
           {({ apiName }) => <ApiPage apiName={apiName} />}
         </Route>
-        <Route on={changelogRoute} exact>
-          <Changelog />
-        </Route>
         <Route on={historyRoute} exact>
           <History />
         </Route>
         <Route on={demosIndexRoute} exact>
           <DemosIndex />
         </Route>
-        {/* Demos are self-contained apps: one static mount each, matched non-exact,
-            with everything under it routed inside the demo component. */}
+        {/* Changelog and the demos below are self-contained apps: one static mount each,
+            matched non-exact, with everything under it routed inside the component. */}
+        <Route on={changelogRoute}>
+          <Changelog rootAtom={changelogRoute} />
+        </Route>
         <Route on={basicRoutingDemoRoute}>
           <BasicRoutingDemo />
         </Route>
