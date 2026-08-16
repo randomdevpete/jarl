@@ -13,7 +13,7 @@ const template = readFileSync(path.join(path.dirname(fileURLToPath(import.meta.u
 /** Matches `ssrPathPattern` in infra/lib/jarl-stacks.ts: CloudFront forwards the whole /ssr/* request. */
 const ssrPrefix = "/ssr";
 
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
   const url = req.url ?? "/";
 
   if (url === "/healthz") {
@@ -29,8 +29,8 @@ const server = createServer((req, res) => {
   }
 
   try {
-    const { html, head } = render(url.slice(ssrPrefix.length) || "/");
-    res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+    const { html, head, status } = await render(url.slice(ssrPrefix.length) || "/");
+    res.writeHead(status, { "content-type": "text/html; charset=utf-8" });
     res.end(template.replace("<!--app-head-->", head).replace("<!--app-html-->", html));
   } catch (error) {
     console.error(error);
