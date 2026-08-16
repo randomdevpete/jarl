@@ -15,8 +15,8 @@ export const theme = {
   /** Code-block token colours (see `lib/highlight.ts`). `steel` contrasts types/built-ins from keywords. */
   syntax: {
     comment: "#8a6552",
-    keyword: "#ff6b52",
-    string: "#f4c065",
+    keyword: "#c2578f",
+    string: "#7a9d5c",
     constant: "#e8a33d",
     entity: "#c98a6e",
     steel: "#8fb4c9",

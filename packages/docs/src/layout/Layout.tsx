@@ -14,6 +14,8 @@ import { DiscordMark } from "./DiscordMark";
 import { NpmMark } from "./NpmMark";
 import {
   Brand,
+  BrandLabel,
+  BrandName,
   MainNav,
   Page,
   SiteFooter,
@@ -58,17 +60,17 @@ export const Layout = ({ children }: { children: ReactNode }) => (
       <SiteHeaderInner>
         <Brand route={homeRoute} to={{}}>
           <VikingHelmetMark />
-          JARL
+          <BrandLabel>Jarl</BrandLabel>
         </Brand>
         <MainNav>{navLinks}</MainNav>
         <Toolbar>
           <ToolbarLink href={npmPackageUrl} aria-label="jarl-react on npm">
             <NpmMark />
           </ToolbarLink>
-          <ToolbarLink href={discordInviteUrl} aria-label="Join the JARL Discord">
+          <ToolbarLink href={discordInviteUrl} aria-label="Join the Jarl Discord">
             <DiscordMark />
           </ToolbarLink>
-          <ToolbarLink href={githubRepoUrl} aria-label="JARL on GitHub">
+          <ToolbarLink href={githubRepoUrl} aria-label="Jarl on GitHub">
             <GitHubMark />
           </ToolbarLink>
         </Toolbar>
@@ -77,7 +79,7 @@ export const Layout = ({ children }: { children: ReactNode }) => (
     <SiteMain>{children}</SiteMain>
     <SiteFooter>
       <p>
-        JARL: Atomic Routing Library &mdash; <a href={githubRepoUrl}>GitHub</a>
+        <BrandName>Jarl: Atomic Routing Library</BrandName> &mdash; <a href={githubRepoUrl}>GitHub</a>
       </p>
     </SiteFooter>
   </Page>
