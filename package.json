@@ -55,7 +55,7 @@
     "@types/recompose": "^0.30.15",
     "@types/warning": "^3.0.4",
     "@vitejs/plugin-react": "^6.0.5",
-    "conventional-changelog-conventionalcommits": "^10.2.1",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
     "discord.js": "^11.3.2",
     "jsdom": "^30.0.1",
     "oxfmt": "^0.62.0",
