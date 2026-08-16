@@ -44,6 +44,24 @@ export const Brand = styled(Link)`
   }
 `;
 
+/**
+ * "Jarl" set in small caps rather than typed as literal "JARL": the initial capital stays a true
+ * cap while the rest render as small-cap glyphs, which is what actually separates the J from the
+ * following letters cleanly in Alverata (plain uppercase set all four letters at the same cap
+ * height and weight, and the J read as oddly cramped against them).
+ */
+export const BrandName = styled.span`
+  font-variant-caps: small-caps;
+`;
+
+/** Header-only: same small-caps brand text, hidden below the breakpoint where the full nav wraps
+ * to three lines (brand + links + toolbar). The mark alone is enough at that width. */
+export const BrandLabel = styled(BrandName)`
+  @media (max-width: 640px) {
+    display: none;
+  }
+`;
+
 export const MainNav = styled.nav`
   display: flex;
   gap: 1.25rem;

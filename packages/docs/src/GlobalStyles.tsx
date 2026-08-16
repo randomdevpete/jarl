@@ -35,12 +35,16 @@ const documentStyles = css`
   kbd,
   samp {
     font-family: ${theme.fontMono};
-    /* Mono x-height matches the body face at 0.875em */
-    font-size: 0.875em;
+    /* input-mono runs visually larger than alegreya-sans at a shared em size, and its
+       baseline sits slightly lower - scale down and nudge up so inline code reads level
+       with the surrounding prose instead of looming over and under it. */
+    font-size: 0.8em;
+    line-height: 1;
+    vertical-align: 0.05em;
     background: ${theme.codeBg};
     color: ${theme.accent};
     border-radius: 3px;
-    padding: 0.1em 0.35em;
+    padding: 0.15em 0.35em;
   }
 
   pre {
@@ -56,6 +60,8 @@ const documentStyles = css`
 
   pre code {
     font-size: 1em;
+    line-height: inherit;
+    vertical-align: baseline;
     background: none;
     padding: 0;
   }
