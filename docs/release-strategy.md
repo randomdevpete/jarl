@@ -115,8 +115,7 @@ Run the CI workflow from the Actions tab with the **Release everything outstandi
 tag** input ticked. That skips the gate and releases whatever has accumulated. It is the intended
 recovery for the two cases where a releasable commit can otherwise sit unreleased indefinitely:
 
-- A push's release job failed — today it always does: Actions is billing-locked for this repo and
-  `NPM_TOKEN` isn't set yet. No later docs-only push will pick that work up.
+- A push's release job failed. No later docs-only push will pick that work up.
 - Three or more pushes land in quick succession. GitHub cancels a _pending_ run when a newer one
   joins the same concurrency group, so a middle push's release can be dropped while the newest
   push's gate only sees the newest push's own commits.
