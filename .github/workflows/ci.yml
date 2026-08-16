@@ -20,11 +20,10 @@ name: CI
 # that marks the v2 rewrite as substantially complete.
 #
 # The `release` job runs `npm run release` (semantic-release) after
-# `build-and-test`, on pushes to master and beta — but only when the commits
-# that push introduced are themselves releasable (see
-# scripts/push-warrants-release.mjs), so a docs-only push can't sweep an older
-# unreleased `feat` into a surprise minor. Run the workflow manually with the
-# `release` input to flush anything left outstanding. `.releaserc.json` decides
+# `build-and-test`, and ONLY when the workflow is dispatched by hand with the
+# `release` input ticked — never automatically on a push. Releasing is a
+# deliberate decision about when enough has accumulated to be worth cutting.
+# `.releaserc.json` decides
 # what each branch produces: a normal release on master, a `-beta.N` prerelease
 # under the npm `beta` dist-tag on beta. See docs/release-strategy.md for the
 # full pipeline, the cadence rationale, and the two one-time owner (repo-admin)
@@ -128,8 +127,7 @@ jobs:
     if: |
       github.repository == 'randomdevpete/jarl' &&
       (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta') &&
-      (github.event_name == 'push' ||
-       (github.event_name == 'workflow_dispatch' && inputs.release))
+      github.event_name == 'workflow_dispatch' && inputs.release
     # Two semantic-release runs at once would race the release tag and the two
     # npm publishes; queue them instead. cancel-in-progress stays false so a
     # release already mid-publish always finishes.
@@ -163,22 +161,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # A manual dispatch skips the narrowing below — the flush valve for anything left outstanding.
-      - name: Decide whether to release
-        id: gate
-        env:
-          EVENT: ${{ github.event_name }}
-          BASE: ${{ github.event.before }}
-          HEAD: ${{ github.sha }}
-        run: |
-          if [ "$EVENT" = "workflow_dispatch" ]; then
-            echo "release=true" >> "$GITHUB_OUTPUT"
-          else
-            node scripts/push-warrants-release.mjs "$BASE" "$HEAD"
-          fi
-
       - name: Build
-        if: steps.gate.outputs.release == 'true'
         run: npm run build
 
       # Runs the shared semantic-release pipeline from the root .releaserc.json
@@ -218,7 +201,6 @@ jobs:
       # rather than implemented in this ticket so the boring, well-understood
       # NPM_TOKEN path ships first.
       - name: Release
-        if: steps.gate.outputs.release == 'true'
         run: npm run release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

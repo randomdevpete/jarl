@@ -81,48 +81,34 @@ Default mapping (standard Conventional Commits semantics):
 If multiple commits are included in one release, the highest applicable bump wins
 (a `feat` and a `fix` together still only produce one `minor` release).
 
-## Release cadence: when the release job actually runs
+## Release cadence: releases are cut by hand, never by a push
 
 `commit-analyzer` decides _what_ a release is; it never decides _whether_ now is the moment to
-cut one. It always analyses every commit since the last `vX.Y.Z` tag, so one unreleased `feat`
-keeps forcing a `minor` on every later push until something finally releases it — which is how
-`2.0.1 → 2.1.0 → 2.2.0 → 2.3.0 → 2.4.0 → 2.5.0` came out as six consecutive minor bumps, several
-of them for pushes that were entirely docs.
+cut one. It always analyses every commit since the last `vX.Y.Z` tag, so while releases fired
+automatically, one unreleased `feat` kept forcing a `minor` on every later push until something
+finally released it — which is how `2.0.1 → 2.1.0 → 2.2.0 → 2.3.0 → 2.4.0 → 2.5.0` came out as
+six consecutive minor bumps, several of them for pushes that were entirely docs.
 
-The `release` job in `.github/workflows/ci.yml` therefore gates itself on
-[`scripts/push-warrants-release.mjs`](../scripts/push-warrants-release.mjs), which runs
-semantic-release only when **the commits that push introduced** are themselves releasable.
+Releasing is now a deliberate act. The `release` job in `.github/workflows/ci.yml` runs **only**
+on a manual `workflow_dispatch` with the `release` input ticked; no push to `master` or `beta`
+can trigger it. That way a release happens when enough has accumulated to be worth cutting, which
+is a judgement no commit-message convention can make.
 
-- The script reads the `commit-analyzer` entry straight out of `.releaserc.json` and calls its
-  `analyzeCommits` on `github.event.before..github.sha`, so the gate cannot drift from the real
-  mapping — custom `releaseRules`, `!` breaking markers, reverts and all.
-- Releasable push → the pipeline runs, and still releases _everything_ outstanding since the last
-  tag. The narrowing applies to the trigger, never to the release contents.
-- `docs`/`chore`/`style`/`refactor`-only push → the job's `Build` and `Release` steps are skipped,
-  and an earlier unreleased `feat` stays unreleased rather than arriving as a "docs" minor.
-- No usable base commit (branch just created, or history rewritten so `before` is unreachable) →
-  the gate releases, rather than risk silently dropping work.
-
-The job also has a `concurrency` group (`release-<ref>`, `cancel-in-progress: false`), so pushes
-landing close together queue instead of racing each other's tag push and npm publishes.
-
-`on.push.branches` still includes `master` — the build, e2e and deploy jobs are unchanged and do
+`on.push.branches` still includes `master` and `beta` — build, e2e and deploy are unchanged and do
 belong on every push. Only the release is decoupled from it.
 
-### Flushing an outstanding release by hand
+### Cutting a release
 
-Run the CI workflow from the Actions tab with the **Release everything outstanding since the last
-tag** input ticked. That skips the gate and releases whatever has accumulated. It is the intended
-recovery for the two cases where a releasable commit can otherwise sit unreleased indefinitely:
+Actions tab → **CI** → _Run workflow_ → pick the branch (`master` for a normal release, `beta` for
+a `-beta.N` prerelease) → tick **Release everything outstanding since the last tag** → run.
 
-- A push's release job failed. No later docs-only push will pick that work up.
-- Three or more pushes land in quick succession. GitHub cancels a _pending_ run when a newer one
-  joins the same concurrency group, so a middle push's release can be dropped while the newest
-  push's gate only sees the newest push's own commits.
+semantic-release then does what it always did: analyses every commit since the last tag, computes
+one version bump from them, and publishes both packages in lockstep. Nothing is ever dropped by
+waiting — the accumulated commits are all still there to be analysed whenever the release is cut.
 
-Both show up in the Actions tab as a failed or cancelled `Release` job. Accepting them is the
-trade for not releasing on every push: the accumulation is bounded by the next `feat`/`fix` push,
-which releases everything outstanding along with itself.
+The job keeps a `concurrency` group (`release-<ref>`, `cancel-in-progress: false`) so two
+dispatches can't race each other's tag push and npm publishes, and so a run already mid-publish
+always finishes.
 
 ### Commits with no Conventional Commits type
 
@@ -132,8 +118,7 @@ these and several are real work — `Add notAtom for catch-all/unmatched routes`
 `Emit dist/index.d.cts for jarl-atoms/jarl-react, fix require condition types` (a `fix`),
 `Make jotai a peerDependency of jarl-atoms and jarl-react` (a breaking `fix`). They reached npm
 only because a later typed `feat` swept them into its release, and none of them appear in the
-changelog. The gate script emits a GitHub Actions warning for every untyped commit in a push so
-they stop being invisible; enforcing the format at PR time (commitlint) is a separate change.
+changelog. Enforcing the format at commit or PR time (commitlint) is a separate change.
 
 ## Major-version suppression ("romantic versioning")
 
