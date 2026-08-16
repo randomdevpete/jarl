@@ -19,28 +19,32 @@ name: CI
 # workflow file) — turning the whole pipeline green is itself the milestone
 # that marks the v2 rewrite as substantially complete.
 #
-# The `release` job (ticket 106) runs `npm run release` (semantic-release)
-# after `build-and-test`, on every push to master — semantic-release itself
-# decides from Conventional Commits since the last release tag whether a
-# release is actually warranted, so the job is safe to run unconditionally
-# and no-ops when nothing qualifies. See docs/release-strategy.md for the
-# full pipeline and the `release` job's own inline comments below for the
-# two one-time owner (repo-admin) actions it depends on: creating the
-# `NPM_TOKEN` secret, and pushing the one-time `v2.0.0` baseline tag.
-#
-# Ticket 140 extends the same job to also run on pushes to a long-lived
-# `beta` branch. `.releaserc.json` configures `beta` as a semantic-release
-# prerelease branch, so a push there computes `2.0.0-beta.N` (etc.)
-# increments and publishes them under the npm `beta` dist-tag rather than
-# `latest` — the same job, same pipeline, just a different outcome driven by
-# which branch triggered it. See "Beta prerelease branch" in
-# docs/release-strategy.md.
+# The `release` job runs `npm run release` (semantic-release) after
+# `build-and-test`, on pushes to master and beta — but only when the commits
+# that push introduced are themselves releasable (see
+# scripts/push-warrants-release.mjs), so a docs-only push can't sweep an older
+# unreleased `feat` into a surprise minor. Run the workflow manually with the
+# `release` input to flush anything left outstanding. `.releaserc.json` decides
+# what each branch produces: a normal release on master, a `-beta.N` prerelease
+# under the npm `beta` dist-tag on beta. See docs/release-strategy.md for the
+# full pipeline, the cadence rationale, and the two one-time owner (repo-admin)
+# actions it depends on: creating the `NPM_TOKEN` secret, and pushing the
+# one-time `v2.0.0` baseline tag.
 
 on:
   push:
     branches: [master, beta]
   pull_request:
   workflow_dispatch:
+    inputs:
+      release:
+        description: "Release everything outstanding since the last tag"
+        type: boolean
+        default: false
+      registry_smoke:
+        description: "Smoke-test the currently published packages"
+        type: boolean
+        default: false
 
 jobs:
   build-and-test:
@@ -98,7 +102,7 @@ jobs:
     name: Registry smoke test (published packages)
     runs-on: ubuntu-latest
     # Tests the published packages, not this commit — pointless on a PR build; run by hand after a release.
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.registry_smoke
     steps:
       - uses: actions/checkout@v5
 
@@ -116,19 +120,22 @@ jobs:
     name: Release (semantic-release)
     runs-on: ubuntu-latest
     needs: [build-and-test]
-    # Only ever run on a push to master or beta on the main repo — never on a
-    # PR build (semantic-release refuses to run there anyway, but there's no
-    # reason to even attempt it) and never on a fork (a fork's own
-    # master/beta branch would otherwise also match `on.push.branches` above
-    # and try to release using this repo's secrets, which won't exist
-    # there). Both branches share this one job: `.releaserc.json`'s
-    # branch config is what decides whether a given push produces a normal
-    # release (master) or a `-beta.N` prerelease under the `beta` npm
-    # dist-tag (beta) — see docs/release-strategy.md.
+    # Never on a PR build (semantic-release refuses to run there anyway) and
+    # never on a fork — a fork's own master/beta branch would otherwise match
+    # `on.push.branches` above and try to release with secrets that don't exist
+    # there. This only decides the job may run; whether it actually releases is
+    # the `Decide whether to release` step below.
     if: |
-      github.event_name == 'push' &&
+      github.repository == 'randomdevpete/jarl' &&
       (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/beta') &&
-      github.repository == 'randomdevpete/jarl'
+      (github.event_name == 'push' ||
+       (github.event_name == 'workflow_dispatch' && inputs.release))
+    # Two semantic-release runs at once would race the release tag and the two
+    # npm publishes; queue them instead. cancel-in-progress stays false so a
+    # release already mid-publish always finishes.
+    concurrency:
+      group: release-${{ github.ref }}
+      cancel-in-progress: false
     # semantic-release needs contents:write to push the release commit + tag,
     # and issues:write/pull-requests:write so @semantic-release/github can
     # comment on issues/PRs referenced by release notes. See
@@ -156,18 +163,32 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # semantic-release always analyses everything since the last tag, so on its own it turns
+      # one unreleased `feat` into a minor for every later push until something releases it. This
+      # narrows the decision to run it at all down to the commits this push introduced. A manual
+      # dispatch skips the narrowing — that is the flush valve for anything left outstanding.
+      - name: Decide whether to release
+        id: gate
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.before }}
+          HEAD: ${{ github.sha }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            node scripts/push-warrants-release.mjs "$BASE" "$HEAD"
+          fi
+
       - name: Build
+        if: steps.gate.outputs.release == 'true'
         run: npm run build
 
       # Runs the shared semantic-release pipeline from the root .releaserc.json
       # (see docs/release-strategy.md): computes the next version from
-      # Conventional Commits since the last `vX.Y.Z` tag, and if a release is
-      # warranted, bumps+publishes both packages' package.json in lockstep,
-      # updates CHANGELOG.md, tags, and creates a GitHub release. No-ops
-      # cleanly (exit 0, nothing published) when nothing on master since the
-      # last release warrants one — that's why this job runs unconditionally
-      # on every master push rather than needing its own release-detection
-      # logic.
+      # Conventional Commits since the last `vX.Y.Z` tag, bumps+publishes both
+      # packages' package.json in lockstep, updates CHANGELOG.md, tags, and
+      # creates a GitHub release.
       #
       # Two owner (repo-admin) actions are required before this can actually
       # publish anything, neither of which this PR can perform:
@@ -200,6 +221,7 @@ jobs:
       # rather than implemented in this ticket so the boring, well-understood
       # NPM_TOKEN path ships first.
       - name: Release
+        if: steps.gate.outputs.release == 'true'
         run: npm run release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
