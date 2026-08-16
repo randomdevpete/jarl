@@ -19,6 +19,12 @@
       }
     ],
     [
+      "./scripts/reject-burned-versions.mjs",
+      {
+        "versions": ["2.2.0", "2.3.0", "2.4.0", "2.5.0"]
+      }
+    ],
+    [
       "@semantic-release/changelog",
       {
         "changelogFile": "CHANGELOG.md"
