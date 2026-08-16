@@ -163,10 +163,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # semantic-release always analyses everything since the last tag, so on its own it turns
-      # one unreleased `feat` into a minor for every later push until something releases it. This
-      # narrows the decision to run it at all down to the commits this push introduced. A manual
-      # dispatch skips the narrowing — that is the flush valve for anything left outstanding.
+      # A manual dispatch skips the narrowing below — the flush valve for anything left outstanding.
       - name: Decide whether to release
         id: gate
         env:
