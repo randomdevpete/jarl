@@ -12,6 +12,7 @@ import {
   demosIndexRoute,
   basicRoutingDemoRoute,
   blogRoutingDemoRoute,
+  dataGridDemoRoute,
   asyncLookupDemoRoute,
 } from "./router/routes";
 import Home from "./pages/Home";
@@ -22,6 +23,7 @@ import History from "./pages/History";
 import DemosIndex from "./pages/DemosIndex";
 import BasicRoutingDemo from "./pages/BasicRoutingDemo";
 import BlogRoutingDemo from "./pages/BlogRoutingDemo";
+import DataGridDemo from "./pages/DataGridDemo";
 import AsyncLookupDemo from "./pages/AsyncLookupDemo";
 import NotFound from "./pages/NotFound";
 
@@ -61,6 +63,9 @@ export const App = () => (
         </Route>
         <Route on={blogRoutingDemoRoute}>
           <BlogRoutingDemo />
+        </Route>
+        <Route on={dataGridDemoRoute}>
+          <DataGridDemo />
         </Route>
         <Route on={asyncLookupDemoRoute}>
           <AsyncLookupDemo />

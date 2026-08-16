@@ -33,6 +33,10 @@ export const basicRoutingDemoPageRoute = paramRouteAtom("page", { parent: basicR
 // tree lives inside BlogRoutingApp, parented on whatever root atom it is handed.
 export const blogRoutingDemoRoute = staticRouteAtom("blog-routing", { parent: demosIndexRoute });
 
+// Data grid demo: just the static mount point. Filter/sort state lives entirely in query
+// params chained inside DataGridApp, parented on whatever root atom it is handed.
+export const dataGridDemoRoute = staticRouteAtom("data-grid", { parent: demosIndexRoute });
+
 // Async-lookup demo: /demos/async-lookup/:slug exists only if the demo's fake database has an
 // article at that slug, and the article it found rides along on the route's own values. Its
 // nested atoms stay module-level, unlike the blog demo's, because the server render needs them:
@@ -56,6 +60,7 @@ const exactRouteMissedAtom = notAtom(
   basicRoutingDemoRoute,
   basicRoutingDemoPageRoute,
   blogRoutingDemoRoute,
+  dataGridDemoRoute,
   asyncLookupDemoRoute,
   asyncArticleRoute,
 );
@@ -97,6 +102,7 @@ export const staticPaths: string[] = [
   "/demos/basic-routing",
   "/demos/basic-routing/about",
   ...blogStaticPaths(),
+  "/demos/data-grid",
   "/demos/async-lookup",
   ...articleSlugs().map((slug) => `/demos/async-lookup/${slug}`),
 ];
