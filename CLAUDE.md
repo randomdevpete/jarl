@@ -49,11 +49,11 @@ npm run release:dry-run   # semantic-release --dry-run --no-ci, no credentials n
 
 `jarl-atoms` and `jarl-react` are released together via semantic-release, versioned in
 lockstep from Conventional Commits, with major version bumps suppressed (breaking-change
-commits produce a minor bump instead) until that's explicitly lifted. Only a push that
-introduces a releasable commit cuts a release: on `master` a normal one (`latest` dist-tag), on
-the long-lived `beta` branch a `2.0.0-beta.N`-style prerelease under the `beta` dist-tag, so
-iteration can ship installable builds before committing to a real `2.0.0`. A docs-only push
-releases nothing, even with an earlier unreleased `feat` behind it. See
+commits produce a minor bump instead) until that's explicitly lifted. Releases are cut by hand, never
+by a push: run the CI workflow manually with the `release` input ticked, on `master` for a normal
+release (`latest` dist-tag) or on the long-lived `beta` branch for a `2.0.0-beta.N`-style
+prerelease under the `beta` dist-tag, so iteration can ship installable builds before committing
+to a real `2.0.0`. See
 [`docs/release-strategy.md`](./docs/release-strategy.md) for the full mechanism,
 rationale, and what CI needs to wire it up.
 
