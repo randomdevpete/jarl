@@ -1,6 +1,6 @@
 import { Link } from "jarl-react";
 import LinkList from "../lib/LinkList";
-import { asyncLookupDemoRoute, basicRoutingDemoRoute, blogRoutingDemoRoute } from "../router/routes";
+import { asyncLookupDemoRoute, basicRoutingDemoRoute, blogRoutingDemoRoute, dataGridDemoRoute } from "../router/routes";
 
 export const DemosIndex = () => (
   <>
@@ -26,6 +26,13 @@ export const DemosIndex = () => (
         </Link>{" "}
         &mdash; a classic <code>/blog/:year/:month/:day/:slug</code> tree, hand-composed from{" "}
         <code>numericRouteAtom</code> chained as parent/child, with 404s for out-of-range and non-existent dates.
+      </li>
+      <li>
+        <Link route={dataGridDemoRoute} to={{}}>
+          Data grid filter/sort
+        </Link>{" "}
+        &mdash; a table whose filter text and sort column live in <code>queryParamAtom</code>s chained off the mount
+        route, so the grid&apos;s state is shareable and moves with back/forward navigation.
       </li>
       <li>
         <Link route={asyncLookupDemoRoute} to={{}}>
