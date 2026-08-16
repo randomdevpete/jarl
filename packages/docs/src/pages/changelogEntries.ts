@@ -2,13 +2,15 @@ import changelogSource from "../../../../CHANGELOG.md?raw";
 
 export type ChangelogEntry = { version: string; date?: string; heading: string; body: string };
 
-const HEADING_RE = /^(#+)\s+(.*)$/;
+// Only `#`/`##` delimit entries: the generated notes put their own `### Features`/`### Bug Fixes`
+// sections inside an entry, and matching those would cut every body off at the first section.
+const HEADING_RE = /^(#{1,2})\s+(.*)$/;
 const VERSION_RE = /v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)/;
 const DATE_RE = /\((\d{4}-\d{2}-\d{2})\)/;
 
 /**
  * Splits the generated CHANGELOG.md into one entry per `##` version heading.
- * Non-version headings (e.g. section headers) close the current entry without starting a new one.
+ * A non-version `#`/`##` heading closes the current entry without starting a new one.
  */
 const parseChangelogEntries = (markdown: string): ChangelogEntry[] => {
   const entries: ChangelogEntry[] = [];
