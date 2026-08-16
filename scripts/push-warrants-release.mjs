@@ -2,9 +2,8 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync, readFileSync } from "node:fs";
 import { analyzeCommits } from "@semantic-release/commit-analyzer";
 
-// Decides whether the commits a push introduced are themselves releasable, so a docs-only push
-// can't sweep an older unreleased feat into a surprise minor. semantic-release always analyses
-// everything since the last tag; this narrows only the decision to run it at all.
+// Narrows semantic-release's "run at all" decision to the pushed range, so a docs-only push
+// can't sweep an older unreleased feat into a surprise minor.
 // Usage: node scripts/push-warrants-release.mjs <base-sha> [head-sha]
 
 const ANALYZER = "@semantic-release/commit-analyzer";

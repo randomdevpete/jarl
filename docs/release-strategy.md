@@ -135,6 +135,7 @@ these and several are real work — `Add notAtom for catch-all/unmatched routes`
 only because a later typed `feat` swept them into its release, and none of them appear in the
 changelog. The gate script emits a GitHub Actions warning for every untyped commit in a push so
 they stop being invisible; enforcing the format at PR time (commitlint) is a separate change.
+
 ## Major-version suppression ("romantic versioning")
 
 Per the author's note on the ticket: breaking changes will happen often while the
