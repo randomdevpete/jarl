@@ -213,12 +213,23 @@ costing only the unused version numbers.
 npm's self-service unpublish applies **within 72 hours of publish**; after that it needs npm
 support and is rarely granted. `2.1.0` went out on 2026-08-14, the rest on 2026-08-15.
 
+`npm unpublish` takes **one package spec per call**, and needs an authenticated session
+(`npm whoami` must answer). Loop rather than listing specs on one line:
+
 ```bash
-npm unpublish jarl-react@2.1.0 jarl-atoms@2.1.0   # and 2.2.0, 2.3.0, 2.4.0, 2.5.0
-npm dist-tag add jarl-react@2.0.1 latest          # and jarl-atoms, if npm does not re-point it
-gh release delete v2.2.0 --yes                    # keeps the tag; --cleanup-tag would remove it
-git push origin :refs/tags/v2.2.0                 # v2.3.0, v2.4.0, v2.5.0 too; keep v2.1.0
+for v in 2.1.0 2.2.0 2.3.0 2.4.0 2.5.0; do
+  for p in jarl-react jarl-atoms; do npm unpublish "$p@$v"; done
+done
+
+npm view jarl-react versions   # confirm: 2.x should be 2.0.1 alone
+npm dist-tag add jarl-react@2.0.1 latest   # and jarl-atoms, if npm does not re-point it
+
+gh release delete v2.2.0 --yes   # keeps the tag; --cleanup-tag would remove it
+git push origin :refs/tags/v2.2.0   # v2.3.0, v2.4.0, v2.5.0 too; keep v2.1.0
 ```
+
+Check the result rather than the exit chatter: an unpublished version disappears from
+`npm view <pkg> versions`, so that listing is the only confirmation worth trusting.
 
 Keep the `v2.1.0` **tag** while deleting its GitHub release: it is the tombstone the `2.1.1`
 release counts from. Delete a GitHub release before its tag, or it is left as a draft.
