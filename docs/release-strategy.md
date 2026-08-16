@@ -120,6 +120,27 @@ these and several are real work — `Add notAtom for catch-all/unmatched routes`
 only because a later typed `feat` swept them into its release, and none of them appear in the
 changelog. Enforcing the format at commit or PR time (commitlint) is a separate change.
 
+## Changelog content
+
+`release-notes-generator` and `commit-analyzer` both load the
+`conventional-changelog-conventionalcommits` preset by name (`preset: "conventionalcommits"`),
+resolving whichever version is installed at the repo root — neither `@semantic-release`
+package depends on it directly. That version is pinned to `^8.0.0` in `package.json`
+rather than latest: from `9.0.0` onward the preset emits function-based templates for a
+rewritten `conventional-changelog-writer` v9+, but `@semantic-release/release-notes-generator`
+still depends on the older, Handlebars-string-based `conventional-changelog-writer@^8.0.0`.
+Installing a `9.x`/`10.x` preset against that writer doesn't error — it silently renders
+each release's notes as just the version heading, with no `### Features`/`### Bug Fixes`
+sections, which is what shipped in `CHANGELOG.md` for `v2.0.1` through `v2.5.0`. `8.0.0` is
+the newest version compatible with the writer version `release-notes-generator` actually
+uses, and produces the intended grouped, linked commit list under each version heading.
+Bumping `release-notes-generator` to a version pinning `conventional-changelog-writer@^9`
+would need `conventional-changelog-conventionalcommits` bumped in lockstep with it.
+
+The generated `CHANGELOG.md` is rendered directly on the docs site's `/changelog` route
+(`packages/docs/src/pages/Changelog.tsx` imports it with Vite's `?raw` and feeds it to the
+shared `Markdown` component) — no separate copy or build step keeps it in sync.
+
 ## Major-version suppression ("romantic versioning")
 
 Per the author's note on the ticket: breaking changes will happen often while the
