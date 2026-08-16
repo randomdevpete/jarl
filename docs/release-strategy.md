@@ -141,6 +141,68 @@ The generated `CHANGELOG.md` is rendered directly on the docs site's `/changelog
 (`packages/docs/src/pages/Changelog.tsx` imports it with Vite's `?raw` and feeds it to the
 shared `Markdown` component) — no separate copy or build step keeps it in sync.
 
+## Burned versions: 2.2.0 – 2.5.0
+
+`2.2.0`, `2.3.0`, `2.4.0` and `2.5.0` were published by the runaway-bump sequence described
+above and are being withdrawn. They are listed as **burned** in `.releaserc.json`, and
+`scripts/reject-burned-versions.mjs` fails any release that computes one of them.
+
+**A burned version can never be reused, whether or not it is unpublished.** npm reserves a
+version number permanently on first publish: unpublishing frees the tarball but not the
+number, and a later `npm publish` of the same version is rejected outright. Republishing over
+one would also be unsafe even if npm allowed it, since registry mirrors and lockfiles cache by
+version. So the burn list stands independently of the unpublish decision — it just stops
+being academic once the numbers are gone.
+
+### Why the skip is not automatic
+
+The obvious fix — a plugin that notices the collision and bumps the patch — cannot work.
+semantic-release computes `nextRelease.version` in `index.js` before the `verifyRelease` step
+and reads it back from that same object afterwards, but every plugin is handed a **deep clone**
+of the context (`cloneDeep` in `lib/plugins/normalize.js`), so a plugin's write to
+`nextRelease.version` is discarded. This applies equally to the frequently-suggested
+`@semantic-release/exec` recipe. Two levers actually decide the number, and both sit outside
+the plugin: the **last release tag** on the branch, and the **release type** the commits imply.
+
+`scripts/reject-burned-versions.mjs` therefore guards rather than fixes. It throws in
+`verifyRelease`, which runs before the tag is cut and also runs under `npm run
+release:dry-run`, so a collision is a clean, early failure rather than a half-published
+release.
+
+### Resuming the version line
+
+Whichever version tag is highest on `master` is what the next release counts from, so the
+choice is made by which tags survive the rollback:
+
+- **Resume above the burned range** — keep the `v2.5.0` tag as a tombstone (tag only: no npm
+  version, no GitHub release). The next release is `2.5.1` or `2.6.0` and can never collide.
+  Nothing further to remember.
+- **Resume inside it at patch level** — keep `v2.2.0` as the tombstone and delete `v2.3.0`
+  through `v2.5.0`. The next release is `2.2.1`, then `2.2.2`, and so on. This holds only
+  while releases stay patch-level: one `feat` computes `2.3.0` and the guard stops the run.
+  Suppressing `feat` to `patch` in `commit-analyzer`'s `releaseRules` — the same move already
+  made for breaking changes — keeps it stable until the line is deliberately taken past
+  `2.5.0`.
+
+Deleting a tag that a GitHub release still points at turns that release into a draft, so
+delete the releases first, then the tags.
+
+### Withdrawing the published versions
+
+npm's self-service unpublish only applies **within 72 hours of publish**; after that it needs
+npm support and is rarely granted. These four went out on 2026-08-15.
+
+```bash
+npm unpublish jarl-react@2.2.0 jarl-atoms@2.2.0   # and 2.3.0, 2.4.0, 2.5.0
+gh release delete v2.5.0 --yes                    # releases before tags
+git push origin :refs/tags/v2.5.0                 # keep whichever tombstone is chosen
+```
+
+Unpublishing removes the only published versions carrying `notAtom`, `Switch`, the
+`dist/index.d.cts` require-condition fix and the `jotai` peer dependency, so anyone installed
+on `2.2.0`–`2.5.0` loses resolution until the next release goes out. All of that code is on
+`master` and returns with the next release — cut it promptly after withdrawing.
+
 ## Major-version suppression ("romantic versioning")
 
 Per the author's note on the ticket: breaking changes will happen often while the

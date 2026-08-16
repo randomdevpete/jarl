@@ -1,14 +1,129 @@
 ## [2.5.0](https://github.com/randomdevpete/jarl/compare/v2.4.0...v2.5.0) (2026-08-15)
 
+> **Withdrawn.** This version is being removed from npm and its number retired. Nothing below is
+> lost — every change ships again in the next release cut from `master`. See
+> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
+
+### Features
+
+* **docs:** add GitHub, Discord and npm links to the toolbar ([ceb3ec8](https://github.com/randomdevpete/jarl/commit/ceb3ec8))
+* **docs:** generate the API reference from package doc comments ([60d4351](https://github.com/randomdevpete/jarl/commit/60d4351))
+
+### Code Refactoring
+
+* **atoms:** split `routeAtom.ts` into one file per primitive atom ([1b777f5](https://github.com/randomdevpete/jarl/commit/1b777f5))
+* **atoms:** restore the `Path` type export to keep the public API intact ([0b9ba90](https://github.com/randomdevpete/jarl/commit/0b9ba90))
+* **docs:** replace `main.css` with `@emotion/styled` components ([71288ab](https://github.com/randomdevpete/jarl/commit/71288ab))
+
+### Documentation
+
+* point the doc site's links at `randomdev.co.uk` after the repo transfer ([7b4f2b9](https://github.com/randomdevpete/jarl/commit/7b4f2b9))
+* new tagline, "Routing for the atomic age" ([2fb91d8](https://github.com/randomdevpete/jarl/commit/2fb91d8))
+
+### Continuous Integration
+
+* wire the deploy job — OIDC role, `cdk deploy --all`, S3 sync and invalidation ([eba8115](https://github.com/randomdevpete/jarl/commit/eba8115))
+* bump `checkout`/`setup-node` to v5 for Node 24 action runtimes ([e716935](https://github.com/randomdevpete/jarl/commit/e716935))
+
 ## [2.4.0](https://github.com/randomdevpete/jarl/compare/v2.3.0...v2.4.0) (2026-08-15)
+
+> **Withdrawn.** This version is being removed from npm and its number retired. Nothing below is
+> lost — every change ships again in the next release cut from `master`. See
+> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
+
+### Features
+
+* **infra:** Route53 zone, ACM certificate and alias records for `jarl.randomdev.co.uk` ([78bb9a0](https://github.com/randomdevpete/jarl/commit/78bb9a0))
+
+### Bug Fixes
+
+* emit `dist/index.d.cts` for both packages and fix the `require` condition types ([433d863](https://github.com/randomdevpete/jarl/commit/433d863))
+* make `jotai` a peer dependency of `jarl-atoms` and `jarl-react` rather than a bundled one ([80e88aa](https://github.com/randomdevpete/jarl/commit/80e88aa))
+
+### Tests
+
+* smoke-test the published packages from a clean consumer project ([450d7d5](https://github.com/randomdevpete/jarl/commit/450d7d5))
 
 ## [2.3.0](https://github.com/randomdevpete/jarl/compare/v2.2.0...v2.3.0) (2026-08-15)
 
+> **Withdrawn.** This version is being removed from npm and its number retired. Nothing below is
+> lost — every change ships again in the next release cut from `master`. See
+> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
+
+### Features
+
+* **jarl-react:** add `Switch` for first-match routing with a fallback ([3ab1ca5](https://github.com/randomdevpete/jarl/commit/3ab1ca5))
+
 ## [2.2.0](https://github.com/randomdevpete/jarl/compare/v2.1.0...v2.2.0) (2026-08-15)
+
+> **Withdrawn.** This version is being removed from npm and its number retired. Nothing below is
+> lost — every change ships again in the next release cut from `master`. See
+> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
+
+### Features
+
+* add `notAtom` for catch-all and unmatched routes ([7de8802](https://github.com/randomdevpete/jarl/commit/7de8802))
+* **infra:** static-site stack — private S3 bucket behind CloudFront ([0231ced](https://github.com/randomdevpete/jarl/commit/0231ced))
+* **infra:** SSR stack — EC2 behind the shared CloudFront front ([3f2dca6](https://github.com/randomdevpete/jarl/commit/3f2dca6))
+
+### Documentation
+
+* Viking dark theme, gold accents and a monospace code font ([cfed963](https://github.com/randomdevpete/jarl/commit/cfed963), [df7bdb6](https://github.com/randomdevpete/jarl/commit/df7bdb6))
+* adopt the chosen font pairing — Cinzel headings, Source Sans 3 body ([4406851](https://github.com/randomdevpete/jarl/commit/4406851))
+* adopt the candidate-01 helmet as the logo and favicon ([b400fd0](https://github.com/randomdevpete/jarl/commit/b400fd0))
+
+### Tests
+
+* wire the e2e fixture app to `queryAtom`/`redirectAtom`/`resolvedAtom` ([39d3ced](https://github.com/randomdevpete/jarl/commit/39d3ced))
 
 ## [2.1.0](https://github.com/randomdevpete/jarl/compare/v2.0.1...v2.1.0) (2026-08-14)
 
+No library changes. This release carries the first infrastructure work for the doc site; it
+reached npm because the release pipeline analysed every commit on `master`, not only those
+touching the published packages.
+
+### Features
+
+* **infra:** add the CDK app scaffold for `jarl.randomdev.co.uk` ([d419da0](https://github.com/randomdevpete/jarl/commit/d419da0))
+
 ## [2.0.1](https://github.com/randomdevpete/jarl/compare/v2.0.0...v2.0.1) (2026-08-11)
+
+**The first release of the v2 rewrite.**
+
+JARL v2 is a ground-up rewrite around an atomic routing model. Routing state lives in
+[jotai](https://jotai.org/) atoms rather than in a router component's internal state: a route
+resolves into atoms, and anything that needs the current location, query or resolved route reads
+the atom directly instead of threading props or context down the tree. `jarl-atoms` holds that
+framework-agnostic core, and `jarl-react` is the React binding over it — the two are released
+together and always share a version number.
+
+The v1 implementation and its `url-pattern` dependency are gone; v2 is not a drop-in upgrade from
+the v1 beta line.
+
+`2.0.1` rather than `2.0.0` because `v2.0.0` exists only as a baseline tag marking where the
+rewrite reached version 2 — it was never published to npm, so this is the first v2 version
+installable from the registry.
+
+### Features
+
+* rewrite the docs around the atomic routing model ([c303649](https://github.com/randomdevpete/jarl/commit/c303649))
+* wire semantic-release into a CI publish job, with major-bump suppression ([7973010](https://github.com/randomdevpete/jarl/commit/7973010), [084cda5](https://github.com/randomdevpete/jarl/commit/084cda5))
+* add a `beta` prerelease branch to the release pipeline ([1831d5a](https://github.com/randomdevpete/jarl/commit/1831d5a))
+
+### Bug Fixes
+
+* correct package metadata and tarball contents for `jarl-atoms` and `jarl-react` ([fed93f0](https://github.com/randomdevpete/jarl/commit/fed93f0))
+* **release:** unblock the first publish ([0371bbd](https://github.com/randomdevpete/jarl/commit/0371bbd))
+
+### Code Refactoring
+
+* remove the v1 implementation ([8c5c36e](https://github.com/randomdevpete/jarl/commit/8c5c36e))
+* remove `url-pattern` and its remaining references ([f724632](https://github.com/randomdevpete/jarl/commit/f724632))
+
+### Continuous Integration
+
+* fix the e2e job to install its own dependencies, and drop `continue-on-error` ([c699f10](https://github.com/randomdevpete/jarl/commit/c699f10))
+* bump CI to Node 24 to match the jsdom/undici engine requirements ([d9d4e8b](https://github.com/randomdevpete/jarl/commit/d9d4e8b))
 
 # JARL: Version History
 
