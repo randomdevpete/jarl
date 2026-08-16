@@ -81,6 +81,60 @@ Default mapping (standard Conventional Commits semantics):
 If multiple commits are included in one release, the highest applicable bump wins
 (a `feat` and a `fix` together still only produce one `minor` release).
 
+## Release cadence: when the release job actually runs
+
+`commit-analyzer` decides _what_ a release is; it never decides _whether_ now is the moment to
+cut one. It always analyses every commit since the last `vX.Y.Z` tag, so one unreleased `feat`
+keeps forcing a `minor` on every later push until something finally releases it — which is how
+`2.0.1 → 2.1.0 → 2.2.0 → 2.3.0 → 2.4.0 → 2.5.0` came out as six consecutive minor bumps, several
+of them for pushes that were entirely docs.
+
+The `release` job in `.github/workflows/ci.yml` therefore gates itself on
+[`scripts/push-warrants-release.mjs`](../scripts/push-warrants-release.mjs), which runs
+semantic-release only when **the commits that push introduced** are themselves releasable.
+
+- The script reads the `commit-analyzer` entry straight out of `.releaserc.json` and calls its
+  `analyzeCommits` on `github.event.before..github.sha`, so the gate cannot drift from the real
+  mapping — custom `releaseRules`, `!` breaking markers, reverts and all.
+- Releasable push → the pipeline runs, and still releases _everything_ outstanding since the last
+  tag. The narrowing applies to the trigger, never to the release contents.
+- `docs`/`chore`/`style`/`refactor`-only push → the job's `Build` and `Release` steps are skipped,
+  and an earlier unreleased `feat` stays unreleased rather than arriving as a "docs" minor.
+- No usable base commit (branch just created, or history rewritten so `before` is unreachable) →
+  the gate releases, rather than risk silently dropping work.
+
+The job also has a `concurrency` group (`release-<ref>`, `cancel-in-progress: false`), so pushes
+landing close together queue instead of racing each other's tag push and npm publishes.
+
+`on.push.branches` still includes `master` — the build, e2e and deploy jobs are unchanged and do
+belong on every push. Only the release is decoupled from it.
+
+### Flushing an outstanding release by hand
+
+Run the CI workflow from the Actions tab with the **Release everything outstanding since the last
+tag** input ticked. That skips the gate and releases whatever has accumulated. It is the intended
+recovery for the two cases where a releasable commit can otherwise sit unreleased indefinitely:
+
+- A push's release job failed — today it always does: Actions is billing-locked for this repo and
+  `NPM_TOKEN` isn't set yet. No later docs-only push will pick that work up.
+- Three or more pushes land in quick succession. GitHub cancels a _pending_ run when a newer one
+  joins the same concurrency group, so a middle push's release can be dropped while the newest
+  push's gate only sees the newest push's own commits.
+
+Both show up in the Actions tab as a failed or cancelled `Release` job. Accepting them is the
+trade for not releasing on every push: the accumulation is bounded by the next `feat`/`fix` push,
+which releases everything outstanding along with itself.
+
+### Commits with no Conventional Commits type
+
+`commit-analyzer` matches release rules against a parsed `type`, so a commit whose subject has no
+`type:` prefix is unreleasable no matter what it changed. `master` carries a couple of dozen of
+these and several are real work — `Add notAtom for catch-all/unmatched routes` (a `feat`),
+`Emit dist/index.d.cts for jarl-atoms/jarl-react, fix require condition types` (a `fix`),
+`Make jotai a peerDependency of jarl-atoms and jarl-react` (a breaking `fix`). They reached npm
+only because a later typed `feat` swept them into its release, and none of them appear in the
+changelog. The gate script emits a GitHub Actions warning for every untyped commit in a push so
+they stop being invisible; enforcing the format at PR time (commitlint) is a separate change.
 ## Major-version suppression ("romantic versioning")
 
 Per the author's note on the ticket: breaking changes will happen often while the
@@ -269,9 +323,9 @@ This ticket only adds config/scripts/docs — it does not wire anything into Git
 Actions. For the automated release to actually run, ticket 106 needs to:
 
 - Add a job to `.github/workflows/ci.yml` (or a new workflow) that runs `npm run release`
-  after `build-and-test` succeeds, triggered on `push` to `master` only (not on PRs —
-  semantic-release itself also refuses to run on PR builds, but the job shouldn't even
-  attempt it).
+  after `build-and-test` succeeds, never on PRs — semantic-release itself also refuses to run
+  on PR builds, but the job shouldn't even attempt it. See "Release cadence" above for the
+  trigger that job uses.
 - Provide these as repository secrets, injected as env vars for that job:
   - `NPM_TOKEN` — an npm automation/publish token with publish rights to both `jarl-atoms`
     and `jarl-react` on the registry.
