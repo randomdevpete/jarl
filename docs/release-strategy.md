@@ -70,17 +70,16 @@ breaking, unlike the older `angular` preset which only recognizes the footer).
 
 Default mapping (standard Conventional Commits semantics):
 
-| Commit type                                                       | Release bump                                                                        |
-| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `fix`, `perf`                                                     | patch                                                                               |
-| `feat`                                                            | **patch** (suppressed while the burned range is in play; would normally be `minor`) |
-| breaking change (`!` or `BREAKING CHANGE:` footer)                | **minor** (suppressed — see below; would normally be `major`)                       |
-| `revert`                                                          | patch                                                                               |
-| `docs`, `style`, `chore`, `refactor`, `test`, `build`, `ci`, etc. | no release                                                                          |
+| Commit type                                                       | Release bump                                                  |
+| ----------------------------------------------------------------- | ------------------------------------------------------------- |
+| `fix`, `perf`                                                     | patch                                                         |
+| `feat`                                                            | minor                                                         |
+| breaking change (`!` or `BREAKING CHANGE:` footer)                | **minor** (suppressed — see below; would normally be `major`) |
+| `revert`                                                          | patch                                                         |
+| `docs`, `style`, `chore`, `refactor`, `test`, `build`, `ci`, etc. | no release                                                    |
 
-If multiple commits are included in one release, the highest applicable bump wins — one release,
-one version bump, however many commits it covers. With `feat` suppressed to `patch`, only a
-breaking change produces a `minor`.
+If multiple commits are included in one release, the highest applicable bump wins
+(a `feat` and a `fix` together still only produce one `minor` release).
 
 ## Release cadence: releases are cut by hand, never by a push
 
@@ -144,103 +143,42 @@ shared `Markdown` component) — no separate copy or build step keeps it in sync
 
 ## Burned versions: 2.1.0 – 2.5.0
 
-`2.1.0` through `2.5.0` were published by the runaway-bump sequence described above and are
-being withdrawn, taking the published line back to `2.0.1`. They are listed as **burned** in
-`.releaserc.json`, and `scripts/reject-burned-versions.mjs` fails any release that computes one
-of them.
+`2.1.0` through `2.5.0` were published by the runaway-bump sequence described above. They stay on
+npm — they cannot be unpublished — and they can never be republished either, because npm reserves
+a version number permanently on first publish. They are listed as **burned** in `.releaserc.json`,
+and `scripts/reject-burned-versions.mjs` fails any release that computes one.
 
-`2.1.0` is included because it shipped no library change at all: between `v2.0.1` and `v2.1.0`
-the only edits under `packages/` were the version fields themselves and a Discord invite link in
-two READMEs. Its `feat` was the CDK scaffold under `infra/`, which is not published.
+`2.1.0` is in that list despite being a real published release because it shipped no library
+change at all: between `v2.0.1` and `v2.1.0` the only edits under `packages/` were the version
+fields themselves and a Discord invite link in two READMEs. Its `feat` was the CDK scaffold under
+`infra/`, which is not published.
 
-**A burned version can never be reused, whether or not it is unpublished.** npm reserves a
-version number permanently on first publish: unpublishing frees the tarball but not the
-number, and a later `npm publish` of the same version is rejected outright. Republishing over
-one would also be unsafe even if npm allowed it, since registry mirrors and lockfiles cache by
-version. So the burn list stands independently of the unpublish decision — it just stops
-being academic once the numbers are gone.
+### Why they cannot be unpublished
 
-### Why the guard cannot bump past the collision
+npm's dependent check is package-level, not version-range-aware. `jarl-react` is depended on by
+`jarl-react-native` and `jarl-react-redux`, whose ranges (`^1.0.0-beta.4` and older) match no 2.x
+version, but their existence alone makes npm refuse. `jarl-atoms` is blocked behind a genuinely
+matching dependent: every `jarl-react@2.x` pins its exact `jarl-atoms` version. The two legacy
+packages were published in 2022, far outside their own unpublish window, so the path cannot be
+cleared.
 
-semantic-release computes `nextRelease.version` before the `verifyRelease` step and reads it
-back from that same object afterwards, but hands every plugin a **deep clone** of the context
-(`cloneDeep` in `lib/plugins/normalize.js`), so a plugin's write to `nextRelease.version` is
-discarded. Two levers decide the number, both outside the plugin: the **last release tag**
-reachable from the branch, and the **release type** the commits imply.
-
-`scripts/reject-burned-versions.mjs` therefore guards rather than fixes. It throws in
-`verifyRelease`, which runs before notes are generated, before `prepare`, and before the tag is
-cut, so a blocked run leaves nothing behind and can simply be re-run. It also runs under
-`npm run release:dry-run`.
-
-## Opening a version line with a tombstone tag
-
-Every burned version is a `.0`, and a patch bump can only ever produce `.1` or higher, so
-**while `feat` is suppressed to `patch` the guard can never fire**. That suppression is in
-`commit-analyzer`'s `releaseRules`, alongside the breaking-change one.
-
-With the type fixed at `patch`, the version is decided entirely by the highest tag on `master`.
-Opening a new `X.Y.x` line is therefore one step: **plant a tombstone tag `vX.Y.0` on the
-current release commit**, and the next release computes `X.Y.1`.
-
-A tombstone is a tag and nothing else — no npm version, no GitHub release. Plant it on the
-commit the last release was cut from, never on `HEAD`: semantic-release takes its commit range
-from the last tag, so a tombstone at `HEAD` empties the range and the run reports no relevant
-changes and releases nothing.
-
-A breaking change is the one thing that still computes a `minor` while `feat` is suppressed, so
-it lands on a burned `.0` and the guard stops the run. That is the signal to plant the next
-line's tombstone and re-run — which is what opening a line for a breaking change should do
-anyway.
-
-The line to date, and where it goes next:
-
-| release                   | how                                                                     |
-| ------------------------- | ----------------------------------------------------------------------- |
-| `2.0.1`                   | last published version, and the floor the rollback restores             |
-| `2.1.1`                   | tombstone `v2.1.0` (already tagged, kept), carrying everything since it |
-| `2.1.2`, `2.1.3`, …       | further patches on the same line, no tombstone needed                   |
-| `2.2.1`                   | next batch of functionality: plant tombstone `v2.2.0`, release          |
-| `2.3.1`, `2.4.1`, `2.5.1` | same pattern per line, if the burned range is walked through            |
-
-Once past `2.5.0` nothing is burned any more: plant tombstone `v2.5.0`, drop the `feat`
-suppression from `releaseRules`, and normal minor bumps resume from `2.6.0`. That is also the
-escape hatch if the ladder proves more trouble than it is worth — it can be taken at any point,
-costing only the unused version numbers.
-
-## Withdrawing the published versions
-
-npm's self-service unpublish applies **within 72 hours of publish**; after that it needs npm
-support and is rarely granted. `2.1.0` went out on 2026-08-14, the rest on 2026-08-15.
-
-`npm unpublish` takes **one package spec per call**, and needs an authenticated session
-(`npm whoami` must answer). Loop rather than listing specs on one line:
+`npm deprecate` has neither restriction and works at any age, so it is what marks these versions:
 
 ```bash
-for v in 2.1.0 2.2.0 2.3.0 2.4.0 2.5.0; do
-  for p in jarl-react jarl-atoms; do npm unpublish "$p@$v"; done
-done
-
-npm view jarl-react versions   # confirm: 2.x should be 2.0.1 alone
-npm dist-tag add jarl-react@2.0.1 latest   # and jarl-atoms, if npm does not re-point it
-
-gh release delete v2.2.0 --yes   # keeps the tag; --cleanup-tag would remove it
-git push origin :refs/tags/v2.2.0   # v2.3.0, v2.4.0, v2.5.0 too; keep v2.1.0
+npm deprecate jarl-react '>=2.1.0 <2.6.0' 'Superseded by 2.6.0'
+npm deprecate jarl-atoms '>=2.1.0 <2.6.0' 'Superseded by 2.6.0'
 ```
 
-Check the result rather than the exit chatter: an unpublished version disappears from
-`npm view <pkg> versions`, so that listing is the only confirmation worth trusting.
+### The line continues from 2.5.0
 
-Keep the `v2.1.0` **tag** while deleting its GitHub release: it is the tombstone the `2.1.1`
-release counts from. Delete a GitHub release before its tag, or it is left as a draft.
+The `v2.2.0`–`v2.5.0` tags stay, so `lastRelease` is `2.5.0` and the next release is `2.6.0`,
+carrying everything accumulated since. Nothing needs to dodge the burned range: every version the
+pipeline can now compute is above it, and the guard is insurance against a hand-planted tag rather
+than a routine obstacle.
 
-`2.1.0`–`2.5.0` are the only published versions carrying `notAtom`, `Switch`, the
-`dist/index.d.cts` require-condition fix and the `jotai` peer dependency. All of that code is on
-`master` and ships again in `2.1.1`, so cut that release promptly after withdrawing. The only
-consumer, `randomdev-web`, is locked to `2.0.1` on `^2.0.1` ranges, so nothing it installs breaks.
-
-`2.1.1` is the `2.1.0` release, patch-bumped to work around this pipeline setup friction; open
-its generated notes with that line, in `CHANGELOG.md` and on the GitHub release.
+Rolling the published line back to `2.0.1` was considered and is not possible: dist-tags do not
+govern range resolution, so while `2.5.0` remains published, `npm install jarl-react@^2.0.1`
+resolves to it whatever `latest` points at.
 
 ## Major-version suppression ("romantic versioning")
 

@@ -1,9 +1,5 @@
 ## [2.5.0](https://github.com/randomdevpete/jarl/compare/v2.4.0...v2.5.0) (2026-08-15)
 
-> **Withdrawn.** This version is being removed from npm and its number retired. Nothing below is
-> lost — every change ships again in the next release cut from `master`. See
-> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
-
 ### Features
 
 * **docs:** add GitHub, Discord and npm links to the toolbar ([ceb3ec8](https://github.com/randomdevpete/jarl/commit/ceb3ec8))
@@ -27,10 +23,6 @@
 
 ## [2.4.0](https://github.com/randomdevpete/jarl/compare/v2.3.0...v2.4.0) (2026-08-15)
 
-> **Withdrawn.** This version is being removed from npm and its number retired. Nothing below is
-> lost — every change ships again in the next release cut from `master`. See
-> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
-
 ### Features
 
 * **infra:** Route53 zone, ACM certificate and alias records for `jarl.randomdev.co.uk` ([78bb9a0](https://github.com/randomdevpete/jarl/commit/78bb9a0))
@@ -46,19 +38,11 @@
 
 ## [2.3.0](https://github.com/randomdevpete/jarl/compare/v2.2.0...v2.3.0) (2026-08-15)
 
-> **Withdrawn.** This version is being removed from npm and its number retired. Nothing below is
-> lost — every change ships again in the next release cut from `master`. See
-> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
-
 ### Features
 
 * **jarl-react:** add `Switch` for first-match routing with a fallback ([3ab1ca5](https://github.com/randomdevpete/jarl/commit/3ab1ca5))
 
 ## [2.2.0](https://github.com/randomdevpete/jarl/compare/v2.1.0...v2.2.0) (2026-08-15)
-
-> **Withdrawn.** This version is being removed from npm and its number retired. Nothing below is
-> lost — every change ships again in the next release cut from `master`. See
-> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
 
 ### Features
 
@@ -77,11 +61,6 @@
 * wire the e2e fixture app to `queryAtom`/`redirectAtom`/`resolvedAtom` ([39d3ced](https://github.com/randomdevpete/jarl/commit/39d3ced))
 
 ## [2.1.0](https://github.com/randomdevpete/jarl/compare/v2.0.1...v2.1.0) (2026-08-14)
-
-> **Withdrawn.** This version is being removed from npm and its number retired. The `2.1.x` line
-> resumes at [2.1.1](https://github.com/randomdevpete/jarl/blob/master/CHANGELOG.md), which
-> carries the library work this release did not. See
-> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
 
 Published no library change: the only edits under `packages/` were the version fields themselves
 and a Discord invite link in both READMEs. The work below is the first infrastructure for the doc
