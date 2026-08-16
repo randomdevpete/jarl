@@ -78,13 +78,23 @@
 
 ## [2.1.0](https://github.com/randomdevpete/jarl/compare/v2.0.1...v2.1.0) (2026-08-14)
 
-No library changes. This release carries the first infrastructure work for the doc site; it
-reached npm because the release pipeline analysed every commit on `master`, not only those
-touching the published packages.
+> **Withdrawn.** This version is being removed from npm and its number retired. The `2.1.x` line
+> resumes at [2.1.1](https://github.com/randomdevpete/jarl/blob/master/CHANGELOG.md), which
+> carries the library work this release did not. See
+> [release strategy](https://github.com/randomdevpete/jarl/blob/master/docs/release-strategy.md).
+
+Published no library change: the only edits under `packages/` were the version fields themselves
+and a Discord invite link in both READMEs. The work below is the first infrastructure for the doc
+site, under `infra/`, which is not published — it reached npm because the release pipeline
+analysed every commit on `master`, not only those touching the published packages.
 
 ### Features
 
 * **infra:** add the CDK app scaffold for `jarl.randomdev.co.uk` ([d419da0](https://github.com/randomdevpete/jarl/commit/d419da0))
+
+### Documentation
+
+* update the Discord invite link in both package READMEs ([aef4bec](https://github.com/randomdevpete/jarl/commit/aef4bec))
 
 ## [2.0.1](https://github.com/randomdevpete/jarl/compare/v2.0.0...v2.0.1) (2026-08-11)
 
