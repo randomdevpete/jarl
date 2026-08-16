@@ -8,6 +8,7 @@
         "preset": "conventionalcommits",
         "releaseRules": [
           { "breaking": true, "release": "minor" },
+          { "type": "feat", "release": "patch" },
           { "type": "revert", "release": "patch" }
         ]
       }
@@ -21,7 +22,7 @@
     [
       "./scripts/reject-burned-versions.mjs",
       {
-        "versions": ["2.2.0", "2.3.0", "2.4.0", "2.5.0"]
+        "versions": ["2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.5.0"]
       }
     ],
     [
