@@ -1,3 +1,39 @@
+## [2.6.0](https://github.com/randomdevpete/jarl/compare/v2.5.0...v2.6.0) (2026-08-17)
+
+### ⚠ BREAKING CHANGES
+
+* **release:** suppression. Every burned version is a .0 and a patch
+bump can only produce .1 or higher, so while that holds the guard
+cannot fire and the version is decided entirely by the highest tag.
+
+Opening a line is then one step — plant a tombstone tag on the last
+release commit and release the .1. v2.1.0 is already tagged and stays,
+so the next release is 2.1.1, carrying everything since it.
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+
+### Features
+
+* **atoms:** add asyncRouteAtom for routes an async lookup decides ([9cc4f6c](https://github.com/randomdevpete/jarl/commit/9cc4f6c7a5f027092ab6b7478b961e6f1eb30778))
+* **atoms:** add numericRouteAtom for numeric path segments ([6199066](https://github.com/randomdevpete/jarl/commit/6199066cdddf0bb070974eb7edcb431ccf26e650))
+* **atoms:** drop redundant module-level comment in asyncRouteAtom ([9c07ea7](https://github.com/randomdevpete/jarl/commit/9c07ea7b9c7fb990342a38f35777d547b3e7ba4a))
+* **docs:** add blog routing demo ([409d271](https://github.com/randomdevpete/jarl/commit/409d2712747f1ab514b3b0db26549fc73f565442))
+* **docs:** async-lookup demo, and a real 404 status from SSR ([6c0b9a1](https://github.com/randomdevpete/jarl/commit/6c0b9a107fdf3d6bed7981937cc2f65237011d49))
+* **docs:** browse changelog releases with per-version routes ([a718546](https://github.com/randomdevpete/jarl/commit/a7185466ee799c2e81c08e6b9910bcb8aed2f7ad))
+* **docs:** data grid filter/sort demo driven by query params ([d0c2557](https://github.com/randomdevpete/jarl/commit/d0c25571dca9140f9a82251d3c9afda7b558ff18))
+* **docs:** syntax-highlight code blocks with highlight.js ([fa39824](https://github.com/randomdevpete/jarl/commit/fa39824c372f838df275af66b238df9a7a14a292))
+* roll the SSR server on every deploy ([627a414](https://github.com/randomdevpete/jarl/commit/627a414de52146a3043c1e41bb864ccbfcff5480))
+
+### Bug Fixes
+
+* **docs:** await the now-async render in the production SSR server ([a615556](https://github.com/randomdevpete/jarl/commit/a615556da4a9e2fa7d6ddfb614876336c7ad8fdf))
+* **docs:** keep release-note sections inside their changelog entry ([67da666](https://github.com/randomdevpete/jarl/commit/67da666eb5f08799473bb14e2bcbc2d76e145f4c))
+* pin conventional-changelog-conventionalcommits to the release-notes-generator-compatible v8 line ([eec26a5](https://github.com/randomdevpete/jarl/commit/eec26a50ea7d69d0765e1af1c90db3846c9daa6b))
+
+### Continuous Integration
+
+* **release:** reset the published line to 2.0.1 and open 2.1.x at 2.1.1 ([25a5aa3](https://github.com/randomdevpete/jarl/commit/25a5aa364ab5f6cfff64a276c8aa49a6d50751e1))
+
 ## [2.5.0](https://github.com/randomdevpete/jarl/compare/v2.4.0...v2.5.0) (2026-08-15)
 
 ### Features
