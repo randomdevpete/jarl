@@ -265,7 +265,8 @@ jobs:
         run: npm ci --prefix infra
 
       - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v5
+        # v6 runs on node24; v5 declares the deprecated node20 and warns on every deploy.
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
           aws-region: eu-west-2
