@@ -290,8 +290,9 @@ jobs:
           aws cloudfront create-invalidation --distribution-id "$dist_id" --paths '/*'
 
       - name: Roll SSR server
-        # Uses SSM Run Command (no SSH inbound). Fails if the systemctl restart or the
-        # /ssr/ health check doesn't succeed within 2 minutes.
+        # Uses SSM Run Command (no SSH inbound). Fails if the roll doesn't leave the
+        # instance answering /healthz locally, or if /ssr/ isn't 200 through the
+        # distribution within 2 minutes.
         run: |
           bundle_bucket=$(aws cloudformation describe-stacks --stack-name JarlSsr \
             --query 'Stacks[0].Outputs[?ExportName==`JarlSsrBundleBucketName`].OutputValue' --output text)
@@ -309,6 +310,18 @@ jobs:
           chown -R ec2-user:ec2-user /opt/jarl-ssr
           rm /tmp/jarl-ssr-bundle.tar.gz
           systemctl restart jarl-ssr
+          # Type=simple: the restart above returns 0 as soon as node is forked, so a server
+          # that dies on its first import still reads as a clean roll. Wait for it to serve.
+          for attempt in \$(seq 1 15); do
+            if curl -fsS -o /dev/null http://localhost:3000/healthz; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "jarl-ssr did not answer /healthz on the instance after the restart" >&2
+          systemctl status jarl-ssr --no-pager --full >&2 || true
+          journalctl -u jarl-ssr --no-pager --lines 50 >&2 || true
+          exit 1
           SCRIPT
           jq -n --rawfile script /tmp/roll-ssr.sh '{commands: [$script]}' > /tmp/ssm-params.json
 

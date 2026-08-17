@@ -14,13 +14,21 @@ const outDir = path.resolve(root, "dist");
 const ssrOutDir = path.resolve(root, "dist/.ssr-tmp");
 const ssrServerOutDir = path.resolve(root, "dist-ssr");
 
-/** An SSR-targeted vite build with a single entry, named `fileName` in `dir`. */
-const buildSsrBundle = (entry, dir, fileName) =>
+/**
+ * An SSR-targeted vite build with a single entry, named `fileName` in `dir`.
+ * `selfContained` inlines npm dependencies: the jarl-ssr instance runs dist-ssr/ with no
+ * node_modules beside it, so a bare import there is an unstartable server.
+ */
+const buildSsrBundle = (entry, dir, fileName, { selfContained = false } = {}) =>
   build({
     root,
+    // Node builtins stay external either way; noExternal only covers npm packages.
+    ssr: selfContained ? { noExternal: true } : {},
     build: {
       outDir: dir,
       emptyOutDir: true,
+      // A server bundle read off local disk is never downloaded by a browser.
+      chunkSizeWarningLimit: selfContained ? Infinity : 500,
       // Neither SSR bundle serves public/ itself - the client build already copied it into dist/.
       copyPublicDir: false,
       ssr: entry,
@@ -87,7 +95,7 @@ async function main() {
 
   // eslint-disable-next-line no-console
   console.log("[docs:build] building SSR server bundle...");
-  await buildSsrBundle("src/prod-server.ts", ssrServerOutDir, "server.mjs");
+  await buildSsrBundle("src/prod-server.ts", ssrServerOutDir, "server.mjs", { selfContained: true });
   // Node needs the template at runtime, not build time - prod-server.ts reads it off
   // disk next to server.mjs, using the same hashed-asset template every route prerenders
   // from.
