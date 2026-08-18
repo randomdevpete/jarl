@@ -1,0 +1,13 @@
+{
+  "name": "jarl-react-redux",
+  "version": "1.0.1",
+  "description": "Retired. Superseded by jarl-react and jarl-atoms — see the README.",
+  "license": "MIT",
+  "author": "Peter Hurst",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randomdevpete/jarl.git"
+  },
+  "homepage": "https://jarl.randomdev.co.uk",
+  "deprecated": "Retired: superseded by jarl-react and jarl-atoms. See https://jarl.randomdev.co.uk"
+}
