@@ -1,30 +1,32 @@
 import { useEffect, useMemo } from "react";
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
-import { DefaultParams, queryParamAtom, rootAtom as defaultRootAtom, RouteAtom } from "jarl-atoms";
-import { Route } from "jarl-react";
+import { DefaultParams, queryParamAtom, rootAtom as defaultRootAtom, RouteAtom, transformRouteAtom } from "jarl-atoms";
 import styled from "@emotion/styled";
 import { theme } from "../theme";
-import { filterWares, parseSort, sortColumns, sortWares, stringifySort, SortDirection, SortKey, wares } from "./wares";
+import { filterWares, parseSort, sortColumns, sortWares, stringifySort, SortKey, wares } from "./wares";
 
-// The demo's whole state hangs off whatever root it is given, so the app never knows the
-// URL it is mounted on. `filter` chains off `sort` so writing either one round-trips
-// through the same href and keeps the other. `rows` and `activeSort` are derived atoms reading
-// off `filter`, so the grid's data and header state are plain jotai reads rather than component
-// state recomputed with useMemo. `filterInput` is a separate, un-navigated atom for the
-// controlled input - it only reaches the URL (via `filter`'s setter) on submit.
+// The demo's whole state hangs off whatever root it is given, so the app never knows the URL
+// it is mounted on. `activeSort` reshapes the raw `sort` query value into `{key, direction}` and
+// back via `transformRouteAtom`. `filter` chains off `activeSort` rather than `sort` directly,
+// so its own values carry the already-parsed sort alongside the filter text - one atom with
+// everything the grid needs, and writing it always round-trips whichever field didn't change.
+// `rows` derives off that. `filterInput` is a separate, un-navigated atom for the controlled
+// input - it only reaches the URL (via `filter`'s setter) on submit.
 const createGridRoutes = (root: RouteAtom<DefaultParams>) => {
   const sort = queryParamAtom("sort", { parent: root });
-  const filter = queryParamAtom("filter", { parent: sort });
-  const activeSort = atom((get) => parseSort(get(filter).values?.sort));
+  const activeSort = transformRouteAtom(
+    sort,
+    (values) => parseSort(values.sort),
+    (values) => ({ sort: stringifySort(values.key, values.direction) }),
+  );
+  const filter = queryParamAtom("filter", { parent: activeSort });
   const rows = atom((get) => {
-    const { direction, key } = get(activeSort);
-    return sortWares(filterWares(wares, get(filter).values?.filter), key, direction);
+    const values = get(filter).values ?? { ...parseSort(undefined), filter: undefined };
+    return sortWares(filterWares(wares, values.filter), values.key, values.direction);
   });
   const filterInput = atom("");
-  return { sort, filter, activeSort, rows, filterInput };
+  return { filter, rows, filterInput };
 };
-
-type GridRoutes = ReturnType<typeof createGridRoutes>;
 
 const Table = styled.table`
   border-collapse: collapse;
@@ -47,30 +49,29 @@ const Table = styled.table`
   }
 `;
 
-const Grid = ({
-  routes,
-  sort,
-  filter,
-}: {
-  routes: GridRoutes;
-  sort: string | undefined;
-  filter: string | undefined;
-}) => {
-  const setFilterRoute = useSetAtom(routes.filter);
-  const { key: sortKey, direction } = useAtomValue(routes.activeSort);
+/**
+ * Self-contained demo: a data grid whose filter text and sort column/direction both live in the
+ * URL query string (`?sort=-price&filter=axe`), so the grid's state is shareable/bookmarkable and
+ * moves with back/forward navigation. Pass the route atom it is mounted on as `rootAtom`. Both
+ * query params are optional, so the route always matches - no `<Route>` needed, just reading the
+ * atoms directly.
+ */
+export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAtom<DefaultParams> }) => {
+  const routes = useMemo(() => createGridRoutes(rootAtom), [rootAtom]);
+  const { values } = useAtomValue(routes.filter);
+  const { key: sortKey, direction } = values ?? parseSort(undefined);
   const rows = useAtomValue(routes.rows);
   const [filterInput, setFilterInput] = useAtom(routes.filterInput);
+  const setGrid = useSetAtom(routes.filter);
 
   // Keeps the input in sync with the URL when it changes some other way (back/forward, a
   // shared link) - the input is otherwise free-standing scratch state, not live-searching.
-  useEffect(() => setFilterInput(filter ?? ""), [filter, setFilterInput]);
+  useEffect(() => setFilterInput(values?.filter ?? ""), [values?.filter, setFilterInput]);
 
-  const commitFilter = () => setFilterRoute({ sort, filter: filterInput || undefined });
+  const commitFilter = () => setGrid({ key: sortKey, direction, filter: filterInput || undefined });
 
-  const toggleSort = (key: SortKey) => {
-    const nextDirection: SortDirection = sortKey === key && direction === "asc" ? "desc" : "asc";
-    setFilterRoute({ sort: stringifySort(key, nextDirection), filter });
-  };
+  const toggleSort = (key: SortKey) =>
+    setGrid({ key, direction: sortKey === key && direction === "asc" ? "desc" : "asc", filter: values?.filter });
 
   return (
     <div>
@@ -115,23 +116,13 @@ const Grid = ({
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={sortColumns.length}>No wares match &ldquo;{filter ?? ""}&rdquo;.</td>
+              <td colSpan={sortColumns.length}>No wares match &ldquo;{values?.filter ?? ""}&rdquo;.</td>
             </tr>
           )}
         </tbody>
       </Table>
     </div>
   );
-};
-
-/**
- * Self-contained demo: a data grid whose filter text and sort column/direction both live in the
- * URL query string (`?sort=-price&filter=axe`), so the grid's state is shareable/bookmarkable and
- * moves with back/forward navigation. Pass the route atom it is mounted on as `rootAtom`.
- */
-export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAtom<DefaultParams> }) => {
-  const routes = useMemo(() => createGridRoutes(rootAtom), [rootAtom]);
-  return <Route on={routes.filter}>{({ sort, filter }) => <Grid routes={routes} sort={sort} filter={filter} />}</Route>;
 };
 
 export default DataGridApp;
