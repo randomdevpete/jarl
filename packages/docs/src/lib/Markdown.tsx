@@ -3,24 +3,14 @@ import { marked } from "marked";
 import { useMemo } from "react";
 import { theme } from "../theme";
 import { escapeHtml, highlightToHtml } from "./highlight";
+import { slugify } from "./slug";
 
 marked.setOptions({ gfm: true });
 
-// Slugified per document (Markdown's useMemo clears this before each parse) so headings get
-// stable, GitHub-style #anchors without pulling in a whole extension for it. Repeats within one
-// document get a numeric suffix, same convention GitHub uses.
+// Cleared before each parse (Markdown's useMemo) so headings get stable, GitHub-style
+// #anchors without pulling in a whole extension for it - see `apiLinks.ts` for the other
+// consumer of the same scheme.
 const headingSlugCounts = new Map<string, number>();
-
-const slugify = (raw: string): string => {
-  const base = raw
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const count = headingSlugCounts.get(base) ?? 0;
-  headingSlugCounts.set(base, count + 1);
-  return count === 0 ? base : `${base}-${count}`;
-};
 
 marked.use({
   renderer: {
@@ -30,7 +20,7 @@ marked.use({
       return `<pre class="hljs"${languageAttr}><code>${highlightToHtml(code, lang)}</code></pre>`;
     },
     heading(text, depth, raw) {
-      const id = slugify(raw);
+      const id = slugify(raw, headingSlugCounts);
       return `<h${depth} id="${id}">${text}</h${depth}>\n`;
     },
   },
