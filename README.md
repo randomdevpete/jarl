@@ -30,7 +30,7 @@ is incredibly efficient.
 *   Framework-agnostic core (`jarl-atoms`) with thin, hooks-first React bindings (`jarl-react`)
 *   Full querystring matching support
 *   Resolve promises during routing (via jotai's own async atoms) and redirect if required
-*   SSR/SSG-safe: the shared location atom is seedable per-render on the server
+*   SSR/SSG-safe: the resolved location atom is hydratable per-render on the server
 *   And much more...
 
 ## Concrete Example
