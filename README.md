@@ -103,8 +103,8 @@ import { Link } from "jarl-react";
 
 const MainMenu = () => (
   <nav>
-    <Link route={homeRoute} to={{}} exact>Home</Link>
-    <Link route={aboutRoute} to={{}}>About</Link>
+    <Link route={homeRoute} exact>Home</Link>
+    <Link route={aboutRoute}>About</Link>
     <Link route={productRoute} to={{ productId: "123" }}>
       Our Best Product Ever!
     </Link>
