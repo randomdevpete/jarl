@@ -21,9 +21,8 @@ components like `<Switch>` and `<Route>` and of course the ubiquitous `<Link>` a
 the React package, all accepting atoms for parameters instead of type-unsafe strings.)
 
 Because each route atom is an independent, subscribable unit of jotai state, a component that
-reads one only re-renders when *that atom's* derived value actually changes - not on every
-navigation everywhere in the tree, which is where the "atomic" in "Atomic Routing Library"
-comes from.
+reads one only re-renders when *that atom's* derived value actually changes - it turns out this
+is incredibly efficient.
 
 ## Features
 
