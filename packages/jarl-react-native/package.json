@@ -1,0 +1,13 @@
+{
+  "name": "jarl-react-native",
+  "version": "1.0.1",
+  "description": "Retired. Superseded by jarl-react and jarl-atoms — see the README.",
+  "homepage": "https://jarl.randomdev.co.uk",
+  "license": "MIT",
+  "author": "Peter Hurst",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randomdevpete/jarl.git"
+  },
+  "deprecated": "Retired: Not in scope for JARL v2. Was never finished even in v1. Could be reconsidered at a later date. See https://jarl.randomdev.co.uk"
+}
