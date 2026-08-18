@@ -1,9 +1,49 @@
 import { useEffect, useMemo } from "react";
 import { atom, useAtom, useAtomValue } from "jotai";
 import { DefaultParams, queryParamAtom, rootAtom as defaultRootAtom, RouteAtom, transformRouteAtom } from "jarl-atoms";
-import styled from "@emotion/styled";
-import { theme } from "../theme";
-import { filterWares, parseSort, sortColumns, sortWares, stringifySort, SortKey, wares } from "./wares";
+import { Table } from "./DataGridTable";
+import { Ware, wares } from "./wares";
+
+export type SortKey = "name" | "category" | "price" | "stock";
+export type SortDirection = "asc" | "desc";
+
+export const sortColumns: { key: SortKey; label: string }[] = [
+  { key: "name", label: "Name" },
+  { key: "category", label: "Category" },
+  { key: "price", label: "Price (silver)" },
+  { key: "stock", label: "Stock" },
+];
+
+const sortKeys = sortColumns.map((column) => column.key);
+
+/** Parses a `sort` query value like "-price" into a column key and direction; falls back to
+ * name/ascending for anything missing or unrecognised. */
+export const parseSort = (sort: string | undefined): { key: SortKey; direction: SortDirection } => {
+  const fallback: { key: SortKey; direction: SortDirection } = { key: "name", direction: "asc" };
+  if (!sort) return fallback;
+  const direction: SortDirection = sort.startsWith("-") ? "desc" : "asc";
+  const key = direction === "desc" ? sort.slice(1) : sort;
+  return sortKeys.includes(key as SortKey) ? { key: key as SortKey, direction } : fallback;
+};
+
+/** Inverse of parseSort. */
+export const stringifySort = (key: SortKey, direction: SortDirection): string =>
+  direction === "desc" ? `-${key}` : key;
+
+export const filterWares = (rows: Ware[], filter: string | undefined): Ware[] => {
+  if (!filter) return rows;
+  const needle = filter.toLowerCase();
+  return rows.filter(
+    (ware) => ware.name.toLowerCase().includes(needle) || ware.category.toLowerCase().includes(needle),
+  );
+};
+
+export const sortWares = (rows: Ware[], key: SortKey, direction: SortDirection): Ware[] => {
+  const sorted = [...rows].sort((a, b) =>
+    typeof a[key] === "number" ? (a[key] as number) - (b[key] as number) : String(a[key]).localeCompare(String(b[key])),
+  );
+  return direction === "desc" ? sorted.reverse() : sorted;
+};
 
 // Only a factory because this demo harness mounts at any root - a real app declares these as
 // static atoms. Memoised in the component below so they stay stable references across renders.
@@ -30,27 +70,6 @@ const createGridRoutes = (root: RouteAtom<DefaultParams>) => {
   const filterInput = atom("");
   return { filter, rows, filterInput };
 };
-
-const Table = styled.table`
-  border-collapse: collapse;
-  width: 100%;
-
-  th,
-  td {
-    text-align: left;
-    padding: 0.4rem 0.75rem;
-    border-bottom: 1px solid ${theme.border};
-  }
-
-  th button {
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
-    color: inherit;
-    cursor: pointer;
-  }
-`;
 
 /**
  * Self-contained demo: a data grid whose filter text and sort column/direction both live in the
