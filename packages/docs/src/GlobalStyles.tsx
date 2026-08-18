@@ -16,6 +16,7 @@ const documentStyles = css`
     background: ${theme.bg};
     color: ${theme.fg};
     font-family: ${theme.fontBody};
+    letter-spacing: 1px;
     line-height: 1.6;
   }
 
