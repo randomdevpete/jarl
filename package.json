@@ -6,7 +6,8 @@
     "packages/jarl-react",
     "packages/jarl-react-redux",
     "packages/jarl-react-native",
-    "packages/docs"
+    "packages/docs",
+    "bench"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
@@ -14,6 +15,7 @@
     "start": "npm run dev --workspace packages/docs",
     "dev": "npm run dev --workspace packages/docs",
     "test": "npm run test --workspaces --if-present",
+    "bench": "npm run build --workspace packages/jarl-atoms --workspace packages/jarl-react && npm run bench --workspace bench",
     "ci-test": "npm run ci-test --workspaces --if-present",
     "test:e2e:install": "npm --prefix e2e install && npx --prefix e2e playwright install --with-deps chromium",
     "test:e2e": "npm --prefix e2e run test",
