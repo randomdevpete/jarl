@@ -9,7 +9,17 @@ import { theme } from "../theme";
 // Keeps a single source of truth for the intro copy instead of a duplicated page.
 // The README's own leading H1 is dropped since this page renders its own heading + mark instead
 // (matched loosely so a future title edit in the README can't silently bring the H1 back).
-const readmeBody = readme.replace(/^# .+\n+/, "");
+// "atomic" in the tagline is wrapped in per-letter spans (.atomic-wave, styled in
+// GlobalStyles.tsx) for the colour-wave animation - raw HTML since `marked` passes it
+// straight through, same trick the README's own code blocks rely on.
+const readmeBody = readme
+  .replace(/^# .+\n+/, "")
+  .replace(
+    /\batomic\b/,
+    [..."atomic"]
+      .map((letter, i) => `<span class="atomic-wave" style="animation-delay: ${i * 0.15}s">${letter}</span>`)
+      .join(""),
+  );
 
 const HomeHeading = styled.h1`
   display: flex;
@@ -24,13 +34,23 @@ const HomeMark = styled(VikingHelmetMark)`
   flex-shrink: 0;
 `;
 
+// Aligns the tagline's left edge under the small-caps "arl" of the "Jarl" wordmark -
+// measured against the heading's rendered text at the default root font size.
+const HomeIntro = styled.div`
+  p:first-of-type {
+    margin-left: 4.72rem;
+  }
+`;
+
 export const Home = () => (
   <>
     <HomeHeading>
       <HomeMark />
       <BrandName>Jarl: Atomic Routing Library</BrandName>
     </HomeHeading>
-    <Markdown source={readmeBody} />
+    <HomeIntro>
+      <Markdown source={readmeBody} />
+    </HomeIntro>
   </>
 );
 
