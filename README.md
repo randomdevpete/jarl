@@ -27,6 +27,7 @@ is incredibly efficient.
 
 ## Features
 
+*   Map URLs directly to state (and back again) - the URL becomes the source of truth
 *   Composable route atoms - build nested/dynamic routes out of small, independent pieces
 *   Framework-agnostic core (`jarl-atoms`) with lightweight React bindings (`jarl-react`)
 *   Full querystring matching support
