@@ -53,7 +53,7 @@ export const DemoPage = ({ title, sourcePath, source, children }: DemoPageProps)
     <SourceHeading>
       <a href={`${githubRepoUrl}/blob/master/${sourcePath}`}>{sourcePath.split("/").pop()}</a>
     </SourceHeading>
-    <CodeBlock code={source} lang="tsx" />
+    <CodeBlock code={source} lang="tsx" sourcePath={sourcePath} />
   </>
 );
 
