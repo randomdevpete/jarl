@@ -11,15 +11,21 @@ If you just want the docs: [JARL demos and documentation](https://jarl.randomdev
 
 ## What is a router?
 
-A web router simply performs a mapping between URL and state. I wanted something that did this
-job extremely well without getting in the way of application structure and without mixing
-routing logic up with the component tree. JARL builds that mapping out of composable
-[jotai](https://jotai.org/) atoms: each route is its own atom, matching a piece of the URL and
-telling you both whether it currently matches and how to build a URL back out of param values.
-Routing decisions in your application are then just React state reads via hooks. (Convenience
-components like [`<Switch>`](/api/jarl-react#switch) and [`<Route>`](/api/jarl-react#route) and
-of course the ubiquitous [`<Link>`](/api/jarl-react#link) are provided in the React package, all
-accepting atoms for parameters instead of type-unsafe strings.)
+A web router, fundamentally, is very simple: a mapping between URL and state. I have always
+wanted something that did just this job extremely well, but without getting in the way of or
+dictating application structure, and without forcing route matching logic into the component
+tree itself, where it never seemed to belong. JARL builds that mapping out of composable atoms
+using [jotai](https://jotai.org/) under the hood: each route is its own atom, with a link to a
+parent atom and so on up to the [`rootAtom`](/api/jarl-atoms#rootatom); each one matching a
+piece of the URL (normally a path segment) and telling you both whether it *currently* matches,
+as well as *how to build a URL /to/ that route* based on a given state. Routing decisions in
+your application then decompose to very simple logic based on the current states of these
+atoms; a simple `switch` statement or series of `if`s is enough to decide what components to
+render, and navigation can be performed by *calling the atom setter*. (Convenience components
+like [`<Route>`](/api/jarl-react#route) and [`<Switch>`](/api/jarl-react#switch) and of course
+the ubiquitous [`<Link>`](/api/jarl-react#link) are of course provided in the React package, if
+you want to build more compositionally; they all just accept atoms for parameters instead of
+type-unsafe strings.)
 
 Because each route atom is an independent, subscribable unit of jotai state, a component that
 reads one only re-renders when *that atom's* derived value actually changes - it turns out this
