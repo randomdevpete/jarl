@@ -1,9 +1,10 @@
 # Data Loading
 
 Most of the time in a real application, every route carries with it some data requirements.
-Rather than managing an `isLoading` flag by hand in every component that needs data, JARL lets
-you attach a loader to a route atom and let jotai's own async-atom machinery (and, in React,
-`Suspense`) manage the loading state for you.
+Rather than managing component-level loading states or suspense fallbacks and watching the
+page layout churn as everything resolves, JARL lets you attach a loader to a route atom and
+resolve everything it needs before the route ever renders - jotai's own async-atom machinery,
+behind a single `Suspense` boundary in React, handles the wait.
 
 `resolvedAtom` (from `jarl-atoms`) takes a route atom and a loader function, and resolves once
 that route matches:
@@ -11,8 +12,7 @@ that route matches:
 routes.ts:
 
 ```ts
-import { staticRouteAtom, paramRouteAtom } from "jarl-atoms";
-import { resolvedAtom } from "jarl-atoms";
+import { staticRouteAtom, paramRouteAtom, resolvedAtom } from "jarl-atoms";
 
 export const productsRoute = staticRouteAtom("products");
 export const productRoute = paramRouteAtom("productId", { parent: productsRoute });
