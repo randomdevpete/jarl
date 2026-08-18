@@ -36,11 +36,11 @@ const documentStyles = css`
   samp {
     font-family: ${theme.fontMono};
     /* input-mono runs visually larger than alegreya-sans at a shared em size, and its
-       baseline sits slightly lower - scale down and nudge up so inline code reads level
+       baseline sits slightly lower - scale down and nudge so inline code reads level
        with the surrounding prose instead of looming over and under it. */
     font-size: 0.8em;
     line-height: 1;
-    vertical-align: 0.05em;
+    vertical-align: -0.03em;
     background: ${theme.codeBg};
     color: ${theme.accent};
     border-radius: 3px;
