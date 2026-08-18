@@ -1,4 +1,4 @@
-import { createRootAtom, numericRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { createRootAtom, numericRouteAtom, paramRouteAtom, validateAtom } from "jarl-atoms";
 import { Link, Route, Switch } from "jarl-react";
 import {
   BlogPost,
@@ -33,7 +33,10 @@ const formatDate = (post: BlogPost) => `${MONTH_NAMES[post.month - 1]} ${post.da
 const blogRoot = createRootAtom({ basePath: "/demos/blog-routing" });
 const yearRoute = numericRouteAtom("year", { parent: blogRoot });
 const monthRoute = numericRouteAtom("month", { parent: yearRoute, min: 1, max: 12 });
-const dayRoute = numericRouteAtom("day", { parent: monthRoute, min: 1, max: 31 });
+const daySegment = numericRouteAtom("day", { parent: monthRoute });
+// A segment's own min/max only bounds it in isolation; a real calendar date needs all three
+// together, so the whole date is validated as part of matching rather than in a page component.
+const dayRoute = validateAtom(daySegment, ({ year, month, day }) => isValidCalendarDate(year, month, day));
 const postRoute = paramRouteAtom("slug", { parent: dayRoute });
 
 const BlogNav = () => (
@@ -134,9 +137,6 @@ const MonthPage = ({ year, month }: { year: number; month: number }) => {
 };
 
 const DayPage = ({ year, month, day }: { year: number; month: number; day: number }) => {
-  if (!isValidCalendarDate(year, month, day)) {
-    return <BlogNotFound reason={`${MONTH_NAMES[month - 1]} ${day}, ${year} isn't a real date.`} />;
-  }
   const posts = postsForDay(year, month, day);
   if (posts.length === 0) {
     return <BlogNotFound reason={`No posts on ${MONTH_NAMES[month - 1]} ${day}, ${year}.`} />;
@@ -168,8 +168,8 @@ const PostPage = ({ year, month, day, slug }: { year: number; month: number; day
 };
 
 /**
- * Self-contained demo of a classic /blog/:year/:month/:day/:slug tree: URL-shape 404s via the
- * Switch fallback, content-level 404s via isValidCalendarDate and empty-list checks.
+ * Self-contained demo of a classic /blog/:year/:month/:day/:slug tree: URL-shape 404s (an
+ * impossible date included) via the Switch fallback, content-level 404s via empty-list checks.
  */
 export const BlogRoutingApp = () => (
   <>
