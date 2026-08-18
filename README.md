@@ -17,8 +17,9 @@ routing logic up with the component tree. JARL builds that mapping out of compos
 [jotai](https://jotai.org/) atoms: each route is its own atom, matching a piece of the URL and
 telling you both whether it currently matches and how to build a URL back out of param values.
 Routing decisions in your application are then just React state reads via hooks. (Convenience
-components like `<Switch>` and `<Route>` and of course the ubiquitous `<Link>` are provided in
-the React package, all accepting atoms for parameters instead of type-unsafe strings.)
+components like [`<Switch>`](/api/jarl-react#switch) and [`<Route>`](/api/jarl-react#route) and
+of course the ubiquitous [`<Link>`](/api/jarl-react#link) are provided in the React package, all
+accepting atoms for parameters instead of type-unsafe strings.)
 
 Because each route atom is an independent, subscribable unit of jotai state, a component that
 reads one only re-renders when *that atom's* derived value actually changes - it turns out this
@@ -65,9 +66,9 @@ import { Provider } from "jotai";
 import App from "./App";
 
 createRoot(document.getElementById("root")!).render(
-    <Provider>
-        <App />
-    </Provider>
+  <Provider>
+    <App />
+  </Provider>
 );
 ```
 
@@ -77,17 +78,17 @@ import { Route } from "jarl-react";
 import { homeRoute, aboutRoute, productRoute } from "./routes";
 
 const App = () => (
-    <>
-        <Route on={homeRoute} exact>
-            <HomePage />
-        </Route>
-        <Route on={aboutRoute} exact>
-            <AboutPage />
-        </Route>
-        <Route on={productRoute} exact>
-            {({ productId }) => <ProductPage productId={productId} />}
-        </Route>
-    </>
+  <>
+    <Route on={homeRoute} exact>
+      <HomePage />
+    </Route>
+    <Route on={aboutRoute} exact>
+      <AboutPage />
+    </Route>
+    <Route on={productRoute} exact>
+      {({ productId }) => <ProductPage productId={productId} />}
+    </Route>
+  </>
 );
 
 export default App;
@@ -101,14 +102,14 @@ plus param values, generating the URL by reversing that same atom:
 import { Link } from "jarl-react";
 
 const MainMenu = () => (
-    <nav>
-        <Link route={homeRoute} to={{}} exact>Home</Link>
-        <Link route={aboutRoute} to={{}}>About</Link>
-        <Link route={productRoute} to={{ productId: "123" }}>
-            Our Best Product Ever!
-        </Link>
-        <SearchForm />
-    </nav>
+  <nav>
+    <Link route={homeRoute} to={{}} exact>Home</Link>
+    <Link route={aboutRoute} to={{}}>About</Link>
+    <Link route={productRoute} to={{ productId: "123" }}>
+      Our Best Product Ever!
+    </Link>
+    <SearchForm />
+  </nav>
 );
 ```
 
@@ -130,19 +131,19 @@ const searchQueryRoute = queryParamAtom("q");
 const searchTextAtom = atom("");
 
 const SearchForm = () => {
-    const [searchText, setSearchText] = useAtom(searchTextAtom);
-    const navigate = useNavigate(searchQueryRoute);
-    return (
-        <form onSubmit={(e) => { e.preventDefault(); navigate({ q: searchText }); }}>
-            <input
-                type="text"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Enter search term"
-            />
-            <button type="submit">Search</button>
-        </form>
-    );
+  const [searchText, setSearchText] = useAtom(searchTextAtom);
+  const navigate = useNavigate(searchQueryRoute);
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); navigate({ q: searchText }); }}>
+      <input
+        type="text"
+        value={searchText}
+        onChange={(e) => setSearchText(e.target.value)}
+        placeholder="Enter search term"
+      />
+      <button type="submit">Search</button>
+    </form>
+  );
 };
 
 export default SearchForm;
