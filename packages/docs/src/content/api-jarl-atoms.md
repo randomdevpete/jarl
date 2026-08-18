@@ -1,4 +1,4 @@
-# jarl-atoms API reference
+# API Reference: jarl-atoms
 
 The core exports of `jarl-atoms` - the framework-agnostic half of JARL. Everything here is a
 plain [jotai](https://jotai.org/) atom with no React dependency; the React components and hooks

@@ -1,4 +1,4 @@
-# jarl-react API reference
+# API Reference: jarl-react
 
 The core exports of `jarl-react` - the React bindings (components + hooks) built on top of the
 framework-agnostic route atoms in [`jarl-atoms`](/api/jarl-atoms). `jarl-react` does not
