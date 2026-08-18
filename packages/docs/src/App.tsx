@@ -56,7 +56,7 @@ export const App = () => (
         {/* Changelog and the demos below are self-contained apps: one static mount each,
             matched non-exact, with everything under it routed inside the component. */}
         <Route on={changelogRoute}>
-          <Changelog rootAtom={changelogRoute} />
+          <Changelog />
         </Route>
         <Route on={basicRoutingDemoRoute}>
           <BasicRoutingDemo />

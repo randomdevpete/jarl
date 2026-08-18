@@ -1,21 +1,15 @@
-import { useMemo } from "react";
-import { rootAtom as defaultRootAtom, paramRouteAtom, DefaultParams, RouteAtom } from "jarl-atoms";
+import { createRootAtom, paramRouteAtom } from "jarl-atoms";
 import { Link, Route, Switch } from "jarl-react";
 import Markdown from "../lib/Markdown";
 import { changelogEntries, changelogEntryFor, fullChangelog, ChangelogEntry } from "./changelogEntries";
 
-// Owns its own route tree, same shape as BlogRoutingApp: one param route for the version,
-// parented on whatever root it is mounted under.
-const createChangelogRoutes = (root: RouteAtom<DefaultParams>) => ({
-  root,
-  version: paramRouteAtom("version", { parent: root }),
-});
+// The page this is mounted on, so its version route below is a plain module-level atom.
+const changelogRoot = createRootAtom({ basePath: "/changelog" });
+const versionRoute = paramRouteAtom("version", { parent: changelogRoot });
 
-type ChangelogRoutes = ReturnType<typeof createChangelogRoutes>;
-
-const ChangelogNav = ({ routes }: { routes: ChangelogRoutes }) => (
+const ChangelogNav = () => (
   <nav>
-    <Link route={routes.root} to={{}} exact>
+    <Link route={changelogRoot} to={{}} exact>
       All releases
     </Link>
   </nav>
@@ -23,13 +17,13 @@ const ChangelogNav = ({ routes }: { routes: ChangelogRoutes }) => (
 
 // Just tracks version history - distinct from the History page, which documents the v1
 // architecture and why v2 moved to atoms.
-const ChangelogIndex = ({ routes }: { routes: ChangelogRoutes }) => (
+const ChangelogIndex = () => (
   <>
     <h1>Changelog</h1>
     <ul>
       {changelogEntries.map((entry) => (
         <li key={entry.version}>
-          <Link route={routes.version} to={{ version: entry.version }}>
+          <Link route={versionRoute} to={{ version: entry.version }}>
             {entry.version}
           </Link>
           {entry.date && <span> &mdash; {entry.date}</span>}
@@ -43,24 +37,24 @@ const ChangelogIndex = ({ routes }: { routes: ChangelogRoutes }) => (
   </>
 );
 
-const ChangelogNotFound = ({ routes, version }: { routes: ChangelogRoutes; version: string }) => (
+const ChangelogNotFound = ({ version }: { version: string }) => (
   <>
     <h1>Not found</h1>
     <p>No release named &ldquo;{version}&rdquo;.</p>
     <p>
-      <Link route={routes.root} to={{}}>
+      <Link route={changelogRoot} to={{}}>
         Back to the changelog
       </Link>
     </p>
   </>
 );
 
-const ChangelogVersionPage = ({ routes, entry }: { routes: ChangelogRoutes; entry: ChangelogEntry }) => (
+const ChangelogVersionPage = ({ entry }: { entry: ChangelogEntry }) => (
   <>
     <Markdown source={entry.heading} />
     {entry.body ? <Markdown source={entry.body} /> : <p>No release notes recorded for this version.</p>}
     <p>
-      <Link route={routes.root} to={{}}>
+      <Link route={changelogRoot} to={{}}>
         Back to the changelog
       </Link>
     </p>
@@ -69,30 +63,23 @@ const ChangelogVersionPage = ({ routes, entry }: { routes: ChangelogRoutes; entr
 
 /**
  * Browsable release history: an index of versions parsed out of the generated CHANGELOG.md,
- * with one route per version. Pass the route atom it is mounted on as `rootAtom`.
+ * with one route per version.
  */
-export const Changelog = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAtom<DefaultParams> }) => {
-  const routes = useMemo(() => createChangelogRoutes(rootAtom), [rootAtom]);
-  return (
-    <>
-      <ChangelogNav routes={routes} />
-      <Switch fallback={<ChangelogNotFound routes={routes} version="" />}>
-        <Route on={routes.root} exact>
-          <ChangelogIndex routes={routes} />
-        </Route>
-        <Route on={routes.version} exact>
-          {({ version }) => {
-            const entry = changelogEntryFor(version);
-            return entry ? (
-              <ChangelogVersionPage routes={routes} entry={entry} />
-            ) : (
-              <ChangelogNotFound routes={routes} version={version} />
-            );
-          }}
-        </Route>
-      </Switch>
-    </>
-  );
-};
+export const Changelog = () => (
+  <>
+    <ChangelogNav />
+    <Switch fallback={<ChangelogNotFound version="" />}>
+      <Route on={changelogRoot} exact>
+        <ChangelogIndex />
+      </Route>
+      <Route on={versionRoute} exact>
+        {({ version }) => {
+          const entry = changelogEntryFor(version);
+          return entry ? <ChangelogVersionPage entry={entry} /> : <ChangelogNotFound version={version} />;
+        }}
+      </Route>
+    </Switch>
+  </>
+);
 
 export default Changelog;
