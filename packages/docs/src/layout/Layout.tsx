@@ -12,6 +12,7 @@ import { VikingHelmetMark } from "./VikingHelmetMark";
 import { GitHubMark } from "./GitHubMark";
 import { DiscordMark } from "./DiscordMark";
 import { NpmMark } from "./NpmMark";
+import { githubRepoUrl } from "./siteLinks";
 import {
   Brand,
   BrandLabel,
@@ -26,7 +27,6 @@ import {
   ToolbarLink,
 } from "./Layout.styles";
 
-export const githubRepoUrl = "https://github.com/randomdevpete/jarl";
 // Existing community invite, also linked from the README badges.
 const discordInviteUrl = "https://discord.gg/6yGq39rJ63";
 const npmPackageUrl = "https://www.npmjs.com/package/jarl-react";
