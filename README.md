@@ -224,6 +224,6 @@ And to some extent the [Autoroute](http://www.davidhayden.me/blog/autoroute-cust
 
 ## Copyright
 
-©2017-2018 Downplay Ltd
+©2017-2026 Randomdev Ltd
 
-Distributed under MIT license. See LICENSE for full details.
+Distributed under MIT license. See [LICENSE.md](./LICENSE.md) for full details.

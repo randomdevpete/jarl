@@ -30,6 +30,6 @@ https://discord.gg/6yGq39rJ63
 
 ## Copyright
 
-&copy;2017-18 Downplay Ltd
+&copy;2017-2026 Randomdev Ltd
 
-Distributed under MIT license. See LICENSE for full details.
+Distributed under MIT license. See [LICENSE.md](./LICENSE.md) for full details.
