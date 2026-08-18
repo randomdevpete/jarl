@@ -134,6 +134,8 @@ const MonthPage = ({ year, month }: { year: number; month: number }) => {
 };
 
 const DayPage = ({ year, month, day }: { year: number; month: number; day: number }) => {
+  // Each segment's own min/max only bounds it in isolation (day 1-31 regardless of month);
+  // a real calendar date needs all three together, so that's checked here instead.
   if (!isValidCalendarDate(year, month, day)) {
     return <BlogNotFound reason={`${MONTH_NAMES[month - 1]} ${day}, ${year} isn't a real date.`} />;
   }
