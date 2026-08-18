@@ -27,7 +27,7 @@ is incredibly efficient.
 ## Features
 
 *   Composable route atoms - build nested/dynamic routes out of small, independent pieces
-*   Framework-agnostic core (`jarl-atoms`) with thin, hooks-first React bindings (`jarl-react`)
+*   Framework-agnostic core (`jarl-atoms`) with lightweight React bindings (`jarl-react`)
 *   Full querystring matching support
 *   Resolve promises during routing (via jotai's own async atoms) and redirect if required
 *   SSR/SSG-safe: the resolved location atom is hydratable per-render on the server
