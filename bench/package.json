@@ -1,0 +1,29 @@
+{
+  "name": "jarl-bench",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Reproducible performance comparison of jarl vs react-router: re-render counts, matching throughput and bundle size. See README.md for methodology.",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "bench": "vitest run && NODE_ENV=production vitest run --config vitest.bench.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "jarl-atoms": "2.6.0",
+    "jarl-react": "2.6.0",
+    "jotai": "^2.20.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router": "^8.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
+    "jsdom": "^30.0.1",
+    "rolldown": "^1.2.3",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}
