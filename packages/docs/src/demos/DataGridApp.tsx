@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { atom, useAtom, useAtomValue } from "jotai";
 import { DefaultParams, queryParamAtom, rootAtom as defaultRootAtom, RouteAtom, transformRouteAtom } from "jarl-atoms";
 import styled from "@emotion/styled";
 import { theme } from "../theme";
@@ -61,20 +61,23 @@ const Table = styled.table`
  */
 export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAtom<DefaultParams> }) => {
   const routes = useMemo(() => createGridRoutes(rootAtom), [rootAtom]);
-  const { values } = useAtomValue(routes.filter);
-  const { key: sortKey, direction } = values ?? parseSort(undefined);
+  const [filter, setFilter] = useAtom(routes.filter);
+  const { key: sortKey, direction } = filter.values ?? parseSort(undefined);
   const rows = useAtomValue(routes.rows);
   const [filterInput, setFilterInput] = useAtom(routes.filterInput);
-  const setGrid = useSetAtom(routes.filter);
 
   // Keeps the input in sync with the URL when it changes some other way (back/forward, a
   // shared link) - the input is otherwise free-standing scratch state, not live-searching.
-  useEffect(() => setFilterInput(values?.filter ?? ""), [values?.filter, setFilterInput]);
+  useEffect(() => setFilterInput(filter.values?.filter ?? ""), [filter.values?.filter, setFilterInput]);
 
-  const commitFilter = () => setGrid({ key: sortKey, direction, filter: filterInput || undefined });
+  const commitFilter = () => setFilter({ key: sortKey, direction, filter: filterInput || undefined });
 
   const toggleSort = (key: SortKey) =>
-    setGrid({ key, direction: sortKey === key && direction === "asc" ? "desc" : "asc", filter: values?.filter });
+    setFilter({
+      key,
+      direction: sortKey === key && direction === "asc" ? "desc" : "asc",
+      filter: filter.values?.filter,
+    });
 
   return (
     <div>
@@ -119,7 +122,7 @@ export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAt
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={sortColumns.length}>No wares match &ldquo;{values?.filter ?? ""}&rdquo;.</td>
+              <td colSpan={sortColumns.length}>No wares match &ldquo;{filter.values?.filter ?? ""}&rdquo;.</td>
             </tr>
           )}
         </tbody>
