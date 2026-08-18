@@ -66,10 +66,13 @@ const createGridRoutes = (root: RouteAtom<DefaultParams>) => {
     const values = get(filter).values ?? { ...parseSort(undefined), filter: undefined };
     return sortWares(filterWares(wares, values.filter), values.key, values.direction);
   });
-  // Local and un-navigated - only reaches the chain (and the URL) via filter's setter on submit.
-  const filterInput = atom("");
-  return { filter, rows, filterInput };
+  return { filter, rows };
 };
+
+// Doesn't depend on root, so it's a single static atom rather than one more thing
+// createGridRoutes has to build per instance. Local and un-navigated - only reaches the chain
+// (and the URL) via filter's setter on submit.
+const filterInputAtom = atom("");
 
 /**
  * Self-contained demo: a data grid whose filter text and sort column/direction both live in the
@@ -82,7 +85,7 @@ export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAt
   const routes = useMemo(() => createGridRoutes(rootAtom), [rootAtom]);
   const [filter, setFilter] = useAtom(routes.filter);
   const rows = useAtomValue(routes.rows);
-  const [filterInput, setFilterInput] = useAtom(routes.filterInput);
+  const [filterInput, setFilterInput] = useAtom(filterInputAtom);
   // Falls back to defaults for the (never actually hit, but real to the type) unmatched case,
   // so every setFilter call below can spread current state without re-declaring its shape.
   const defaults = { ...parseSort(undefined), filter: undefined };
