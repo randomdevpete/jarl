@@ -31,12 +31,12 @@ export const demosIndexRoute = staticRouteAtom("demos");
 export const basicRoutingDemoRoute = staticRouteAtom("basic-routing", { parent: demosIndexRoute });
 export const basicRoutingDemoPageRoute = paramRouteAtom("page", { parent: basicRoutingDemoRoute });
 
-// Blog routing demo: just the static mount point. The demo's own /:year/:month/:day/:slug
-// tree lives inside BlogRoutingApp, parented on whatever root atom it is handed.
+// Blog routing demo: the site's own mount point. The demo's own /:year/:month/:day/:slug tree
+// lives inside BlogRoutingApp, on its own basePath-scoped root.
 export const blogRoutingDemoRoute = staticRouteAtom("blog-routing", { parent: demosIndexRoute });
 
-// Data grid demo: just the static mount point. Filter/sort state lives entirely in query
-// params chained inside DataGridApp, parented on whatever root atom it is handed.
+// Data grid demo: the site's own mount point. Filter/sort state lives entirely in query params
+// chained inside DataGridApp, on its own basePath-scoped root.
 export const dataGridDemoRoute = staticRouteAtom("data-grid", { parent: demosIndexRoute });
 
 // Async-lookup demo: /demos/async-lookup/:slug exists only if the demo's fake database has an
