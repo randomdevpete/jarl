@@ -1,17 +1,27 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
 import { DefaultParams, queryParamAtom, rootAtom as defaultRootAtom, RouteAtom } from "jarl-atoms";
-import { Route, useNavigate } from "jarl-react";
+import { Route } from "jarl-react";
 import styled from "@emotion/styled";
 import { theme } from "../theme";
 import { filterWares, parseSort, sortColumns, sortWares, stringifySort, SortDirection, SortKey, wares } from "./wares";
 
 // The demo's whole state hangs off whatever root it is given, so the app never knows the
 // URL it is mounted on. `filter` chains off `sort` so writing either one round-trips
-// through the same href and keeps the other.
+// through the same href and keeps the other. `rows` and `activeSort` are derived atoms reading
+// off `filter`, so the grid's data and header state are plain jotai reads rather than component
+// state recomputed with useMemo. `filterInput` is a separate, un-navigated atom for the
+// controlled input - it only reaches the URL (via `filter`'s setter) on submit.
 const createGridRoutes = (root: RouteAtom<DefaultParams>) => {
   const sort = queryParamAtom("sort", { parent: root });
   const filter = queryParamAtom("filter", { parent: sort });
-  return { sort, filter };
+  const activeSort = atom((get) => parseSort(get(filter).values?.sort));
+  const rows = atom((get) => {
+    const { direction, key } = get(activeSort);
+    return sortWares(filterWares(wares, get(filter).values?.filter), key, direction);
+  });
+  const filterInput = atom("");
+  return { sort, filter, activeSort, rows, filterInput };
 };
 
 type GridRoutes = ReturnType<typeof createGridRoutes>;
@@ -46,32 +56,41 @@ const Grid = ({
   sort: string | undefined;
   filter: string | undefined;
 }) => {
-  const navigate = useNavigate(routes.filter);
-  const { key: sortKey, direction } = parseSort(sort);
-  const filterText = filter ?? "";
-  const rows = useMemo(
-    () => sortWares(filterWares(wares, filterText), sortKey, direction),
-    [filterText, sortKey, direction],
-  );
+  const setFilterRoute = useSetAtom(routes.filter);
+  const { key: sortKey, direction } = useAtomValue(routes.activeSort);
+  const rows = useAtomValue(routes.rows);
+  const [filterInput, setFilterInput] = useAtom(routes.filterInput);
 
-  const setFilter = (next: string) => navigate({ sort, filter: next || undefined });
+  // Keeps the input in sync with the URL when it changes some other way (back/forward, a
+  // shared link) - the input is otherwise free-standing scratch state, not live-searching.
+  useEffect(() => setFilterInput(filter ?? ""), [filter, setFilterInput]);
+
+  const commitFilter = () => setFilterRoute({ sort, filter: filterInput || undefined });
 
   const toggleSort = (key: SortKey) => {
     const nextDirection: SortDirection = sortKey === key && direction === "asc" ? "desc" : "asc";
-    navigate({ sort: stringifySort(key, nextDirection), filter });
+    setFilterRoute({ sort: stringifySort(key, nextDirection), filter });
   };
 
   return (
     <div>
-      <label>
-        Filter{" "}
-        <input
-          type="text"
-          value={filterText}
-          onChange={(event) => setFilter(event.target.value)}
-          placeholder="name or category"
-        />
-      </label>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          commitFilter();
+        }}
+      >
+        <label>
+          Filter{" "}
+          <input
+            type="text"
+            value={filterInput}
+            onChange={(event) => setFilterInput(event.target.value)}
+            placeholder="name or category"
+          />
+        </label>
+        <button type="submit">Search</button>
+      </form>
       <Table>
         <thead>
           <tr>
@@ -96,7 +115,7 @@ const Grid = ({
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={sortColumns.length}>No wares match &ldquo;{filterText}&rdquo;.</td>
+              <td colSpan={sortColumns.length}>No wares match &ldquo;{filter ?? ""}&rdquo;.</td>
             </tr>
           )}
         </tbody>
