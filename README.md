@@ -27,9 +27,11 @@ the ubiquitous [`<Link>`](/api/jarl-react#link) are of course provided in the Re
 you want to build more compositionally; they all just accept atoms for parameters instead of
 type-unsafe strings.)
 
-Because each route atom is an independent, subscribable unit of jotai state, a component that
-reads one only re-renders when *that atom's* derived value actually changes - it turns out this
-is incredibly efficient.
+Because each route atom is an independent, subscribable unit of jotai state, only components
+that actually read route state are re-rendered by navigation, resolving a URL against the whole
+route table is fast, and the bundle stays small. Those claims are
+[measured against react-router](/docs/benchmarks) rather than asserted - including the workloads
+where the two routers tie, and the one where react-router is quicker.
 
 ## Features
 
