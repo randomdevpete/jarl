@@ -1,7 +1,5 @@
-// Router cost on the wire: each size entry is bundled with rolldown (minified,
-// NODE_ENV=production, react/react-dom external) and reported min + gzip.
-// Both routers are bundled from their published dist builds, i.e. what an npm
-// consumer actually ships.
+// Router cost on the wire, bundled from each package's published dist build —
+// what an npm consumer actually ships. See ../README.md.
 import { gzipSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 import { rolldown } from "rolldown";

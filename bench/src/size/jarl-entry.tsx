@@ -1,5 +1,4 @@
-// Bundle-size entry: a minimal but realistic jarl app touching the surface the
-// benchmark app uses (route atoms, Link/Route/Switch, hooks, store seeding).
+// Bundle-size entry: a minimal jarl app touching the surface the benchmark app uses.
 import { paramRouteAtom, rootAtom, staticRouteAtom } from "jarl-atoms";
 import { Link, Route, Switch, useNavigate, useRoute } from "jarl-react";
 import { Provider, createStore } from "jotai";

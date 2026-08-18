@@ -1,20 +1,5 @@
-// Raw matching/resolve throughput, React excluded entirely: given a URL, how
-// fast does each library work out which routes match? Runs under plain Node
-// (jarl's locationAtom takes its server path — pure jotai, no history/DOM).
-//
-// The two libraries do this with different machinery, so the workloads are
-// defined by outcome, not mechanics:
-//
-// - "resolve": one URL string in, the matched leaf out. jarl writes the
-//   location atom and reads leaf route atoms in order until one matches (what
-//   a mounted Switch does); react-router calls matchRoutes over the
-//   equivalent route config. "cold" additionally pays jarl's per-store setup
-//   (a fresh jotai store per resolve, as each SSR request would);
-//   matchRoutes is stateless so its cold and warm cost are the same call.
-// - "navigate": a client-side navigation through each library's own API.
-//   jarl writes param values to a route atom and re-reads the leaves;
-//   react-router's memory router runs router.navigate() (a promise — awaited,
-//   as callers must).
+// Raw matching throughput, React excluded. Workloads are defined by outcome
+// rather than mechanics; see ../README.md for what each one covers and why.
 import { createStore } from "jotai/vanilla";
 import { locationAtom, paramRouteAtom, staticRouteAtom } from "jarl-atoms";
 import { createMemoryRouter, matchRoutes } from "react-router";
@@ -36,6 +21,7 @@ const paths = ["/s0/1", "/s25/123", "/s49/9", "/no-such-section/404"];
 
 type Store = ReturnType<typeof createStore>;
 
+// Reads leaves in order and stops at the first match, as Switch's own findIndex does.
 const resolveJarl = (store: Store, pathname: string): number => {
   store.set(locationAtom, { pathname, searchParams: new URLSearchParams() });
   for (let i = 0; i < SECTION_COUNT; i++) {

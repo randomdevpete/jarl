@@ -11,8 +11,7 @@ export const aboutRoute = staticRouteAtom("about");
 export const itemsRoute = staticRouteAtom("items");
 export const itemRoute = paramRouteAtom("itemId", { parent: itemsRoute });
 
-// Built on useLink rather than jarl's <Link> so both apps render the identical
-// anchor markup from their router's public hook primitives.
+// Built from hook primitives rather than <Link>, so both apps render identical anchor markup.
 const NavItem = <T extends DefaultParams>({
   route,
   to,
@@ -26,10 +25,8 @@ const NavItem = <T extends DefaultParams>({
 }) => {
   countRender("nav link");
   const [state, setRoute] = useAtom(route);
-  // jarl's own `active` (useLink/activeClassName) is route-level: every link to a
-  // route atom lights up whatever its `to` values, so two links to different items
-  // are both "active". Narrowed here to href-level by also comparing param values,
-  // to match react-router's semantics and keep both apps' markup identical.
+  // jarl's own `active` is route-level, so two links to different items both light up.
+  // Narrowed to href-level here to match react-router's semantics.
   const matched = exact ? state.exact : state.match;
   const active =
     matched && Object.entries(to).every(([key, value]) => (state.values as Record<string, unknown>)[key] === value);

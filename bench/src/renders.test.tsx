@@ -1,10 +1,7 @@
 // @vitest-environment jsdom
 
-// Counts component re-renders per navigation in the two apps, and proves the
-// comparison is like-for-like by asserting both render byte-identical HTML at
-// every step. Counts are deterministic, so this runs as a plain test with no
-// sampling. React's development build is fine here: without StrictMode it
-// renders each component once per update, the same as production.
+// React's development build is fine here: without StrictMode it renders each
+// component once per update, the same as production, and nothing is timed.
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { createJarlApp } from "./apps/JarlApp";
@@ -92,7 +89,6 @@ test("re-render counts per navigation, with identical rendered HTML throughout",
   const jarl = await runApp(createJarlApp);
   const reactRouter = await runApp(createReactRouterApp);
 
-  // The like-for-like guarantee: same markup after mount and after every click.
   expect(jarl.html.length).toBe(reactRouter.html.length);
   jarl.html.forEach((markup, step) => expect(markup).toBe(reactRouter.html[step]));
   expect(jarl.html.at(-1)).toContain("<h1>About</h1>");

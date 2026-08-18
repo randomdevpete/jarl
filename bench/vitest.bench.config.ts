@@ -1,9 +1,8 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
-// Timed benchmarks. Run with NODE_ENV=production (the `bench` script does) so
-// React and react-router load their production builds; files run one at a
-// time, in a forked process with --expose-gc so samples can start GC-clean.
+// Timed benchmarks. Needs NODE_ENV=production (the `bench` script sets it) for the
+// libraries' production builds, and a serial forked process with --expose-gc.
 export default defineConfig({
   plugins: [react()],
   test: {

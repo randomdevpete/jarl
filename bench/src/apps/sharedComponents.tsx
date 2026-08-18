@@ -1,5 +1,4 @@
-// Router-agnostic pieces of the benchmark app, shared verbatim by both
-// implementations so any render-count difference comes from the router alone.
+// Shared verbatim by both apps, so any render-count difference comes from the router alone.
 import { countRender } from "../renderCounter";
 import { WIDGET_COUNT, itemIds } from "../shape";
 

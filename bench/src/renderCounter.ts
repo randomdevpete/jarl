@@ -1,6 +1,3 @@
-// Per-component-group render tally. Components call countRender in their
-// bodies; a scenario snapshots before, navigates, and diffs after.
-
 const counts = new Map<string, number>();
 
 export const countRender = (group: string) => {
@@ -11,7 +8,7 @@ export const resetCounts = () => counts.clear();
 
 export const snapshotCounts = (): ReadonlyMap<string, number> => new Map(counts);
 
-// Zero deltas are kept: "this group did not re-render" is a result, not noise.
+/** Deltas since `before`, keeping zeroes: "did not re-render" is a result, not noise. */
 export const diffCounts = (before: ReadonlyMap<string, number>): Map<string, number> => {
   const diff = new Map<string, number>();
   for (const [group, count] of counts) {

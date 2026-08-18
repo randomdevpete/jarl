@@ -1,5 +1,4 @@
-// Bundle-size entry: the react-router equivalent of jarl-entry.tsx (data
-// router, NavLink, Outlet, params + programmatic navigation).
+// Bundle-size entry: the react-router equivalent of jarl-entry.tsx.
 import { NavLink, Outlet, RouterProvider, createBrowserRouter, useNavigate, useParams } from "react-router";
 import { createRoot } from "react-dom/client";
 

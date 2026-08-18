@@ -38,16 +38,24 @@ update, the same as production, and no timing is taken from this file.
 ### Matching/resolve throughput (`src/matching.benchmark.ts`)
 
 Pure library cost with React excluded, over a 100-route table (50 static sections, each with a
-`:id` param child), run under plain Node:
+`:id` param child), run under plain Node. Neither side touches history or the DOM there: jarl's
+`locationAtom` falls back to its server path, and react-router is given a config or a memory
+router. The two libraries match with different machinery, so the workloads are defined by
+outcome rather than mechanics:
 
 - **resolve** — one URL string in, the matched leaf out. jarl writes `locationAtom` and reads leaf
-  route atoms in order until one matches (what a mounted `Switch` does); react-router calls
-  `matchRoutes` over the equivalent config. The "cold" jarl variant pays a fresh jotai store per
+  route atoms in order until one matches, which is exactly what a mounted `Switch` does — its
+  `findIndex` short-circuits too, so a hit early in the table costs less than a late one or a
+  miss. The measured URLs cycle an early, middle and late hit plus a miss so neither library is
+  measured only at its best. react-router calls `matchRoutes` over the equivalent config, which
+  ranks the whole table on every call. The "cold" jarl variant pays a fresh jotai store per
   resolve, as each SSR request would; `matchRoutes` is stateless, so its cold and warm costs are
   the same call.
 - **navigate** — one client-side navigation through each library's own API: a param-value write to
   a route atom plus re-reading the leaves, versus `router.navigate()` on a memory router
-  (awaited — its API is promise-based).
+  (awaited — its API is promise-based). Not equivalent work: `router.navigate()` runs
+  react-router's full data-router state machine, where the atom write only re-derives state. jarl
+  is slower here regardless, so the gap this understates is jarl's own.
 
 Each number is 30 retained samples of 1000 operations, after 10 discarded warm-up samples, with GC
 forced between samples; reported as median with p25/p75 and min/max.

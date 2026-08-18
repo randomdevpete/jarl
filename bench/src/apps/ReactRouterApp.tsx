@@ -12,9 +12,8 @@ import { itemIds } from "../shape";
 import { AboutPage, HomePage, ItemDetail, ItemsPage, NotFoundPage, Widgets } from "./sharedComponents";
 import type { BenchApp } from "./types";
 
-// Built on react-router's hook primitives (useMatch/useHref/useLinkClickHandler,
-// the same ones NavLink is built from) so both apps render identical anchor
-// markup; NavLink itself adds aria-current, which jarl's Link has no analogue of.
+// Built from the hook primitives NavLink itself uses, since NavLink adds an
+// aria-current jarl's Link has no analogue of and the markup must match.
 const NavItem = ({ href, label, exact }: { href: string; label: string; exact?: boolean }) => {
   countRender("nav link");
   const active = useMatch(exact ? href : `${href}/*`) != null;

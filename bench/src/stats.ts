@@ -28,9 +28,9 @@ export const summarise = (samples: number[]): Summary => {
 };
 
 /**
- * Runs `work` for `warmup + samples` timed samples of `iterations` calls each,
- * discards the warm-up samples, and returns per-call times in microseconds.
- * Forces GC before each sample when available (--expose-gc).
+ * Times `warmup + samples` samples of `iterations` calls, discards the warm-up
+ * ones, and summarises the rest in microseconds per call. Forces GC before each
+ * sample where `--expose-gc` allows it.
  */
 export const measure = (
   work: () => void,
@@ -68,7 +68,7 @@ const fmt = (value: number) => (value >= 100 ? value.toFixed(0) : value >= 10 ? 
 export const formatSummary = ({ samples, median, p25, p75, min, max }: Summary): string =>
   `median ${fmt(median)}µs  p25 ${fmt(p25)}µs  p75 ${fmt(p75)}µs  min ${fmt(min)}µs  max ${fmt(max)}µs  (n=${samples})`;
 
-/** Prints rows as an aligned two-column-per-label comparison table. */
+/** Prints rows as a column-aligned table, first column left-justified. */
 export const printTable = (title: string, header: string[], rows: (string | number)[][]) => {
   const all = [header, ...rows.map((row) => row.map(String))];
   const widths = header.map((_, col) => Math.max(...all.map((row) => row[col].length)));
