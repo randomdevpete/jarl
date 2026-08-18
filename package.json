@@ -4,6 +4,8 @@
   "workspaces": [
     "packages/jarl-atoms",
     "packages/jarl-react",
+    "packages/jarl-react-redux",
+    "packages/jarl-react-native",
     "packages/docs"
   ],
   "scripts": {
