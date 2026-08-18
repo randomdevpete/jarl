@@ -25,7 +25,7 @@ const HomeHeading = styled.h1`
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.15rem;
 `;
 
 const HomeMark = styled(VikingHelmetMark)`
@@ -40,6 +40,7 @@ const HomeMark = styled(VikingHelmetMark)`
 const HomeIntro = styled.div`
   p:first-of-type {
     margin-top: 0;
+    margin-bottom: 1.5rem;
     margin-left: 4.72rem;
   }
 `;
