@@ -9,7 +9,7 @@ Routing for the atomic age
 
 If you just want the docs: [JARL demos and documentation](https://jarl.randomdev.co.uk)
 
-## Why another router?
+## What is a router?
 
 A web router simply performs a mapping between URL and state. I wanted something that did this
 job extremely well without getting in the way of application structure and without mixing
