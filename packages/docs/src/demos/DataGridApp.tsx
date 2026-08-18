@@ -4,33 +4,33 @@ import { DefaultParams, queryParamAtom, rootAtom as defaultRootAtom, RouteAtom, 
 import { Table } from "./DataGridTable";
 import { Ware, wares } from "./wares";
 
-export type SortKey = "name" | "category" | "price" | "stock";
-export type SortDirection = "asc" | "desc";
-
-export const sortColumns: { key: SortKey; label: string }[] = [
+export const sortColumns = [
   { key: "name", label: "Name" },
   { key: "category", label: "Category" },
   { key: "price", label: "Price (silver)" },
   { key: "stock", label: "Stock" },
-];
+] as const;
 
-const sortKeys = sortColumns.map((column) => column.key);
+type SortKey = (typeof sortColumns)[number]["key"];
+type SortDirection = "asc" | "desc";
+
+const defaultSort = { key: "name", direction: "asc" } as const;
 
 /** Parses a `sort` query value like "-price" into a column key and direction; falls back to
  * name/ascending for anything missing or unrecognised. */
-export const parseSort = (sort: string | undefined): { key: SortKey; direction: SortDirection } => {
-  const fallback: { key: SortKey; direction: SortDirection } = { key: "name", direction: "asc" };
-  if (!sort) return fallback;
+export const parseSort = (sort: string | undefined) => {
+  if (!sort) {
+    return defaultSort;
+  }
   const direction: SortDirection = sort.startsWith("-") ? "desc" : "asc";
   const key = direction === "desc" ? sort.slice(1) : sort;
-  return sortKeys.includes(key as SortKey) ? { key: key as SortKey, direction } : fallback;
+  return sortColumns.some((column) => column.key === key) ? { key: key as SortKey, direction } : defaultSort;
 };
 
 /** Inverse of parseSort. */
-export const stringifySort = (key: SortKey, direction: SortDirection): string =>
-  direction === "desc" ? `-${key}` : key;
+export const stringifySort = (key: SortKey, direction: SortDirection) => (direction === "desc" ? `-${key}` : key);
 
-export const filterWares = (rows: Ware[], filter: string | undefined): Ware[] => {
+export const filterWares = (rows: Ware[], filter: string | undefined) => {
   if (!filter) return rows;
   const needle = filter.toLowerCase();
   return rows.filter(
@@ -38,10 +38,14 @@ export const filterWares = (rows: Ware[], filter: string | undefined): Ware[] =>
   );
 };
 
-export const sortWares = (rows: Ware[], key: SortKey, direction: SortDirection): Ware[] => {
-  const sorted = [...rows].sort((a, b) =>
-    typeof a[key] === "number" ? (a[key] as number) - (b[key] as number) : String(a[key]).localeCompare(String(b[key])),
-  );
+export const sortWares = (rows: Ware[], key: SortKey, direction: SortDirection) => {
+  const sorted = rows
+    .slice()
+    .sort((a, b) =>
+      typeof a[key] === "number"
+        ? (a[key] as number) - (b[key] as number)
+        : String(a[key]).localeCompare(String(b[key])),
+    );
   return direction === "desc" ? sorted.reverse() : sorted;
 };
 
@@ -50,17 +54,17 @@ export const sortWares = (rows: Ware[], key: SortKey, direction: SortDirection):
 const createGridRoutes = (root: RouteAtom<DefaultParams>) => {
   // The raw "sort" query segment, chained off whatever root this demo is mounted on.
   const sort = queryParamAtom("sort", { parent: root });
-  const activeSort = transformRouteAtom(
+  const parsedSort = transformRouteAtom(
     sort,
     // Down: parse the raw query value into the shape the UI actually wants.
     (values) => parseSort(values.sort),
     // Up: serialize back to the raw string queryParamAtom expects to write.
     (values) => ({ sort: stringifySort(values.key, values.direction) }),
   );
-  // Chains off activeSort, not sort - so filter's own values carry the already-parsed sort
+  // Chains off parsedSort, not sort - so filter's own values carry the already-parsed sort
   // alongside the filter text. Writing here re-composes the whole chain back into a URL, so
   // whichever field didn't change comes along for free via the current match.
-  const filter = queryParamAtom("filter", { parent: activeSort });
+  const filter = queryParamAtom("filter", { parent: parsedSort });
   // A plain read off the chain's tip - no useMemo in the component needed for this.
   const rows = atom((get) => {
     const values = get(filter).values ?? { ...parseSort(undefined), filter: undefined };
@@ -74,6 +78,10 @@ const createGridRoutes = (root: RouteAtom<DefaultParams>) => {
 // (and the URL) via filter's setter on submit.
 const filterInputAtom = atom("");
 
+// State is never really undefined because the optional query params always match;
+// but since this can't be confirmed with the types, use a default
+const defaultFilter = { ...parseSort(undefined), filter: undefined };
+
 /**
  * Self-contained demo: a data grid whose filter text and sort column/direction both live in the
  * URL query string (`?sort=-price&filter=axe`), so the grid's state is shareable/bookmarkable and
@@ -86,20 +94,18 @@ export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAt
   const [filter, setFilter] = useAtom(routes.filter);
   const rows = useAtomValue(routes.rows);
   const [filterInput, setFilterInput] = useAtom(filterInputAtom);
-  // Falls back to defaults for the (never actually hit, but real to the type) unmatched case,
-  // so every setFilter call below can spread current state without re-declaring its shape.
-  const defaults = { ...parseSort(undefined), filter: undefined };
+
+  const currentFilter = filter.values ?? defaultFilter;
 
   // Keeps the input in sync with the URL when it changes some other way (back/forward, a
   // shared link) - the input is otherwise free-standing scratch state, not live-searching.
-  useEffect(() => setFilterInput(filter.values?.filter ?? ""), [filter.values?.filter, setFilterInput]);
+  useEffect(() => setFilterInput(currentFilter.filter ?? ""), [currentFilter.filter, setFilterInput]);
 
-  const commitFilter = () => setFilter({ ...defaults, ...filter.values, filter: filterInput || undefined });
+  const commitFilter = () => setFilter({ ...currentFilter, filter: filterInput || undefined });
 
   const toggleSort = (key: SortKey) =>
     setFilter({
-      ...defaults,
-      ...filter.values,
+      ...currentFilter,
       key,
       direction: filter.values?.key === key && filter.values?.direction === "asc" ? "desc" : "asc",
     });
@@ -130,7 +136,7 @@ export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAt
               <th key={column.key}>
                 <button type="button" onClick={() => toggleSort(column.key)}>
                   {column.label}
-                  {filter.values?.key === column.key ? (filter.values.direction === "asc" ? " ▲" : " ▼") : ""}
+                  {currentFilter.key === column.key ? (currentFilter.direction === "asc" ? " ▲" : " ▼") : ""}
                 </button>
               </th>
             ))}
@@ -147,7 +153,7 @@ export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAt
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={sortColumns.length}>No wares match &ldquo;{filter.values?.filter ?? ""}&rdquo;.</td>
+              <td colSpan={sortColumns.length}>No wares match &ldquo;{currentFilter.filter ?? ""}&rdquo;.</td>
             </tr>
           )}
         </tbody>
