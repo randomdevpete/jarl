@@ -1,17 +1,5 @@
 ## [2.6.0](https://github.com/randomdevpete/jarl/compare/v2.5.0...v2.6.0) (2026-08-17)
 
-### ⚠ BREAKING CHANGES
-
-* **release:** suppression. Every burned version is a .0 and a patch
-bump can only produce .1 or higher, so while that holds the guard
-cannot fire and the version is decided entirely by the highest tag.
-
-Opening a line is then one step — plant a tombstone tag on the last
-release commit and release the .1. v2.1.0 is already tagged and stays,
-so the next release is 2.1.1, carrying everything since it.
-
-Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
-
 ### Features
 
 * **atoms:** add asyncRouteAtom for routes an async lookup decides ([9cc4f6c](https://github.com/randomdevpete/jarl/commit/9cc4f6c7a5f027092ab6b7478b961e6f1eb30778))
