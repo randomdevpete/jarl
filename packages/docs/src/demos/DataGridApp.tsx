@@ -5,25 +5,28 @@ import styled from "@emotion/styled";
 import { theme } from "../theme";
 import { filterWares, parseSort, sortColumns, sortWares, stringifySort, SortKey, wares } from "./wares";
 
-// The demo's whole state hangs off whatever root it is given, so the app never knows the URL
-// it is mounted on. `activeSort` reshapes the raw `sort` query value into `{key, direction}` and
-// back via `transformRouteAtom`. `filter` chains off `activeSort` rather than `sort` directly,
-// so its own values carry the already-parsed sort alongside the filter text - one atom with
-// everything the grid needs, and writing it always round-trips whichever field didn't change.
-// `rows` derives off that. `filterInput` is a separate, un-navigated atom for the controlled
-// input - it only reaches the URL (via `filter`'s setter) on submit.
+// Built fresh per rootAtom (memoised in the component below) since atoms are meant to be
+// stable references - recreating them every render would resubscribe everything each time.
 const createGridRoutes = (root: RouteAtom<DefaultParams>) => {
+  // The raw "sort" query segment, chained off whatever root this demo is mounted on.
   const sort = queryParamAtom("sort", { parent: root });
   const activeSort = transformRouteAtom(
     sort,
+    // Down: parse the raw query value into the shape the UI actually wants.
     (values) => parseSort(values.sort),
+    // Up: serialize back to the raw string queryParamAtom expects to write.
     (values) => ({ sort: stringifySort(values.key, values.direction) }),
   );
+  // Chains off activeSort, not sort - so filter's own values carry the already-parsed sort
+  // alongside the filter text. Writing here re-composes the whole chain back into a URL, so
+  // whichever field didn't change comes along for free via the current match.
   const filter = queryParamAtom("filter", { parent: activeSort });
+  // A plain read off the chain's tip - no useMemo in the component needed for this.
   const rows = atom((get) => {
     const values = get(filter).values ?? { ...parseSort(undefined), filter: undefined };
     return sortWares(filterWares(wares, values.filter), values.key, values.direction);
   });
+  // Local and un-navigated - only reaches the chain (and the URL) via filter's setter on submit.
   const filterInput = atom("");
   return { filter, rows, filterInput };
 };
