@@ -1,4 +1,3 @@
-import { dataGridDemoRoute } from "../router/routes";
 import { DataGridApp } from "../demos/DataGridApp";
 import DemoPage from "../lib/DemoPage";
 import demoSource from "../demos/DataGridApp.tsx?raw";
@@ -9,7 +8,7 @@ export const DataGridDemo = () => (
     sourcePath="packages/docs/src/demos/DataGridApp.tsx"
     source={demoSource}
   >
-    <DataGridApp rootAtom={dataGridDemoRoute} />
+    <DataGridApp />
   </DemoPage>
 );
 
