@@ -31,6 +31,23 @@ const documentStyles = css`
     color: ${theme.accent};
   }
 
+  /* Home page tagline only - see Home.tsx for where these spans come from. Per-letter
+     animation-delay staggers the sweep; 2.4s round trip reads as a pulse, not a flicker. */
+  @keyframes atomic-wave {
+    0%,
+    100% {
+      color: ${theme.fg};
+    }
+    50% {
+      color: ${theme.accent};
+    }
+  }
+
+  .atomic-wave {
+    display: inline-block;
+    animation: atomic-wave 2.4s ease-in-out infinite;
+  }
+
   code,
   kbd,
   samp {
