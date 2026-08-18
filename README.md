@@ -126,8 +126,7 @@ import { queryParamAtom } from "jarl-atoms";
 // A single named query-string param is its own composable route atom too:
 const searchQueryRoute = queryParamAtom("q");
 
-// The text being typed is ordinary jotai state, living alongside the route atom
-// rather than in a separate useState world.
+// Controlled search input value also tracked in an atom
 const searchTextAtom = atom("");
 
 const SearchForm = () => {
