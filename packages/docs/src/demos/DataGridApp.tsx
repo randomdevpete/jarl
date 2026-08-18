@@ -4,7 +4,7 @@ import { DefaultParams, queryParamAtom, rootAtom as defaultRootAtom, RouteAtom, 
 import { Table } from "./DataGridTable";
 import { Ware, wares } from "./wares";
 
-export const sortColumns = [
+const sortColumns = [
   { key: "name", label: "Name" },
   { key: "category", label: "Category" },
   { key: "price", label: "Price (silver)" },
@@ -18,7 +18,7 @@ const defaultSort = { key: "name", direction: "asc" } as const;
 
 /** Parses a `sort` query value like "-price" into a column key and direction; falls back to
  * name/ascending for anything missing or unrecognised. */
-export const parseSort = (sort: string | undefined) => {
+const parseSort = (sort: string | undefined) => {
   if (!sort) {
     return defaultSort;
   }
@@ -28,9 +28,9 @@ export const parseSort = (sort: string | undefined) => {
 };
 
 /** Inverse of parseSort. */
-export const stringifySort = (key: SortKey, direction: SortDirection) => (direction === "desc" ? `-${key}` : key);
+const stringifySort = (key: SortKey, direction: SortDirection) => (direction === "desc" ? `-${key}` : key);
 
-export const filterWares = (rows: Ware[], filter: string | undefined) => {
+const filterWares = (rows: Ware[], filter: string | undefined) => {
   if (!filter) return rows;
   const needle = filter.toLowerCase();
   return rows.filter(
@@ -38,7 +38,7 @@ export const filterWares = (rows: Ware[], filter: string | undefined) => {
   );
 };
 
-export const sortWares = (rows: Ware[], key: SortKey, direction: SortDirection) => {
+const sortWares = (rows: Ware[], key: SortKey, direction: SortDirection) => {
   const sorted = rows
     .slice()
     .sort((a, b) =>

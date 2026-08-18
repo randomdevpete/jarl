@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import styled from "@emotion/styled";
 import { theme } from "../theme";
-import { githubRepoUrl } from "../layout/Layout";
+import { githubRepoUrl } from "../layout/siteLinks";
 import CodeBlock from "./CodeBlock";
 
 const DemoBox = styled.div`
