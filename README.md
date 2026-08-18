@@ -16,8 +16,9 @@ job extremely well without getting in the way of application structure and witho
 routing logic up with the component tree. JARL builds that mapping out of composable
 [jotai](https://jotai.org/) atoms: each route is its own atom, matching a piece of the URL and
 telling you both whether it currently matches and how to build a URL back out of param values.
-Routing decisions in your application are then just React state reads via hooks. (There's no
-`<Switch/>` component either - a `<Route>` per page, or a plain conditional, does the job.)
+Routing decisions in your application are then just React state reads via hooks. (Convenience
+components like `<Switch>` and `<Route>` and of course the ubiquitous `<Link>` are provided in
+the React package, all accepting atoms for parameters instead of type-unsafe strings.)
 
 Because each route atom is an independent, subscribable unit of jotai state, a component that
 reads one only re-renders when *that atom's* derived value actually changes - not on every

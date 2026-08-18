@@ -25,6 +25,7 @@ const HomeHeading = styled.h1`
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  margin-bottom: 0.35rem;
 `;
 
 const HomeMark = styled(VikingHelmetMark)`
@@ -38,6 +39,7 @@ const HomeMark = styled(VikingHelmetMark)`
 // measured against the heading's rendered text at the default root font size.
 const HomeIntro = styled.div`
   p:first-of-type {
+    margin-top: 0;
     margin-left: 4.72rem;
   }
 `;
