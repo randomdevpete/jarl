@@ -4,7 +4,8 @@ This file preserves the intent behind exploratory sketches that were originally
 left as commented-out code in `src/routeAtom.ts` on the first (uncommitted)
 draft of the v2 atoms core. They were lifted out here — rather than deleted —
 so the alternative designs they were exploring aren't lost, in case a later
-ticket (atom coverage gaps, React bindings, etc.) wants to revisit them.
+ticket (atom coverage gaps, React bindings, etc.) wants to revisit them. Designs
+explored and rejected since are recorded here too.
 
 ## Tuple-shaped `RouteReturn`
 
@@ -86,3 +87,25 @@ approach were revived instead of the segment-composition one.
 A leftover return-type annotation for the pattern-string `routeAtom` sketch
 above, referencing a `Match<T>` type that was never defined in this file.
 Dead in isolation; only relevant if the pattern-string sketch is revived.
+
+## Scoping `locationAtom` to a path prefix with a jotai store
+
+Rejected in favour of `createRootAtom({ basePath })`.
+
+The idea was to mount a subtree in its own jotai store whose `locationAtom` reads
+and writes relative to a prefix, so the subtree's route atoms could be declared
+without knowing where they are mounted. Two mechanisms exist and neither works:
+
+- **A nested `<Provider store={createStore()}>`.** jotai stores don't inherit, so
+  the subtree gets its own `atomWithLocation`, which only refreshes on `popstate`.
+  Navigating inside the subtree calls `history.pushState`, which fires no
+  `popstate`, so the outer store keeps serving the old pathname: the URL changes
+  while every route atom outside the subtree still matches the previous location.
+- **A store that shares state with its parent but overrides `locationAtom`.**
+  jotai 2.20 exposes this only as `INTERNAL_buildStoreRev3` and friends — private,
+  revision-numbered API that `jotai-scope` is built on. Not a dependency a router
+  can take on a peer's internals.
+
+`createRootAtom({ basePath })` gets the useful half of the idea in one store: route
+atoms below it are static module-level values, and the prefix is named once, on the
+root, where a `reverse()` can prepend it again.
