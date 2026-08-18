@@ -34,13 +34,14 @@ export function escapeHtml(text: string): string {
 
 /**
  * Highlights a code snippet to an HTML string of `hljs-*`-classed spans (no wrapping
- * `pre`/`code`), with any recognised `jarl-atoms`/`jarl-react` identifier linked to its API
- * reference entry - see `codeLinks.ts`. Falls back to auto-detection when `lang` is missing or
- * unregistered, and to escaped-but-unhighlighted text if even that fails - a malformed snippet
- * shouldn't break the page it's on. Runs identically on server and client (see `Markdown.tsx`),
- * so output never differs between the two.
+ * `pre`/`code`), with recognised identifiers and imports linked to their source - see
+ * `codeLinks.ts`. `sourcePath` is the repo path of the file being shown, for resolving its
+ * own relative imports; omit it for a snippet with no such file (a markdown fence). Falls back
+ * to auto-detection when `lang` is missing or unregistered, and to escaped-but-unhighlighted
+ * text if even that fails - a malformed snippet shouldn't break the page it's on. Runs
+ * identically on server and client (see `Markdown.tsx`), so output never differs between the two.
  */
-export function highlightToHtml(code: string, lang?: string): string {
+export function highlightToHtml(code: string, lang?: string, sourcePath?: string): string {
   const language = lang && hljs.getLanguage(lang) ? lang : undefined;
   let html: string;
   try {
@@ -48,5 +49,5 @@ export function highlightToHtml(code: string, lang?: string): string {
   } catch {
     return escapeHtml(code);
   }
-  return linkifyHtml(html);
+  return linkifyHtml(html, sourcePath);
 }
