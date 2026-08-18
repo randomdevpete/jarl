@@ -80,7 +80,7 @@ const filterInputAtom = atom("");
 
 // State is never really undefined because the optional query params always match;
 // but since this can't be confirmed with the types, use a default
-const defaultFilter = { ...parseSort(undefined), filter: undefined };
+const defaultFilter = { ...defaultSort, filter: undefined };
 
 /**
  * Self-contained demo: a data grid whose filter text and sort column/direction both live in the
@@ -107,7 +107,7 @@ export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAt
     setFilter({
       ...currentFilter,
       key,
-      direction: filter.values?.key === key && filter.values?.direction === "asc" ? "desc" : "asc",
+      direction: currentFilter.key === key && currentFilter.direction === "asc" ? "desc" : "asc",
     });
 
   return (
