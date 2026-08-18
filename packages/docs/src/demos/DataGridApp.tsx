@@ -1,6 +1,6 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { atom, useAtom, useAtomValue } from "jotai";
-import { DefaultParams, queryParamAtom, rootAtom as defaultRootAtom, RouteAtom, transformRouteAtom } from "jarl-atoms";
+import { createRootAtom, queryParamAtom, transformRouteAtom } from "jarl-atoms";
 import { Table } from "./DataGridTable";
 import { Ware, wares } from "./wares";
 
@@ -49,33 +49,32 @@ const sortWares = (rows: Ware[], key: SortKey, direction: SortDirection) => {
   return direction === "desc" ? sorted.reverse() : sorted;
 };
 
-// Only a factory because this demo harness mounts at any root - a real app declares these as
-// static atoms. Memoised in the component below so they stay stable references across renders.
-const createGridRoutes = (root: RouteAtom<DefaultParams>) => {
-  // The raw "sort" query segment, chained off whatever root this demo is mounted on.
-  const sort = queryParamAtom("sort", { parent: root });
-  const parsedSort = transformRouteAtom(
-    sort,
-    // Down: parse the raw query value into the shape the UI actually wants.
-    (values) => parseSort(values.sort),
-    // Up: serialize back to the raw string queryParamAtom expects to write.
-    (values) => ({ sort: stringifySort(values.key, values.direction) }),
-  );
-  // Chains off parsedSort, not sort - so filter's own values carry the already-parsed sort
-  // alongside the filter text. Writing here re-composes the whole chain back into a URL, so
-  // whichever field didn't change comes along for free via the current match.
-  const filter = queryParamAtom("filter", { parent: parsedSort });
-  // A plain read off the chain's tip - no useMemo in the component needed for this.
-  const rows = atom((get) => {
-    const values = get(filter).values ?? { ...parseSort(undefined), filter: undefined };
-    return sortWares(filterWares(wares, values.filter), values.key, values.direction);
-  });
-  return { filter, rows };
-};
+// The page this demo is mounted on, so everything below it is a plain module-level atom.
+const gridRoot = createRootAtom({ basePath: "/demos/data-grid" });
 
-// Doesn't depend on root, so it's a single static atom rather than one more thing
-// createGridRoutes has to build per instance. Local and un-navigated - only reaches the chain
-// (and the URL) via filter's setter on submit.
+// The raw "sort" query segment.
+const sortParam = queryParamAtom("sort", { parent: gridRoot });
+
+const sortRoute = transformRouteAtom(
+  sortParam,
+  // Down: parse the raw query value into the shape the UI actually wants.
+  (values) => parseSort(values.sort),
+  // Up: serialize back to the raw string queryParamAtom expects to write.
+  (values) => ({ sort: stringifySort(values.key, values.direction) }),
+);
+
+// Chains off sortRoute, not sortParam - so filter's own values carry the already-parsed sort
+// alongside the filter text. Writing here re-composes the whole chain back into a URL, so
+// whichever field didn't change comes along for free via the current match.
+const filterRoute = queryParamAtom("filter", { parent: sortRoute });
+
+// A plain read off the chain's tip - no useMemo in the component needed for this.
+const rowsAtom = atom((get) => {
+  const values = get(filterRoute).values ?? { ...parseSort(undefined), filter: undefined };
+  return sortWares(filterWares(wares, values.filter), values.key, values.direction);
+});
+
+// Local and un-navigated - only reaches the chain (and the URL) via filter's setter on submit.
 const filterInputAtom = atom("");
 
 // State is never really undefined because the optional query params always match;
@@ -85,14 +84,12 @@ const defaultFilter = { ...defaultSort, filter: undefined };
 /**
  * Self-contained demo: a data grid whose filter text and sort column/direction both live in the
  * URL query string (`?sort=-price&filter=axe`), so the grid's state is shareable/bookmarkable and
- * moves with back/forward navigation. Pass the route atom it is mounted on as `rootAtom`. Both
- * query params are optional, so the route always matches - no `<Route>` needed, just reading the
- * atoms directly.
+ * moves with back/forward navigation. Both query params are optional, so the route always matches -
+ * no `<Route>` needed, just reading the atoms directly.
  */
-export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAtom<DefaultParams> }) => {
-  const routes = useMemo(() => createGridRoutes(rootAtom), [rootAtom]);
-  const [filter, setFilter] = useAtom(routes.filter);
-  const rows = useAtomValue(routes.rows);
+export const DataGridApp = () => {
+  const [filter, setFilter] = useAtom(filterRoute);
+  const rows = useAtomValue(rowsAtom);
   const [filterInput, setFilterInput] = useAtom(filterInputAtom);
 
   const currentFilter = filter.values ?? defaultFilter;
