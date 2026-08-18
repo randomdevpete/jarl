@@ -26,7 +26,7 @@ import {
   ToolbarLink,
 } from "./Layout.styles";
 
-const githubRepoUrl = "https://github.com/randomdevpete/jarl";
+export const githubRepoUrl = "https://github.com/randomdevpete/jarl";
 // Existing community invite, also linked from the README badges.
 const discordInviteUrl = "https://discord.gg/6yGq39rJ63";
 const npmPackageUrl = "https://www.npmjs.com/package/jarl-react";

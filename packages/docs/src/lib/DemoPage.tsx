@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import styled from "@emotion/styled";
 import { theme } from "../theme";
+import { githubRepoUrl } from "../layout/Layout";
 import CodeBlock from "./CodeBlock";
 
 const DemoBox = styled.div`
@@ -24,31 +25,35 @@ const DemoBox = styled.div`
   }
 `;
 
-const SourceDisclosure = styled.details`
-  summary {
-    cursor: pointer;
-    color: ${theme.fgMuted};
-    margin: 1rem 0 0.5rem;
+const SourceHeading = styled.h2`
+  color: ${theme.fgMuted};
+  margin: 1rem 0 0.5rem;
+
+  a {
+    color: inherit;
   }
 `;
 
 export type DemoPageProps = {
   title: string;
-  /** The demo's own source, imported with Vite's `?raw`, shown under a "View source" disclosure. */
+  /** Repo-relative path to the demo's own source, e.g. "packages/docs/src/demos/DataGridApp.tsx" -
+   * shown as the source section's heading (just the filename) and linked to it on GitHub. */
+  sourcePath: string;
+  /** The demo's own source, imported with Vite's `?raw`. Always shown - it's the point of a demo. */
   source: string;
   /** The running demo. */
   children: ReactNode;
 };
 
 /** The frame every live demo page shares: heading, bordered demo box, and its source. */
-export const DemoPage = ({ title, source, children }: DemoPageProps) => (
+export const DemoPage = ({ title, sourcePath, source, children }: DemoPageProps) => (
   <>
     <h1>{title}</h1>
     <DemoBox>{children}</DemoBox>
-    <SourceDisclosure>
-      <summary>View source</summary>
-      <CodeBlock code={source} lang="tsx" />
-    </SourceDisclosure>
+    <SourceHeading>
+      <a href={`${githubRepoUrl}/blob/master/${sourcePath}`}>{sourcePath.split("/").pop()}</a>
+    </SourceHeading>
+    <CodeBlock code={source} lang="tsx" />
   </>
 );
 
