@@ -5,6 +5,7 @@ import javascript from "highlight.js/lib/languages/javascript";
 import json from "highlight.js/lib/languages/json";
 import typescript from "highlight.js/lib/languages/typescript";
 import xml from "highlight.js/lib/languages/xml";
+import { linkifyHtml } from "./codeLinks";
 
 // Import from core (not full bundle) to optimize bundle size.
 hljs.registerLanguage("javascript", javascript);
@@ -33,16 +34,19 @@ export function escapeHtml(text: string): string {
 
 /**
  * Highlights a code snippet to an HTML string of `hljs-*`-classed spans (no wrapping
- * `pre`/`code`). Falls back to auto-detection when `lang` is missing or unregistered, and to
- * escaped-but-unhighlighted text if even that fails - a malformed snippet shouldn't break the
- * page it's on. Runs identically on server and client (see `Markdown.tsx`), so output never
- * differs between the two.
+ * `pre`/`code`), with any recognised `jarl-atoms`/`jarl-react` identifier linked to its API
+ * reference entry - see `codeLinks.ts`. Falls back to auto-detection when `lang` is missing or
+ * unregistered, and to escaped-but-unhighlighted text if even that fails - a malformed snippet
+ * shouldn't break the page it's on. Runs identically on server and client (see `Markdown.tsx`),
+ * so output never differs between the two.
  */
 export function highlightToHtml(code: string, lang?: string): string {
   const language = lang && hljs.getLanguage(lang) ? lang : undefined;
+  let html: string;
   try {
-    return language ? hljs.highlight(code, { language, ignoreIllegals: true }).value : hljs.highlightAuto(code).value;
+    html = language ? hljs.highlight(code, { language, ignoreIllegals: true }).value : hljs.highlightAuto(code).value;
   } catch {
     return escapeHtml(code);
   }
+  return linkifyHtml(html);
 }

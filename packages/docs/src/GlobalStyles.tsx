@@ -152,6 +152,17 @@ const documentStyles = css`
     font-weight: 700;
   }
 
+  /* Clickable identifiers/imports (see \`lib/codeLinks.ts\`) keep their token colour instead of
+     the site's usual link colour, and only reveal themselves as links on hover. */
+  .hljs a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .hljs a:hover {
+    text-decoration: underline;
+  }
+
   a {
     color: ${theme.accent};
     text-decoration: none;
