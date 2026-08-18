@@ -18,7 +18,7 @@ tree itself, where it never seemed to belong. JARL builds that mapping out of co
 using [jotai](https://jotai.org/) under the hood: each route is its own atom, with a link to a
 parent atom and so on up to the [`rootAtom`](/api/jarl-atoms#rootatom); each one matching a
 piece of the URL (normally a path segment) and telling you both whether it *currently* matches,
-as well as *how to build a URL /to/ that route* based on a given state. Routing decisions in
+as well as **how to build a URL _to_ that route** based on a given state. Routing decisions in
 your application then decompose to very simple logic based on the current states of these
 atoms; a simple `switch` statement or series of `if`s is enough to decide what components to
 render, and navigation can be performed by *calling the atom setter*. (Convenience components
