@@ -119,15 +119,19 @@ A component that needs to navigate programmatically (rather than render a plain 
 the `useNavigate` hook instead:
 
 ```tsx
-import { useState } from "react";
+import { atom, useAtom } from "jotai";
 import { useNavigate } from "jarl-react";
 import { queryParamAtom } from "jarl-atoms";
 
 // A single named query-string param is its own composable route atom too:
 const searchQueryRoute = queryParamAtom("q");
 
+// The text being typed is ordinary jotai state, living alongside the route atom
+// rather than in a separate useState world.
+const searchTextAtom = atom("");
+
 const SearchForm = () => {
-    const [searchText, setSearchText] = useState("");
+    const [searchText, setSearchText] = useAtom(searchTextAtom);
     const navigate = useNavigate(searchQueryRoute);
     return (
         <form onSubmit={(e) => { e.preventDefault(); navigate({ q: searchText }); }}>
