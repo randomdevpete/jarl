@@ -5,8 +5,8 @@ import styled from "@emotion/styled";
 import { theme } from "../theme";
 import { filterWares, parseSort, sortColumns, sortWares, stringifySort, SortKey, wares } from "./wares";
 
-// Built fresh per rootAtom (memoised in the component below) since atoms are meant to be
-// stable references - recreating them every render would resubscribe everything each time.
+// Only a factory because this demo harness mounts at any root - a real app declares these as
+// static atoms. Memoised in the component below so they stay stable references across renders.
 const createGridRoutes = (root: RouteAtom<DefaultParams>) => {
   // The raw "sort" query segment, chained off whatever root this demo is mounted on.
   const sort = queryParamAtom("sort", { parent: root });
@@ -62,21 +62,24 @@ const Table = styled.table`
 export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAtom<DefaultParams> }) => {
   const routes = useMemo(() => createGridRoutes(rootAtom), [rootAtom]);
   const [filter, setFilter] = useAtom(routes.filter);
-  const { key: sortKey, direction } = filter.values ?? parseSort(undefined);
   const rows = useAtomValue(routes.rows);
   const [filterInput, setFilterInput] = useAtom(routes.filterInput);
+  // Falls back to defaults for the (never actually hit, but real to the type) unmatched case,
+  // so every setFilter call below can spread current state without re-declaring its shape.
+  const defaults = { ...parseSort(undefined), filter: undefined };
 
   // Keeps the input in sync with the URL when it changes some other way (back/forward, a
   // shared link) - the input is otherwise free-standing scratch state, not live-searching.
   useEffect(() => setFilterInput(filter.values?.filter ?? ""), [filter.values?.filter, setFilterInput]);
 
-  const commitFilter = () => setFilter({ key: sortKey, direction, filter: filterInput || undefined });
+  const commitFilter = () => setFilter({ ...defaults, ...filter.values, filter: filterInput || undefined });
 
   const toggleSort = (key: SortKey) =>
     setFilter({
+      ...defaults,
+      ...filter.values,
       key,
-      direction: sortKey === key && direction === "asc" ? "desc" : "asc",
-      filter: filter.values?.filter,
+      direction: filter.values?.key === key && filter.values?.direction === "asc" ? "desc" : "asc",
     });
 
   return (
@@ -105,7 +108,7 @@ export const DataGridApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAt
               <th key={column.key}>
                 <button type="button" onClick={() => toggleSort(column.key)}>
                   {column.label}
-                  {sortKey === column.key ? (direction === "asc" ? " ▲" : " ▼") : ""}
+                  {filter.values?.key === column.key ? (filter.values.direction === "asc" ? " ▲" : " ▼") : ""}
                 </button>
               </th>
             ))}
