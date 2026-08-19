@@ -56,9 +56,40 @@ outcome rather than mechanics:
   (awaited — its API is promise-based). Not equivalent work: `router.navigate()` runs
   react-router's full data-router state machine, where the atom write only re-derives state. jarl
   is slower here regardless, so the gap this understates is jarl's own.
+- **resolve cost decomposition** — why react-router can navigate faster than it resolves: the
+  public `matchRoutes()` flattens and ranks the whole config on *every call*, where a data router
+  does that once at creation and each navigation matches against the cached ranking
+  (`precomputedBranches` in react-router's `router.ts`). The workload holds the matched URL at the
+  first-ranked branch while the table grows, so per-call match work is constant: `matchRoutes`
+  scales linearly with table size (it is dominated by per-call table preparation), while
+  `router.navigate` and jarl stay near-flat. Navigation does still resolve the route — it just
+  never re-pays the preparation the stateless number includes.
 
 Each number is 30 retained samples of 1000 operations, after 10 discarded warm-up samples, with GC
 forced between samples; reported as median with p25/p75 and min/max.
+
+### Deep nesting (`src/deepRenders.test.tsx`, `src/deepNavigation.benchmark.tsx`)
+
+Five nested levels (`/d1/:p1/d2/:p2/…/d5/:p5`), each level a layout that renders its own param
+and a static child, against three implementations: jarl's nested `Switch`/`Route` atoms,
+react-router's data router (route config), and react-router's declarative `<Routes>` component
+form. `deepRenders.test.tsx` counts renders per level for a leaf-only, mid-level and root-level
+param change, with the same byte-identical-HTML assertion across all three apps.
+`deepNavigation.benchmark.tsx` times the same leaf toggle with React included — click to
+committed DOM, via `flushSync` — since render counts alone can't rank routers that re-render the
+same components at different per-render cost.
+
+### Nested async data (`src/asyncData.benchmark.tsx`)
+
+A three-level route chain where every level needs one 25ms async lookup, measured from
+navigation to the deepest level's data being in the DOM, with fresh param values per run so no
+cache is ever warm. Three loading strategies: jarl's `asyncRouteAtom` + `followAsyncRoutes`
+(every lookup starts on the location change, in parallel — the param routes chain on each other,
+not on the async atoms, so no lookup waits for another's data), react-router loaders (its own
+parallel mechanism), and a react-router Suspense cascade (each level's component `use()`s its own
+fetch, so a level's lookup cannot start until its parent has rendered). The cascade is what
+fetch-on-render components give you, not a limitation of react-router — loaders exist precisely
+to avoid it and are included as the fair comparison.
 
 ### Bundle size (`src/bundle-size.benchmark.ts`)
 
@@ -70,9 +101,8 @@ bundled) and with jotai external, for apps already using jotai.
 
 ## What the numbers do not show
 
-- No real-browser timings: navigation cost here is library work only, not layout/paint, and jsdom
-  is used solely for deterministic render counting.
-- No data APIs: react-router's loaders/actions/lazy-route machinery and jarl's async route atoms
-  are unexercised, though the react-router bundle necessarily carries that code.
-- One app shape and one route-table shape; different shapes (deep nesting, splats, query-heavy
-  routing) may rank differently.
+- No real-browser timings: no layout, paint or input latency. jsdom timings cover library and
+  React render/commit work only.
+- react-router's actions and lazy-route machinery are unexercised.
+- Two app shapes and two route-table shapes; others (splats, query-heavy routing) may rank
+  differently.

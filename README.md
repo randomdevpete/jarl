@@ -31,7 +31,7 @@ Because each route atom is an independent, subscribable unit of jotai state, onl
 that actually read route state are re-rendered by navigation, resolving a URL against the whole
 route table is fast, and the bundle stays small. Those claims are
 [measured against react-router](/docs/benchmarks) rather than asserted - including the workloads
-where the two routers tie, and the one where react-router is quicker.
+where the two routers tie, and the ones where react-router is quicker.
 
 ## Features
 
