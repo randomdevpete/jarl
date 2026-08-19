@@ -51,6 +51,40 @@ test(`resolve: URL string in, matched leaf out (${SECTION_COUNT} sections × sta
   console.log(`  react-router        ${formatSummary(reactRouter)}`);
 });
 
+// Where matchRoutes' time goes: the URL always hits the first-ranked branch, so
+// per-call match work is constant while the table grows. A data router instead
+// ranks once at creation, so its per-navigation cost must not scale.
+test("resolve cost decomposition: table size scaling at a fixed rank-0 hit", async () => {
+  const rows: string[] = [];
+  for (const size of [1, 10, SECTION_COUNT]) {
+    const config = routeConfig.slice(0, size);
+    const rr = measure(() => {
+      matchRoutes(config, "/s0/1");
+    });
+
+    const store = createStore();
+    const jarl = measure(() => {
+      resolveJarl(store, "/s0/1");
+    });
+
+    const router = createMemoryRouter(config, { initialEntries: ["/s0/1"] });
+    let k = 0;
+    const nav = await measureAsync(async () => {
+      k++;
+      await router.navigate(`/s0/${k}`);
+    });
+    router.dispose();
+
+    rows.push(
+      `  ${String(size * 2).padStart(3)} routes: matchRoutes ${formatSummary(rr)}`,
+      `             jarl        ${formatSummary(jarl)}`,
+      `             navigate    ${formatSummary(nav)}`,
+    );
+  }
+  console.log(`\nRank-0 hit, growing table:`);
+  for (const row of rows) console.log(row);
+});
+
 test("navigate: one client-side navigation through each library's API", async () => {
   const store = createStore();
   let n = 0;
