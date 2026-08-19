@@ -39,6 +39,12 @@ export const blogRoutingDemoRoute = staticRouteAtom("blog-routing", { parent: de
 // chained inside DataGridApp, on its own basePath-scoped root.
 export const dataGridDemoRoute = staticRouteAtom("data-grid", { parent: demosIndexRoute });
 
+// Cancel-navigation demo: the site's own mount point, with one further static child for the
+// "other" page it navigates to. Dirty-tracking and the confirm prompt live entirely inside
+// CancelNavigationApp - the router only needs the two destinations to exist.
+export const cancelNavigationDemoRoute = staticRouteAtom("cancel-navigation", { parent: demosIndexRoute });
+export const cancelNavigationOtherRoute = staticRouteAtom("other", { parent: cancelNavigationDemoRoute });
+
 // Async-lookup demo: /demos/async-lookup/:slug exists only if the demo's fake database has an
 // article at that slug, and the article it found rides along on the route's own values. Its
 // nested atoms stay module-level, unlike the blog demo's, because the server render needs them:
@@ -63,6 +69,8 @@ const exactRouteMissedAtom = notAtom(
   basicRoutingDemoPageRoute,
   blogRoutingDemoRoute,
   dataGridDemoRoute,
+  cancelNavigationDemoRoute,
+  cancelNavigationOtherRoute,
   asyncLookupDemoRoute,
   asyncArticleRoute,
 );
@@ -107,6 +115,8 @@ export const staticPaths: string[] = [
   "/demos/basic-routing/about",
   ...blogStaticPaths(),
   "/demos/data-grid",
+  "/demos/cancel-navigation",
+  "/demos/cancel-navigation/other",
   "/demos/async-lookup",
   ...articleSlugs().map((slug) => `/demos/async-lookup/${slug}`),
 ];
