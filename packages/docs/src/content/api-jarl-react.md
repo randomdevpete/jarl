@@ -8,7 +8,7 @@ re-export `jarl-atoms`: get your route atoms from `jarl-atoms` and these compone
 
 Every hook here takes a route atom as its first argument. `jarl-react` also re-exports jotai's
 own `useAtom`, `useAtomValue` and `useSetAtom`, so composing directly with a route atom (or with
-`jarl-atoms` primitives like `resolvedAtom`) never needs a separate direct dependency on
+`jarl-atoms` primitives like `asyncRouteAtom`) never needs a separate direct dependency on
 `jotai`.
 
 The reference below is generated from the doc comments on each export. Components list only

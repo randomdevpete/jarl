@@ -50,10 +50,10 @@ const href = store.get(docAtom).reverse({ docName: "getting-started" });
 ```
 
 Other exports: `queryAtom`/`queryParamAtom` (query-string state, composable
-the same way as path atoms), `redirectAtom`, `resolvedAtom`, and `asyncRouteAtom`
-(a route that exists only if an async lookup finds it, with what it found bound
-to the route's values). See the full
-docs and demos for the complete model:
+the same way as path atoms), `redirectAtom`, and `asyncRouteAtom` (async data for
+a route, read as `.data`; read as a route instead and the route exists only if
+the load found something, with what it found bound to the route's values). See
+the full docs and demos for the complete model:
 
 [JARL demos and documentation](https://jarl.randomdev.co.uk)
 
