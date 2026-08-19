@@ -33,7 +33,7 @@ export class Redirect {
 }
 
 /**
- * Constructs a `Redirect` sentinel object - typically returned from a `resolvedAtom` loader to
+ * Constructs a `Redirect` sentinel object - typically returned from an `asyncRouteAtom` loader to
  * defer a redirect decision until after data has loaded.
  */
 export const redirect = (to: Path): Redirect => new Redirect(to);
