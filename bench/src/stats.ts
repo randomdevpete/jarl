@@ -65,8 +65,8 @@ export const measureAsync = async (
 
 const fmt = (value: number) => (value >= 100 ? value.toFixed(0) : value >= 10 ? value.toFixed(1) : value.toFixed(2));
 
-export const formatSummary = ({ samples, median, p25, p75, min, max }: Summary): string =>
-  `median ${fmt(median)}µs  p25 ${fmt(p25)}µs  p75 ${fmt(p75)}µs  min ${fmt(min)}µs  max ${fmt(max)}µs  (n=${samples})`;
+export const formatSummary = ({ samples, median, p25, p75, min, max }: Summary, unit = "µs"): string =>
+  `median ${fmt(median)}${unit}  p25 ${fmt(p25)}${unit}  p75 ${fmt(p75)}${unit}  min ${fmt(min)}${unit}  max ${fmt(max)}${unit}  (n=${samples})`;
 
 /** Prints rows as a column-aligned table, first column left-justified. */
 export const printTable = (title: string, header: string[], rows: (string | number)[][]) => {
