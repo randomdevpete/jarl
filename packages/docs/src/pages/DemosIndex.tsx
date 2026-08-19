@@ -5,6 +5,7 @@ import {
   basicRoutingDemoRoute,
   blogRoutingDemoRoute,
   complexRoutingDemoRoute,
+  cancelNavigationDemoRoute,
   dataGridDemoRoute,
 } from "../router/routes";
 
@@ -46,6 +47,13 @@ export const DemosIndex = () => (
         </Link>{" "}
         &mdash; custom single-segment path atoms built on <code>routeAtom</code> directly: <code>yyyy-mm-dd</code> gated
         on the real calendar with <code>validateAtom</code>, and <code>name.ext</code> filenames.
+      </li>
+      <li>
+        <Link route={cancelNavigationDemoRoute} to={{}}>
+          Cancel navigation on dirty edits
+        </Link>{" "}
+        &mdash; a link that confirms before leaving an in-progress edit, built by wrapping <code>useLink</code>&apos;s
+        own <code>onClick</code> rather than the <code>Link</code> component.
       </li>
       <li>
         <Link route={asyncLookupDemoRoute} to={{}}>
