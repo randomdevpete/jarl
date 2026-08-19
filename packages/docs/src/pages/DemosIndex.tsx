@@ -1,6 +1,12 @@
 import { Link } from "jarl-react";
 import LinkList from "../lib/LinkList";
-import { asyncLookupDemoRoute, basicRoutingDemoRoute, blogRoutingDemoRoute, dataGridDemoRoute } from "../router/routes";
+import {
+  asyncLookupDemoRoute,
+  basicRoutingDemoRoute,
+  blogRoutingDemoRoute,
+  cancelNavigationDemoRoute,
+  dataGridDemoRoute,
+} from "../router/routes";
 
 export const DemosIndex = () => (
   <>
@@ -33,6 +39,13 @@ export const DemosIndex = () => (
         </Link>{" "}
         &mdash; a table whose filter text and sort column live in <code>queryParamAtom</code>s chained off the mount
         route, so the grid&apos;s state is shareable and moves with back/forward navigation.
+      </li>
+      <li>
+        <Link route={cancelNavigationDemoRoute} to={{}}>
+          Cancel navigation on dirty edits
+        </Link>{" "}
+        &mdash; a link that confirms before leaving an in-progress edit, built by wrapping <code>useLink</code>&apos;s
+        own <code>onClick</code> rather than the <code>Link</code> component.
       </li>
       <li>
         <Link route={asyncLookupDemoRoute} to={{}}>
