@@ -7,12 +7,12 @@
  * can exercise realistic nested/param routes.
  *
  * NOTE: this file only *composes* the primitives jarl-atoms exports
- * (rootAtom, staticRouteAtom, paramRouteAtom, redirectAtom, resolvedAtom). It
+ * (rootAtom, staticRouteAtom, paramRouteAtom, redirectAtom, asyncRouteAtom). It
  * does not add routing features to the library.
  */
 import { atom } from "jotai/vanilla";
 import { loadable } from "jotai/utils";
-import { rootAtom, staticRouteAtom, paramRouteAtom, redirectAtom, resolvedAtom, redirect } from "jarl-atoms";
+import { rootAtom, staticRouteAtom, paramRouteAtom, redirectAtom, asyncRouteAtom, redirect } from "jarl-atoms";
 
 // --- Shell (demo/cypress/integration/00DemosShell.js) ---
 export { rootAtom };
@@ -77,20 +77,20 @@ const CONTENT: Record<string, string> = {
   "about-us": "A jarl was a Norse or Danish chief, a rank of nobility above a freeman and below a king.",
 };
 
-export const redirectsAdminDataAtom = resolvedAtom(redirectsAdminAtom, async (_values, get) => {
+export const redirectsAdminDataAtom = asyncRouteAtom(redirectsAdminAtom, "admin", async (_values, get) => {
   if (!get(isAdminAuthenticatedAtom)) {
     return redirect("/redirects");
   }
   return { body: "This is the super secret admin page." };
-});
+}).data;
 
-export const redirectsContentDataAtom = resolvedAtom(redirectsContentSlugAtom, async ({ slug }) => {
+export const redirectsContentDataAtom = asyncRouteAtom(redirectsContentSlugAtom, "content", async ({ slug }) => {
   const body = CONTENT[slug];
   if (!body) {
     return redirect("/redirects");
   }
   return { body };
-});
+}).data;
 
 // loadable() lets the pages read these without a Suspense boundary.
 export const redirectsAdminDataLoadableAtom = loadable(redirectsAdminDataAtom);

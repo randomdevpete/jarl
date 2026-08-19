@@ -4,7 +4,7 @@ import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 import createEmotionServer from "@emotion/server/create-instance";
 import App from "./App";
-import { locationAtom, preloadRoutes } from "jarl-atoms";
+import { locationAtom, preloadAsyncRoutes } from "jarl-atoms";
 import { asyncRoutes, notFoundAtom } from "./router/routes";
 
 // Re-exported so the plain-Node prerender script (scripts/build.mjs) can drive the
@@ -39,7 +39,7 @@ export const render = async (path: string): Promise<RenderResult> => {
     pathname: rawPathname || "/",
     searchParams: new URLSearchParams(rawSearch),
   });
-  const routeData = await preloadRoutes(store, asyncRoutes);
+  const routeData = await preloadAsyncRoutes(store, asyncRoutes);
   // The default key is what the browser-side cache adopts server-rendered styles under.
   const cache = createCache({ key: "css" });
   const { extractCriticalToChunks, constructStyleTagsFromChunks } = createEmotionServer(cache);
