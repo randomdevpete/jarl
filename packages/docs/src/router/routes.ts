@@ -8,6 +8,7 @@
 import { atom } from "jotai";
 import { asyncRouteAtom, notAtom, rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 import { blogStaticPaths } from "../demos/blogPosts";
+import { complexRoutingStaticPaths } from "../demos/complexRoutingSamples";
 import { articleSlugs, findArticle } from "../demos/asyncArticles";
 import { changelogStaticPaths } from "../pages/changelogEntries";
 
@@ -45,6 +46,11 @@ export const dataGridDemoRoute = staticRouteAtom("data-grid", { parent: demosInd
 export const cancelNavigationDemoRoute = staticRouteAtom("cancel-navigation", { parent: demosIndexRoute });
 export const cancelNavigationOtherRoute = staticRouteAtom("other", { parent: cancelNavigationDemoRoute });
 
+// Complex routing demo: the site's own mount point. The demo's own /archive/:date and
+// /files/:file trees, built on custom single-segment path atoms, live inside
+// ComplexRoutingApp, on its own basePath-scoped root.
+export const complexRoutingDemoRoute = staticRouteAtom("complex-routing", { parent: demosIndexRoute });
+
 // Async-lookup demo: /demos/async-lookup/:slug exists only if the demo's fake database has an
 // article at that slug, and the article it found rides along on the route's own values. Its
 // nested atoms stay module-level, unlike the blog demo's, because the server render needs them:
@@ -71,19 +77,25 @@ const exactRouteMissedAtom = notAtom(
   dataGridDemoRoute,
   cancelNavigationDemoRoute,
   cancelNavigationOtherRoute,
+  complexRoutingDemoRoute,
   asyncLookupDemoRoute,
   asyncArticleRoute,
 );
 
 /**
  * Whether the current location has nothing behind it, which is what makes a server render's
- * *status code* right and not just its HTML. Everything under the changelog's and the blog demo's
- * mounts counts as found - both route their own subtree and render their own not-found views. The
- * async demo gets no such blanket, and lists `asyncArticleRoute` rather than `asyncLookupSlugRoute`:
- * an unknown slug is a genuine miss, even though the demo page still renders its own not-found view.
+ * *status code* right and not just its HTML. Everything under the changelog's, the blog demo's
+ * and the complex-routing demo's mounts counts as found - all three route their own subtree and
+ * render their own not-found views. The async demo gets no such blanket, and lists
+ * `asyncArticleRoute` rather than `asyncLookupSlugRoute`: an unknown slug is a genuine miss, even
+ * though the demo page still renders its own not-found view.
  */
 export const notFoundAtom = atom(
-  (get) => get(exactRouteMissedAtom) && !get(changelogRoute).match && !get(blogRoutingDemoRoute).match,
+  (get) =>
+    get(exactRouteMissedAtom) &&
+    !get(changelogRoute).match &&
+    !get(blogRoutingDemoRoute).match &&
+    !get(complexRoutingDemoRoute).match,
 );
 
 export type DocName = "getting-started" | "data-loading" | "path-variables";
@@ -117,6 +129,7 @@ export const staticPaths: string[] = [
   "/demos/data-grid",
   "/demos/cancel-navigation",
   "/demos/cancel-navigation/other",
+  ...complexRoutingStaticPaths(),
   "/demos/async-lookup",
   ...articleSlugs().map((slug) => `/demos/async-lookup/${slug}`),
 ];

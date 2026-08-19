@@ -14,6 +14,7 @@ import {
   blogRoutingDemoRoute,
   dataGridDemoRoute,
   cancelNavigationDemoRoute,
+  complexRoutingDemoRoute,
   asyncLookupDemoRoute,
 } from "./router/routes";
 import Home from "./pages/Home";
@@ -26,6 +27,7 @@ import BasicRoutingDemo from "./pages/BasicRoutingDemo";
 import BlogRoutingDemo from "./pages/BlogRoutingDemo";
 import DataGridDemo from "./pages/DataGridDemo";
 import CancelNavigationDemo from "./pages/CancelNavigationDemo";
+import ComplexRoutingDemo from "./pages/ComplexRoutingDemo";
 import AsyncLookupDemo from "./pages/AsyncLookupDemo";
 import NotFound from "./pages/NotFound";
 
@@ -71,6 +73,9 @@ export const App = () => (
         </Route>
         <Route on={cancelNavigationDemoRoute}>
           <CancelNavigationDemo />
+        </Route>
+        <Route on={complexRoutingDemoRoute}>
+          <ComplexRoutingDemo />
         </Route>
         <Route on={asyncLookupDemoRoute}>
           <AsyncLookupDemo />
