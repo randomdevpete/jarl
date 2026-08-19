@@ -158,8 +158,8 @@ export default SearchForm;
 
 That's all the basics! Hopefully this gave a flavour of the power and simplicity of this
 routing system. See the [docs site](https://jarl.randomdev.co.uk) for query strings, redirects, and
-data loading (resolving promises as part of a route match, `jarl-atoms`' `resolvedAtom`) in more
-depth.
+data loading (resolving promises as part of a route match, `jarl-atoms`' `asyncRouteAtom`) in
+more depth.
 
 ## Documentation
 
