@@ -31,8 +31,8 @@ export const DemosIndex = () => (
         <Link route={dataGridDemoRoute} to={{}}>
           Data grid filter/sort
         </Link>{" "}
-        &mdash; a table whose filter text and sort column live in <code>queryParamRouteAtom</code>s chained off the mount
-        route, so the grid&apos;s state is shareable and moves with back/forward navigation.
+        &mdash; a table whose filter text and sort column live in <code>queryParamRouteAtom</code>s chained off the
+        mount route, so the grid&apos;s state is shareable and moves with back/forward navigation.
       </li>
       <li>
         <Link route={asyncLookupDemoRoute} to={{}}>
