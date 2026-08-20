@@ -109,3 +109,32 @@ without knowing where they are mounted. Two mechanisms exist and neither works:
 `createRootAtom({ basePath })` gets the useful half of the idea in one store: route
 atoms below it are static module-level values, and the prefix is named once, on the
 root, where a `reverse()` can prepend it again.
+
+## A derived "this chain always matches" bit on `RouteAtom`
+
+Rejected in favour of `requireMatch`/`useRequiredRoute`.
+
+Whether a chain can miss is a property of how its atoms compose, so the obvious design is to
+derive it: `RouteAtom<T, Always extends boolean = boolean>`, `RouteReturn<T, Always>` collapsing
+to the matched branch when `Always` is `true`, and every constructor threading the bit through
+`RouteOptions` from its parent. It typechecks — `Extract`/conditional types are enough, no
+type-surgery dependency — and assignability survives, because `RouteAtom` is covariant in its
+read type. Three things sink it anyway:
+
+- **The provable class is almost empty.** Only `rootAtom` (or `createRootAtom()` with no
+  `basePath`) is unconditionally total, and every path route can miss by construction, so a
+  chain qualifies only if it binds nothing off the path at all: optional `queryParamAtom`s and
+  total `transformRouteAtom`s, and nothing else.
+- **It doesn't cover the case that motivated it.** The data-grid demo roots on
+  `createRootAtom({ basePath: "/demos/data-grid" })`, which reports `match: false` for any
+  location outside the prefix. A sound derivation has to call that chain partial. What actually
+  guarantees the match is the `<Route>` the demo is mounted under — knowledge that lives above
+  the atoms and can't be recovered from them.
+- **`transformRouteAtom` can't report it.** Its getter is declared `=> Return | undefined`, so
+  totality would have to be inferred from the callback's own return type, changing how `Return`
+  is inferred for every existing caller.
+
+A manual `alwaysMatches: true` opt-in avoids the derivation entirely and was rejected on
+soundness: it makes the type assert something nothing checks, so a wrong guarantee surfaces as
+`undefined` field access far from the claim. `requireMatch` is the same assertion made by the
+same caller, checked, and thrown at the point it is wrong.
