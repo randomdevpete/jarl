@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { DefaultParams, RouteAtom } from "jarl-atoms";
+import { DefaultParams, MatchedRoute, RouteAtom, requireMatch } from "jarl-atoms";
 import { isActive } from "./isActive";
 
 // Re-export jotai's own primitive hooks. Per jotai convention (see
@@ -17,6 +17,19 @@ export { useAtom, useAtomValue, useSetAtom };
  */
 export function useRoute<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
   return useAtomValue(routeAtom);
+}
+
+/**
+ * `useRoute` for a route atom whose match is guaranteed by where the component renders - under the
+ * `<Route>` that already matched it, or on a chain binding nothing but optional params. Returns the
+ * matched branch, so `values` needs no fallback, and throws if it turns out not to match.
+ *
+ * Without the Navigation API (Firefox/Safari today), a `history.pushState` made outside jarl can
+ * leave the read one render stale, so that throw can fire where `useRoute` would render stale
+ * values instead. Navigate through jarl to avoid it.
+ */
+export function useRequiredRoute<T extends DefaultParams>(routeAtom: RouteAtom<T>, name?: string): MatchedRoute<T> {
+  return requireMatch(useAtomValue(routeAtom), name);
 }
 
 /**

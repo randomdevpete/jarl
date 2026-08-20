@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { ReactElement } from "react";
+import { describe, it, expect, beforeEach, expectTypeOf, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { rootAtom } from "jarl-atoms";
-import { useRoute, useNavigate, useIsActive, useHref, useLink } from "../hooks";
+import { Provider, createStore } from "jotai";
+import { locationAtom, rootAtom } from "jarl-atoms";
+import { useRoute, useRequiredRoute, useNavigate, useIsActive, useHref, useLink } from "../hooks";
 import { aboutAtom, teamAtom, userAtom, usersAtom } from "./fixtures";
 
 const goTo = (path: string) => window.history.pushState(null, "", path);
@@ -29,6 +31,34 @@ describe("useRoute", () => {
     };
     render(<Probe />);
     expect(screen.getByTestId("probe")).toHaveTextContent("false");
+  });
+});
+
+describe("useRequiredRoute", () => {
+  // Seeded through a store of its own rather than `goTo`: these assert on the very first render,
+  // and a bare `history.pushState` only reaches the location atom once it is mounted and listening.
+  const renderAt = (path: string, ui: ReactElement) => {
+    const store = createStore();
+    store.set(locationAtom, { pathname: path, searchParams: new URLSearchParams() });
+    return render(<Provider store={store}>{ui}</Provider>);
+  };
+
+  it("gives the matched values with no undefined left to narrow away", () => {
+    const Probe = () => {
+      const { values, exact } = useRequiredRoute(userAtom);
+      expectTypeOf(values.id).toEqualTypeOf<string>();
+      return <div data-testid="probe">{`${values.id}/${exact}`}</div>;
+    };
+    renderAt("/users/42", <Probe />);
+    expect(screen.getByTestId("probe")).toHaveTextContent("42/true");
+  });
+
+  it("throws when the route it was promised would match does not", () => {
+    const Probe = () => <div>{useRequiredRoute(userAtom, "userAtom").values.id}</div>;
+    // React logs the error on its way back out; only the rethrow is worth asserting on.
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(() => renderAt("/about", <Probe />)).toThrow("userAtom does not match the current location");
+    errorLog.mockRestore();
   });
 });
 
