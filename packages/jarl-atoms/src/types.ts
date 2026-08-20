@@ -53,6 +53,9 @@ export type RouteReturn<T extends DefaultParams = DefaultParams> = {
     }
 );
 
+/** The matched branch of a `RouteReturn`: the one carrying `values` and `rest`. */
+export type MatchedRoute<T extends DefaultParams = DefaultParams> = Extract<RouteReturn<T>, { match: true }>;
+
 // jotai's WritableAtom takes its write-side arguments as a tuple (Args) plus
 // a Result type, rather than the single-Update-type shape older jotai
 // versions used — hence `[T]` (a single-argument tuple) and `void` here.
