@@ -8,11 +8,11 @@
 // v1 does this as a side effect inside RoutingProvider.doNavigation, which
 // both matches a route AND performs the navigation as one imperative step.
 // Atoms split that in two, on purpose:
-//   - redirectAtom: a *pure* RouteAtom-shaped leaf - reading it just tells
+//   - redirectRouteAtom: a *pure* RouteAtom-shaped leaf - reading it just tells
 //     you whether the redirect route currently matches, exactly like any
 //     other route. No side effects happen just from reading it.
 //   - followRedirects: the actual effect - given a jotai store and one or
-//     more redirectAtoms, subscribes to them and performs the
+//     more redirectRouteAtoms, subscribes to them and performs the
 //     history.replace-style navigation the moment one starts matching.
 // This keeps the "does this match" question composable/pure (usable in
 // Route/Link like any other RouteAtom) while isolating the "and now actually
@@ -24,7 +24,7 @@
 import { Getter, atom, createStore } from "jotai/vanilla";
 import { Path, splitHref } from "./href";
 import { locationAtom } from "./locationAtom";
-import { rootAtom } from "./rootAtom";
+import { rootRouteAtom } from "./rootRouteAtom";
 import { DefaultParams, NavOptions, RouteAtom, RouteOptions } from "./types";
 
 /** A sentinel object meaning "actually, redirect to this instead". */
@@ -47,12 +47,12 @@ export const isRedirect = (value: unknown): value is Redirect => value instanceo
  *
  * Reading it is pure: matching one navigates nowhere on its own, see `followRedirects`.
  */
-export const redirectAtom = <Parent extends DefaultParams = DefaultParams>(
+export const redirectRouteAtom = <Parent extends DefaultParams = DefaultParams>(
   to: Path | ((get: Getter) => Path),
   options?: RouteOptions<Parent>,
 ): RouteAtom<Parent> => {
   const target = (get: Getter) => (typeof to === "function" ? to(get) : to);
-  const parentAtom = options?.parent || (rootAtom as RouteAtom<Parent>);
+  const parentAtom = options?.parent || (rootRouteAtom as RouteAtom<Parent>);
 
   const reverse = (get: Getter) => () => target(get);
 
@@ -96,15 +96,15 @@ export type Store = ReturnType<typeof createStore>;
  * one starts matching. Call once, near the root of an app, for every redirect atom you want
  * live. Returns an unsubscribe function.
  */
-export const followRedirects = (store: Store, redirectAtoms: ReadonlyArray<RouteAtom<any>>): (() => void) => {
-  const unsubs = redirectAtoms.map((redirectRouteAtom) => {
+export const followRedirects = (store: Store, redirectRouteAtoms: ReadonlyArray<RouteAtom<any>>): (() => void) => {
+  const unsubs = redirectRouteAtoms.map((route) => {
     const check = () => {
-      const result = store.get(redirectRouteAtom);
+      const result = store.get(route);
       if (result.match) {
-        store.set(redirectRouteAtom, {}, { replace: true });
+        store.set(route, {}, { replace: true });
       }
     };
-    const unsub = store.sub(redirectRouteAtom, check);
+    const unsub = store.sub(route, check);
     check();
     return unsub;
   });

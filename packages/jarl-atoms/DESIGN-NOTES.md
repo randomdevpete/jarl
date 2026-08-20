@@ -90,7 +90,7 @@ Dead in isolation; only relevant if the pattern-string sketch is revived.
 
 ## Scoping `locationAtom` to a path prefix with a jotai store
 
-Rejected in favour of `createRootAtom({ basePath })`.
+Rejected in favour of `createRootRouteAtom({ basePath })`.
 
 The idea was to mount a subtree in its own jotai store whose `locationAtom` reads
 and writes relative to a prefix, so the subtree's route atoms could be declared
@@ -106,7 +106,7 @@ without knowing where they are mounted. Two mechanisms exist and neither works:
   revision-numbered API that `jotai-scope` is built on. Not a dependency a router
   can take on a peer's internals.
 
-`createRootAtom({ basePath })` gets the useful half of the idea in one store: route
+`createRootRouteAtom({ basePath })` gets the useful half of the idea in one store: route
 atoms below it are static module-level values, and the prefix is named once, on the
 root, where a `reverse()` can prepend it again.
 
@@ -121,12 +121,12 @@ to the matched branch when `Always` is `true`, and every constructor threading t
 type-surgery dependency — and assignability survives, because `RouteAtom` is covariant in its
 read type. Three things sink it anyway:
 
-- **The provable class is almost empty.** Only `rootAtom` (or `createRootAtom()` with no
+- **The provable class is almost empty.** Only `rootRouteAtom` (or `createRootRouteAtom()` with no
   `basePath`) is unconditionally total, and every path route can miss by construction, so a
-  chain qualifies only if it binds nothing off the path at all: optional `queryParamAtom`s and
+  chain qualifies only if it binds nothing off the path at all: optional `queryParamRouteAtom`s and
   total `transformRouteAtom`s, and nothing else.
 - **It doesn't cover the case that motivated it.** The data-grid demo roots on
-  `createRootAtom({ basePath: "/demos/data-grid" })`, which reports `match: false` for any
+  `createRootRouteAtom({ basePath: "/demos/data-grid" })`, which reports `match: false` for any
   location outside the prefix. A sound derivation has to call that chain partial. What actually
   guarantees the match is the `<Route>` the demo is mounted under — knowledge that lives above
   the atoms and can't be recovered from them.
@@ -138,3 +138,32 @@ A manual `alwaysMatches: true` opt-in avoids the derivation entirely and was rej
 soundness: it makes the type assert something nothing checks, so a wrong guarantee surfaces as
 `undefined` field access far from the claim. `requireMatch` is the same assertion made by the
 same caller, checked, and thrown at the point it is wrong.
+
+## Naming: `*RouteAtom` vs `*Atom`
+
+The suffix names the return type. An export whose value is a `RouteAtom` — something you can read
+for a `RouteReturn`, write param values to in order to navigate, pass as another route's `parent`,
+or hand to `<Route on={...}>` — ends in `RouteAtom`. An export that is any other kind of atom ends
+in `Atom` alone.
+
+So `routeAtom`, `staticRouteAtom`, `paramRouteAtom`, `numericRouteAtom`, `transformRouteAtom`,
+`validateRouteAtom`, `queryParamRouteAtom`, `redirectRouteAtom`, `asyncRouteAtom`,
+`createRootRouteAtom` and `rootRouteAtom` are all routes; `locationAtom` (the location they read
+from), `queryAtom` (the whole query string as state), `notAtom` (`Atom<boolean>`) and
+`navigationGuardAtom` (`Atom<string | null>`) are not. The rule already held at the type level —
+`RouteAtom` and `AsyncRouteAtom` against `NavigationGuardAtom` — before the values were brought
+into line with it.
+
+The distinction is worth carrying in the names because the two categories are not
+interchangeable anywhere they appear, and the pairs that read alike are exactly the ones that
+mislead: `rootRouteAtom` and `locationAtom` are both ambient singletons but only one is a route,
+and `queryAtom` and `queryParamRouteAtom` sound like two flavours of query state when only the
+second participates in matching. An options type takes its atom's name minus the `Atom`
+(`RootRouteOptions`, `QueryParamRouteOptions`, `NumericRouteOptions`).
+
+Dropping `Route` from every name instead was rejected: `routeAtom` would collide with jotai's own
+`atom`, and `staticAtom`/`paramAtom` name nothing.
+
+No deprecated aliases were kept for the old names. Two names per export would make the surface
+less consistent rather than more, which is the opposite of the point, and the alias would then
+need its own removal later.

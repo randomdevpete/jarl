@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { locationAtom } from "../locationAtom";
 import { numericRouteAtom } from "../numericRouteAtom";
 import { paramRouteAtom } from "../paramRouteAtom";
-import { createRootAtom, rootAtom } from "../rootAtom";
+import { createRootRouteAtom, rootRouteAtom } from "../rootRouteAtom";
 import { routeAtom } from "../routeAtom";
 import { staticRouteAtom } from "../staticRouteAtom";
 import { transformRouteAtom } from "../transformRouteAtom";
@@ -24,11 +24,11 @@ const seed = (store: ReturnType<typeof createStore>, pathname: string, search = 
   store.set(locationAtom, { pathname, searchParams: new URLSearchParams(search) });
 };
 
-describe("rootAtom", () => {
+describe("rootRouteAtom", () => {
   it("matches the root path exactly by default", () => {
     const store = createStore();
 
-    const result = store.get(rootAtom);
+    const result = store.get(rootRouteAtom);
 
     assertMatch(result);
     expect(result.exact).toBe(true);
@@ -38,7 +38,7 @@ describe("rootAtom", () => {
   it("normalizes a trailing slash the same as no trailing slash", () => {
     const store = createStore();
     // A route whose own segment name embeds the trailing slash, so we can
-    // exercise rootAtom's normalization purely through the atoms' own
+    // exercise rootRouteAtom's normalization purely through the atoms' own
     // setters rather than reaching into window.location directly.
     const trailing = routeAtom(
       (path) => (path === "trailing" ? {} : undefined),
@@ -47,7 +47,7 @@ describe("rootAtom", () => {
 
     store.set(trailing, {});
 
-    const root = store.get(rootAtom);
+    const root = store.get(rootRouteAtom);
     assertMatch(root);
     expect(root.rest.path).toEqual(["trailing"]);
 
@@ -330,7 +330,7 @@ describe("routeAtom", () => {
   });
 });
 
-describe("createRootAtom with basePath", () => {
+describe("createRootRouteAtom with basePath", () => {
   let store: ReturnType<typeof createStore>;
 
   beforeEach(() => {
@@ -338,7 +338,7 @@ describe("createRootAtom with basePath", () => {
   });
 
   it("matches at the base path itself", () => {
-    const appRoot = createRootAtom({ basePath: "/app" });
+    const appRoot = createRootRouteAtom({ basePath: "/app" });
     seed(store, "/app");
     const result = store.get(appRoot);
     expect(result.match).toBe(true);
@@ -348,27 +348,27 @@ describe("createRootAtom with basePath", () => {
   });
 
   it("strips the base path before matching children", () => {
-    const appRoot = createRootAtom({ basePath: "/app" });
+    const appRoot = createRootRouteAtom({ basePath: "/app" });
     const fooAtom = staticRouteAtom("foo", { parent: appRoot });
     seed(store, "/app/foo");
     expect(store.get(fooAtom).match).toBe(true);
   });
 
   it("does not match locations outside of the base path", () => {
-    const appRoot = createRootAtom({ basePath: "/app" });
+    const appRoot = createRootRouteAtom({ basePath: "/app" });
     seed(store, "/other");
     expect(store.get(appRoot).match).toBe(false);
   });
 
   it("does not treat a similarly-prefixed path as inside the base path", () => {
     // "/app-other" should NOT be considered inside basePath "/app"
-    const appRoot = createRootAtom({ basePath: "/app" });
+    const appRoot = createRootRouteAtom({ basePath: "/app" });
     seed(store, "/app-other");
     expect(store.get(appRoot).match).toBe(false);
   });
 
   it("reverse()/write prepend the base path", () => {
-    const appRoot = createRootAtom({ basePath: "/app" });
+    const appRoot = createRootRouteAtom({ basePath: "/app" });
     const fooAtom = staticRouteAtom("foo", { parent: appRoot });
     seed(store, "/app");
     const href = store.get(fooAtom).reverse({});

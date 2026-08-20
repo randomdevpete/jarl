@@ -1,7 +1,7 @@
 import { createStore } from "jotai/vanilla";
 import { beforeEach, describe, expect, it } from "vitest";
 import { locationAtom } from "../locationAtom";
-import { parseQuery, queryAtom, queryParamAtom, stringifyQuery } from "../queryAtom";
+import { parseQuery, queryAtom, queryParamRouteAtom, stringifyQuery } from "../queryAtom";
 import { staticRouteAtom } from "../staticRouteAtom";
 
 const seed = (store: ReturnType<typeof createStore>, pathname: string, search = "") => {
@@ -49,7 +49,7 @@ describe("queryAtom", () => {
   });
 });
 
-describe("queryParamAtom", () => {
+describe("queryParamRouteAtom", () => {
   let store: ReturnType<typeof createStore>;
 
   beforeEach(() => {
@@ -58,14 +58,14 @@ describe("queryParamAtom", () => {
 
   it("does not match when its parent route doesn't match", () => {
     const fooAtom = staticRouteAtom("foo");
-    const pageAtom = queryParamAtom("page", { parent: fooAtom });
+    const pageAtom = queryParamRouteAtom("page", { parent: fooAtom });
     seed(store, "/bar", "page=2");
     expect(store.get(pageAtom).match).toBe(false);
   });
 
   it("matches and captures the query value once the parent matches", () => {
     const fooAtom = staticRouteAtom("foo");
-    const pageAtom = queryParamAtom("page", { parent: fooAtom });
+    const pageAtom = queryParamRouteAtom("page", { parent: fooAtom });
     seed(store, "/foo", "page=2");
     const result = store.get(pageAtom);
     expect(result.match).toBe(true);
@@ -76,7 +76,7 @@ describe("queryParamAtom", () => {
 
   it("value is undefined (not a non-match) when the param is absent and not required", () => {
     const fooAtom = staticRouteAtom("foo");
-    const pageAtom = queryParamAtom("page", { parent: fooAtom });
+    const pageAtom = queryParamRouteAtom("page", { parent: fooAtom });
     seed(store, "/foo");
     const result = store.get(pageAtom);
     expect(result.match).toBe(true);
@@ -87,14 +87,14 @@ describe("queryParamAtom", () => {
 
   it("required: true makes a missing param a non-match", () => {
     const fooAtom = staticRouteAtom("foo");
-    const pageAtom = queryParamAtom("page", { parent: fooAtom, required: true });
+    const pageAtom = queryParamRouteAtom("page", { parent: fooAtom, required: true });
     seed(store, "/foo");
     expect(store.get(pageAtom).match).toBe(false);
   });
 
   it("reverse() combines the parent path with this query param", () => {
     const fooAtom = staticRouteAtom("foo");
-    const pageAtom = queryParamAtom("page", { parent: fooAtom });
+    const pageAtom = queryParamRouteAtom("page", { parent: fooAtom });
     seed(store, "/foo");
     const href = store.get(pageAtom).reverse({ page: "3" });
     expect(href).toBe("/foo?page=3");
@@ -102,7 +102,7 @@ describe("queryParamAtom", () => {
 
   it("writing navigates to the parent path with the query param set", () => {
     const fooAtom = staticRouteAtom("foo");
-    const pageAtom = queryParamAtom("page", { parent: fooAtom });
+    const pageAtom = queryParamRouteAtom("page", { parent: fooAtom });
     seed(store, "/");
     store.set(pageAtom, { page: "5" });
     expect(store.get(locationAtom).pathname).toBe("/foo");
@@ -111,7 +111,7 @@ describe("queryParamAtom", () => {
 
   it("path matching underneath is unaffected by a composed query param", () => {
     const fooAtom = staticRouteAtom("foo");
-    const pageAtom = queryParamAtom("page", { parent: fooAtom });
+    const pageAtom = queryParamRouteAtom("page", { parent: fooAtom });
     seed(store, "/foo", "page=2");
     const result = store.get(pageAtom);
     expect(result.match).toBe(true);

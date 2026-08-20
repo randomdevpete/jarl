@@ -3,8 +3,8 @@ import { Path, normalizePathname } from "./href";
 import { locationAtom } from "./locationAtom";
 import { DefaultParams, RouteAtom } from "./types";
 
-/** Options for `createRootAtom`. */
-export type RootOptions = {
+/** Options for `createRootRouteAtom`. */
+export type RootRouteOptions = {
   /**
    * Scopes the router to a subtree of the URL: the prefix is stripped from the pathname before
    * matching begins, and prepended again by `reverse`/write. A location outside `basePath` makes
@@ -23,10 +23,10 @@ const stripBasePath = (pathname: string, basePath: string): string | undefined =
 };
 
 /**
- * Creates a root RouteAtom. Call this instead of using the default `rootAtom` export when the
+ * Creates a root RouteAtom. Call this instead of using the default `rootRouteAtom` export when the
  * app needs to be scoped under a basePath.
  */
-export const createRootAtom = (options?: RootOptions): RouteAtom<DefaultParams> => {
+export const createRootRouteAtom = (options?: RootRouteOptions): RouteAtom<DefaultParams> => {
   const basePath = options?.basePath ? normalizePathname(options.basePath) : "";
   return atom(
     (get) => {
@@ -67,4 +67,4 @@ export const createRootAtom = (options?: RootOptions): RouteAtom<DefaultParams> 
 };
 
 /** The default root of every route atom chain: matches `/`, and is the implicit `parent`. */
-export const rootAtom = createRootAtom();
+export const rootRouteAtom = createRootRouteAtom();

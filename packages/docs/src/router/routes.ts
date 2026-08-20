@@ -6,12 +6,12 @@
  * `jarl-atoms`' server-seedable `locationAtom`.
  */
 import { atom } from "jotai";
-import { asyncRouteAtom, notAtom, rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { asyncRouteAtom, notAtom, rootRouteAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 import { blogStaticPaths } from "../demos/blogPosts";
 import { articleSlugs, findArticle } from "../demos/asyncArticles";
 import { changelogStaticPaths } from "../pages/changelogEntries";
 
-export const homeRoute = rootAtom;
+export const homeRoute = rootRouteAtom;
 
 export const docsSectionRoute = staticRouteAtom("docs");
 export const docPageRoute = paramRouteAtom("docName", { parent: docsSectionRoute });

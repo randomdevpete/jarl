@@ -2,7 +2,7 @@ import { ReactElement } from "react";
 import { describe, it, expect, beforeEach, expectTypeOf, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
-import { locationAtom, rootAtom } from "jarl-atoms";
+import { locationAtom, rootRouteAtom } from "jarl-atoms";
 import { useRoute, useRequiredRoute, useNavigate, useIsActive, useHref, useLink } from "../hooks";
 import { aboutAtom, teamAtom, userAtom, usersAtom } from "./fixtures";
 
@@ -114,7 +114,7 @@ describe("useIsActive", () => {
   it("treats root as active only at '/'", () => {
     goTo("/about");
     const Probe = () => {
-      const active = useIsActive(rootAtom, { exact: true });
+      const active = useIsActive(rootRouteAtom, { exact: true });
       return <div data-testid="root">{String(active)}</div>;
     };
     render(<Probe />);

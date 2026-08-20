@@ -1,7 +1,7 @@
 import { staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 
 // Shared route atom fixtures used across the binding tests:
-//   /               -> rootAtom (imported directly by tests that need it)
+//   /               -> rootRouteAtom (imported directly by tests that need it)
 //   /about          -> aboutAtom
 //   /about/team     -> teamAtom
 //   /users          -> usersAtom

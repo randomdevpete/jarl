@@ -6,7 +6,7 @@
 // declare a whole map of named query matchers. That's a lot of
 // surface area to port 1:1 into the atomic model in one pass. Instead this
 // implements the common, composable subset: a single named query param as
-// its own RouteAtom-shaped leaf (`queryParamAtom`), plus a raw whole-query
+// its own RouteAtom-shaped leaf (`queryParamRouteAtom`), plus a raw whole-query
 // atom (`queryAtom`) for reading/writing everything at once. Both are built
 // on plain `URLSearchParams`, deliberately not supporting `qs`'s nested/array
 // query syntax - v1 itself flags that as a known limitation
@@ -16,7 +16,7 @@
 import { Getter, atom } from "jotai/vanilla";
 import { appendQueryParam, splitHref } from "./href";
 import { locationAtom } from "./locationAtom";
-import { rootAtom } from "./rootAtom";
+import { rootRouteAtom } from "./rootRouteAtom";
 import { DefaultParams, NavOptions, RouteAtom, RouteOptions } from "./types";
 
 /** Parses a `URLSearchParams` (or query string) into a plain object. Repeated
@@ -70,7 +70,7 @@ export const queryAtom = atom(
 );
 
 /** `RouteOptions` plus whether the param must be present for the route to match. */
-export type QueryParamOptions<Parent extends DefaultParams> = RouteOptions<Parent> & {
+export type QueryParamRouteOptions<Parent extends DefaultParams> = RouteOptions<Parent> & {
   /** Makes a missing query param a non-match; by default it just yields `undefined`. */
   required?: boolean;
 };
@@ -83,11 +83,11 @@ export type QueryParamOptions<Parent extends DefaultParams> = RouteOptions<Paren
  * path matching continues unaffected by however many query params are
  * chained on.
  */
-export const queryParamAtom = <T extends string, Parent extends DefaultParams = DefaultParams>(
+export const queryParamRouteAtom = <T extends string, Parent extends DefaultParams = DefaultParams>(
   name: T,
-  options?: QueryParamOptions<Parent>,
+  options?: QueryParamRouteOptions<Parent>,
 ): RouteAtom<{ readonly [key in T]: string | undefined } & Parent> => {
-  const parentAtom = options?.parent || (rootAtom as RouteAtom<Parent>);
+  const parentAtom = options?.parent || (rootRouteAtom as RouteAtom<Parent>);
   type Values = { readonly [key in T]: string | undefined };
 
   const reverse =

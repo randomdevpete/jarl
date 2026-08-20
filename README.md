@@ -16,7 +16,7 @@ wanted something that did just this job extremely well, but without getting in t
 dictating application structure, and without forcing route matching logic into the component
 tree itself, where it never seemed to belong. JARL builds that mapping out of composable atoms
 using [jotai](https://jotai.org/) under the hood: each route is its own atom, with a link to a
-parent atom and so on up to the [`rootAtom`](/api/jarl-atoms#rootatom); each one matching a
+parent atom and so on up to the [`rootRouteAtom`](/api/jarl-atoms#rootrouteatom); each one matching a
 piece of the URL (normally a path segment) and telling you both whether it *currently* matches,
 as well as **how to build a URL _to_ that route** based on a given state. Routing decisions in
 your application then decompose to very simple logic based on the current states of these
@@ -54,9 +54,9 @@ Declare some route atoms:
 
 ```ts
 // routes.ts
-import { rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { rootRouteAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 
-export const homeRoute = rootAtom;
+export const homeRoute = rootRouteAtom;
 export const aboutRoute = staticRouteAtom("about");
 export const productsRoute = staticRouteAtom("products");
 // The `productId` segment is bound into `values` when this route matches:
@@ -129,10 +129,10 @@ the `useNavigate` hook instead:
 ```tsx
 import { atom, useAtom } from "jotai";
 import { useNavigate } from "jarl-react";
-import { queryParamAtom } from "jarl-atoms";
+import { queryParamRouteAtom } from "jarl-atoms";
 
 // A single named query-string param is its own composable route atom too:
-const searchQueryRoute = queryParamAtom("q");
+const searchQueryRoute = queryParamRouteAtom("q");
 
 // Controlled search input value also tracked in an atom
 const searchTextAtom = atom("");

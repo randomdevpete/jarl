@@ -168,7 +168,7 @@ on every navigation regardless of relevance. The v2 atoms
   override under Node - so a location can be seeded server-side for prerendering,
   which is exactly what lets this docs site itself be statically generated.
 - `routeAtom(matchPath, makePath, { parent })` derives a **route atom** from a parent
-  route atom (defaulting to a `rootAtom`), matching one path segment at a time and
+  route atom (defaulting to a `rootRouteAtom`), matching one path segment at a time and
   carrying a `rest.path` of unconsumed segments down to child route atoms - so nested
   routes compose as a chain of atoms instead of a nested-array route table walked by a
   single `RouteMap.match` call.

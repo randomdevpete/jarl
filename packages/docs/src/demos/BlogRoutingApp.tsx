@@ -1,4 +1,4 @@
-import { createRootAtom, numericRouteAtom, paramRouteAtom, validateAtom } from "jarl-atoms";
+import { createRootRouteAtom, numericRouteAtom, paramRouteAtom, validateRouteAtom } from "jarl-atoms";
 import { Link, Route, Switch } from "jarl-react";
 import {
   BlogPost,
@@ -30,13 +30,13 @@ const MONTH_NAMES = [
 const formatDate = (post: BlogPost) => `${MONTH_NAMES[post.month - 1]} ${post.day}, ${post.year}`;
 
 // The page this demo is mounted on, so its whole tree below is plain module-level atoms.
-const blogRoot = createRootAtom({ basePath: "/demos/blog-routing" });
+const blogRoot = createRootRouteAtom({ basePath: "/demos/blog-routing" });
 const yearRoute = numericRouteAtom("year", { parent: blogRoot });
 const monthRoute = numericRouteAtom("month", { parent: yearRoute, min: 1, max: 12 });
 const daySegment = numericRouteAtom("day", { parent: monthRoute });
 // A segment's own min/max only bounds it in isolation; a real calendar date needs all three
 // together, so the whole date is validated as part of matching rather than in a page component.
-const dayRoute = validateAtom(daySegment, ({ year, month, day }) => isValidCalendarDate(year, month, day));
+const dayRoute = validateRouteAtom(daySegment, ({ year, month, day }) => isValidCalendarDate(year, month, day));
 const postRoute = paramRouteAtom("slug", { parent: dayRoute });
 
 const BlogNav = () => (

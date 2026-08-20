@@ -10,15 +10,15 @@ root of your app, and `Link`/`Route` from `jarl-react` to navigate and render.
 routes.ts:
 
 ```ts
-import { rootAtom, staticRouteAtom } from "jarl-atoms";
+import { rootRouteAtom, staticRouteAtom } from "jarl-atoms";
 
-export const homeRoute = rootAtom;
+export const homeRoute = rootRouteAtom;
 export const aboutRoute = staticRouteAtom("about");
 ```
 
 Each of these is a **route atom**: a jotai atom that, when read, tells you whether its path
 currently matches (`match`, `exact`, `values`) and how to build a URL for it (`reverse`); when
-_written_, it navigates there. `rootAtom` matches `/` itself and is the implicit parent every
+_written_, it navigates there. `rootRouteAtom` matches `/` itself and is the implicit parent every
 other route atom builds on unless you give it a different `parent`. `staticRouteAtom("about")`
 matches a single fixed path segment - here, `/about`.
 
