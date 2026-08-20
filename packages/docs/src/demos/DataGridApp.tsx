@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { atom, useAtom, useAtomValue } from "jotai";
-import { createRootAtom, queryParamAtom, transformRouteAtom } from "jarl-atoms";
+import { atom, useAtom, useAtomValue, useSetAtom } from "jotai";
+import { createRootAtom, queryParamAtom, requireMatch, transformRouteAtom } from "jarl-atoms";
+import { useRequiredRoute } from "jarl-react";
 import { Table } from "./DataGridTable";
 import { Ware, wares } from "./wares";
 
@@ -68,31 +69,29 @@ const sortRoute = transformRouteAtom(
 // whichever field didn't change comes along for free via the current match.
 const filterRoute = queryParamAtom("filter", { parent: sortRoute });
 
-// A plain read off the chain's tip - no useMemo in the component needed for this.
+// A plain read off the chain's tip - no useMemo in the component needed for this. Only the
+// component below reads it, and the site only mounts that under /demos/data-grid, which is the
+// guarantee `requireMatch` stands on.
 const rowsAtom = atom((get) => {
-  const values = get(filterRoute).values ?? { ...parseSort(undefined), filter: undefined };
+  const { values } = requireMatch(get(filterRoute), "filterRoute");
   return sortWares(filterWares(wares, values.filter), values.key, values.direction);
 });
 
 // Local and un-navigated - only reaches the chain (and the URL) via filter's setter on submit.
 const filterInputAtom = atom("");
 
-// State is never really undefined because the optional query params always match;
-// but since this can't be confirmed with the types, use a default
-const defaultFilter = { ...defaultSort, filter: undefined };
-
 /**
  * Self-contained demo: a data grid whose filter text and sort column/direction both live in the
  * URL query string (`?sort=-price&filter=axe`), so the grid's state is shareable/bookmarkable and
- * moves with back/forward navigation. Both query params are optional, so the route always matches -
- * no `<Route>` needed, just reading the atoms directly.
+ * moves with back/forward navigation. Both query params are optional, so the chain matches wherever
+ * its root does - no `<Route>` needed, just reading the atoms directly, with `useRequiredRoute`
+ * standing in for the match the mount point already guarantees.
  */
 export const DataGridApp = () => {
-  const [filter, setFilter] = useAtom(filterRoute);
+  const { values: currentFilter } = useRequiredRoute(filterRoute, "filterRoute");
+  const setFilter = useSetAtom(filterRoute);
   const rows = useAtomValue(rowsAtom);
   const [filterInput, setFilterInput] = useAtom(filterInputAtom);
-
-  const currentFilter = filter.values ?? defaultFilter;
 
   // Keeps the input in sync with the URL when it changes some other way (back/forward, a
   // shared link) - the input is otherwise free-standing scratch state, not live-searching.
