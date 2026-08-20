@@ -17,3 +17,6 @@ export * from "./href";
 export * from "./queryAtom";
 export * from "./redirectAtom";
 export * from "./asyncRouteAtom";
+// Named rather than `export *`: the rest of the module is the machinery `locationAtom` calls into.
+export { enforceNavigationGuards, navigationGuardAtom } from "./navigationGuardAtom";
+export type { NavigationGuardAtom } from "./navigationGuardAtom";
