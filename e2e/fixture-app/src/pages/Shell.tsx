@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import { useEffect } from "react";
-import { rootAtom, changelogAtom, shellMissingAtom } from "../routes";
+import { rootRoute, changelogAtom, shellMissingAtom } from "../routes";
 import { Link } from "jarl-react";
 
 const useTitle = (title: string) => {
@@ -43,7 +43,7 @@ const NotFound = ({ missingPath }: { missingPath: string }) => {
 // Top-level "shell" of the fixture app: home/about, changelog, and the
 // catch-all 404. Mirrors demo/cypress/integration/00DemosShell.js.
 const Shell = () => {
-  const root = useAtomValue(rootAtom);
+  const root = useAtomValue(rootRoute);
   const changelog = useAtomValue(changelogAtom);
   const missing = useAtomValue(shellMissingAtom);
 
@@ -63,7 +63,7 @@ const Shell = () => {
   return (
     <div>
       <nav>
-        <Link route={rootAtom} data-test="home-nav-link">
+        <Link route={rootRoute} data-test="home-nav-link">
           Home
         </Link>{" "}
         <Link route={changelogAtom} data-test="changelog-nav-link">
