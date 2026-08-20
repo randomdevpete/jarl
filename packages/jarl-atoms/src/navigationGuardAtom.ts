@@ -1,5 +1,5 @@
 import { Atom, Getter, atom } from "jotai/vanilla";
-import type { Store } from "./redirectAtom";
+import type { Store } from "./redirectRouteAtom";
 
 /** A guard's verdict: the message to confirm a navigation with, or `null` to let it through. */
 export type NavigationGuardAtom = Atom<string | null>;

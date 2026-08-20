@@ -1,7 +1,7 @@
 import { createStore } from "jotai/vanilla";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { locationAtom } from "../locationAtom";
-import { queryParamAtom } from "../queryAtom";
+import { queryParamRouteAtom } from "../queryAtom";
 import { requireMatch } from "../requireMatch";
 import { staticRouteAtom } from "../staticRouteAtom";
 import { MatchedRoute, RouteReturn } from "../types";
@@ -15,7 +15,7 @@ const seed = (store: ReturnType<typeof createStore>, pathname: string, search = 
 const readSort = (search: string): RouteReturn<SortValues> => {
   const store = createStore();
   seed(store, "/", search);
-  return store.get(queryParamAtom("sort"));
+  return store.get(queryParamRouteAtom("sort"));
 };
 
 describe("requireMatch", () => {

@@ -22,6 +22,9 @@ JARL ("JARL: Atomic Routing Library") is a controlled-component router for React
 - `infra/` — AWS CDK app provisioning the hosting for jarl.randomdev.co.uk. Also a separate
   npm project, kept out of the workspaces so it is never published: `infra/README.md`.
 
+A new atom's name says what it returns: `*RouteAtom` if its value is a `RouteAtom`, `*Atom`
+otherwise. See `packages/jarl-atoms/DESIGN-NOTES.md`.
+
 The two packages are deliberately separate import paths: `jarl-react` does **not** re-export
 `jarl-atoms`. Consumers get route atoms from `jarl-atoms` and the React bindings from
 `jarl-react`, so the framework boundary stays visible and `jarl-atoms` is usable on its own.

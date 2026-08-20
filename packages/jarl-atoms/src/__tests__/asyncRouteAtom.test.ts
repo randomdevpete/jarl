@@ -10,7 +10,7 @@ import {
 import { locationAtom } from "../locationAtom";
 import { notAtom } from "../notAtom";
 import { paramRouteAtom } from "../paramRouteAtom";
-import { isRedirect, redirect } from "../redirectAtom";
+import { isRedirect, redirect } from "../redirectRouteAtom";
 import { staticRouteAtom } from "../staticRouteAtom";
 
 type Post = { slug: string; title: string };

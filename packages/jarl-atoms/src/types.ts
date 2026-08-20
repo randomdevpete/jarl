@@ -64,6 +64,6 @@ export type RouteAtom<T extends DefaultParams> = WritableAtom<RouteReturn<T>, [T
 
 /** Common options for every route atom constructor. */
 export type RouteOptions<Parent extends DefaultParams> = {
-  /** Route this one nests under, matching the segment after its parent's. Defaults to `rootAtom`. */
+  /** Route this one nests under, matching the segment after its parent's. Defaults to `rootRoute`. */
   parent?: RouteAtom<Parent>;
 };

@@ -37,7 +37,7 @@ describe("notAtom", () => {
   });
 
   it("checks exactness rather than a bare match", () => {
-    // rootAtom (and any ancestor) is `match: true` for every path beneath
+    // rootRoute (and any ancestor) is `match: true` for every path beneath
     // it, so notAtom would never fire if it counted match instead of exact.
     const store = createStore();
     const about = staticRouteAtom("about");
