@@ -70,6 +70,6 @@ export type RouteValues<Route extends RouteAtom<any>> = Route extends RouteAtom<
  * which route atom it composes under.
  */
 export type RouteOptions<Parent extends DefaultParams> = {
-  /** Route this one nests under, matching the segment after its parent's. Defaults to `rootAtom`. */
+  /** Route this one nests under, matching the segment after its parent's. Defaults to `rootRoute`. */
   parent?: RouteAtom<Parent>;
 };

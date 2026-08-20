@@ -23,13 +23,13 @@ npm install jarl-atoms jotai
 
 ## Usage
 
-Routes are built up from `rootAtom` (or `createRootAtom()` for a scoped
+Routes are built up from `rootRoute` (or `rootRouteAtom()` for a scoped
 `basePath`) using `staticRouteAtom` and `paramRouteAtom`, each optionally
 nested under a `parent`:
 
 ```ts
 import { createStore } from "jotai/vanilla";
-import { staticRouteAtom, paramRouteAtom, rootAtom } from "jarl-atoms";
+import { staticRouteAtom, paramRouteAtom, rootRoute } from "jarl-atoms";
 
 const docsAtom = staticRouteAtom("docs");
 const docAtom = paramRouteAtom("docName", { parent: docsAtom });
@@ -49,8 +49,8 @@ store.set(docAtom, { docName: "getting-started" });
 const href = store.get(docAtom).reverse({ docName: "getting-started" });
 ```
 
-Other exports: `queryAtom`/`queryParamAtom` (query-string state, composable
-the same way as path atoms), `redirectAtom`, and `asyncRouteAtom` (async data for
+Other exports: `queryAtom`/`queryParamRouteAtom` (query-string state, composable
+the same way as path atoms), `redirectRouteAtom`, and `asyncRouteAtom` (async data for
 a route, read as `.data`; read as a route instead and the route exists only if
 the load found something, with what it found bound to the route's values). See
 the full docs and demos for the complete model:

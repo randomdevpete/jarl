@@ -6,17 +6,17 @@
 export * from "./types";
 export * from "./locationAtom";
 export * from "./routeAtom";
-export * from "./rootAtom";
+export * from "./rootRouteAtom";
 export * from "./staticRouteAtom";
 export * from "./paramRouteAtom";
 export * from "./numericRouteAtom";
 export * from "./transformRouteAtom";
-export * from "./validateAtom";
+export * from "./validateRouteAtom";
 export * from "./unionRouteAtom";
 export * from "./notAtom";
 export * from "./href";
 export * from "./queryAtom";
-export * from "./redirectAtom";
+export * from "./redirectRouteAtom";
 export * from "./asyncRouteAtom";
 // Named rather than `export *`: the rest of the module is the machinery `locationAtom` calls into.
 export { enforceNavigationGuards, navigationGuardAtom } from "./navigationGuardAtom";

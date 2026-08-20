@@ -16,30 +16,30 @@ wanted something that did just this job extremely well, but without getting in t
 dictating application structure, and without forcing route matching logic into the component
 tree itself, where it never seemed to belong. JARL builds that mapping out of composable atoms
 using [jotai](https://jotai.org/) under the hood: each route is its own atom, with a link to a
-parent atom and so on up to the [`rootAtom`](/api/jarl-atoms#rootatom); each one matching a
-piece of the URL (normally a path segment) and telling you both whether it *currently* matches,
+parent atom and so on up to the [`rootRoute`](/api/jarl-atoms#rootroute); each one matching a
+piece of the URL (normally a path segment) and telling you both whether it _currently_ matches,
 as well as **how to build a URL _to_ that route** based on a given state. Routing decisions in
 your application then decompose to very simple logic based on the current states of these
 atoms; a simple `switch` statement or series of `if`s is enough to decide what components to
-render, and navigation can be performed by *calling the atom setter*. (Convenience components
+render, and navigation can be performed by _calling the atom setter_. (Convenience components
 like [`<Route>`](/api/jarl-react#route) and [`<Switch>`](/api/jarl-react#switch) and of course
 the ubiquitous [`<Link>`](/api/jarl-react#link) are of course provided in the React package, if
 you want to build more compositionally; they all just accept atoms for parameters instead of
 type-unsafe strings.)
 
 Because each route atom is an independent, subscribable unit of jotai state, a component that
-reads one only re-renders when *that atom's* derived value actually changes - it turns out this
+reads one only re-renders when _that atom's_ derived value actually changes - it turns out this
 is incredibly efficient.
 
 ## Features
 
-*   Map URLs directly to state (and back again) - the URL becomes the source of truth
-*   Composable route atoms - build nested/dynamic routes out of small, independent pieces
-*   Framework-agnostic core (`jarl-atoms`) with lightweight React bindings (`jarl-react`)
-*   Full querystring matching support
-*   Resolve promises during routing (via jotai's own async atoms) and redirect if required
-*   SSR/SSG-safe: the resolved location atom is hydratable per-render on the server
-*   And much more...
+- Map URLs directly to state (and back again) - the URL becomes the source of truth
+- Composable route atoms - build nested/dynamic routes out of small, independent pieces
+- Framework-agnostic core (`jarl-atoms`) with lightweight React bindings (`jarl-react`)
+- Full querystring matching support
+- Resolve promises during routing (via jotai's own async atoms) and redirect if required
+- SSR/SSG-safe: the resolved location atom is hydratable per-render on the server
+- And much more...
 
 ## Concrete Example
 
@@ -54,9 +54,9 @@ Declare some route atoms:
 
 ```ts
 // routes.ts
-import { rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { rootRoute, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 
-export const homeRoute = rootAtom;
+export const homeRoute = rootRoute;
 export const aboutRoute = staticRouteAtom("about");
 export const productsRoute = staticRouteAtom("products");
 // The `productId` segment is bound into `values` when this route matches:
@@ -75,7 +75,7 @@ import App from "./App";
 createRoot(document.getElementById("root")!).render(
   <Provider>
     <App />
-  </Provider>
+  </Provider>,
 );
 ```
 
@@ -110,7 +110,9 @@ import { Link } from "jarl-react";
 
 const MainMenu = () => (
   <nav>
-    <Link route={homeRoute} exact>Home</Link>
+    <Link route={homeRoute} exact>
+      Home
+    </Link>
     <Link route={aboutRoute}>About</Link>
     <Link route={productRoute} to={{ productId: "123" }}>
       Our Best Product Ever!
@@ -129,10 +131,10 @@ the `useNavigate` hook instead:
 ```tsx
 import { atom, useAtom } from "jotai";
 import { useNavigate } from "jarl-react";
-import { queryParamAtom } from "jarl-atoms";
+import { queryParamRouteAtom } from "jarl-atoms";
 
 // A single named query-string param is its own composable route atom too:
-const searchQueryRoute = queryParamAtom("q");
+const searchQueryRoute = queryParamRouteAtom("q");
 
 // Controlled search input value also tracked in an atom
 const searchTextAtom = atom("");
@@ -141,7 +143,12 @@ const SearchForm = () => {
   const [searchText, setSearchText] = useAtom(searchTextAtom);
   const navigate = useNavigate(searchQueryRoute);
   return (
-    <form onSubmit={(e) => { e.preventDefault(); navigate({ q: searchText }); }}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        navigate({ q: searchText });
+      }}
+    >
       <input
         type="text"
         value={searchText}
