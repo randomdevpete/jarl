@@ -6,6 +6,7 @@ import BasicRouting from "./pages/BasicRouting";
 import AdvancedRouting from "./pages/AdvancedRouting";
 import QueryStrings from "./pages/QueryStrings";
 import Redirects from "./pages/Redirects";
+import NavigationGuards from "./pages/NavigationGuards";
 
 // Top-level segment -> demo. The v2 route atoms don't have a "first match
 // wins" switch/exclusivity primitive yet, so this dispatch is done in plain
@@ -17,6 +18,7 @@ const DEMOS: Record<string, ComponentType> = {
   advancedRouting: AdvancedRouting,
   queryStrings: QueryStrings,
   redirects: Redirects,
+  navigationGuards: NavigationGuards,
 };
 
 const App = () => {

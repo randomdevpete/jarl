@@ -12,7 +12,15 @@
  */
 import { atom } from "jotai/vanilla";
 import { loadable } from "jotai/utils";
-import { rootAtom, staticRouteAtom, paramRouteAtom, redirectAtom, asyncRouteAtom, redirect } from "jarl-atoms";
+import {
+  rootAtom,
+  staticRouteAtom,
+  paramRouteAtom,
+  redirectAtom,
+  asyncRouteAtom,
+  redirect,
+  navigationGuardAtom,
+} from "jarl-atoms";
 
 // --- Shell (demo/cypress/integration/00DemosShell.js) ---
 export { rootAtom };
@@ -95,3 +103,15 @@ export const redirectsContentDataAtom = asyncRouteAtom(redirectsContentSlugAtom,
 // loadable() lets the pages read these without a Suspense boundary.
 export const redirectsAdminDataLoadableAtom = loadable(redirectsAdminDataAtom);
 export const redirectsContentDataLoadableAtom = loadable(redirectsContentDataAtom);
+
+// --- Navigation Guards ---
+export const navigationGuardsAtom = staticRouteAtom("navigationGuards");
+export const navigationGuardsAwayAtom = staticRouteAtom("away", {
+  parent: navigationGuardsAtom,
+});
+
+export const unsavedEditsAtom = atom(false);
+
+export const unsavedEditsGuard = navigationGuardAtom((get) =>
+  get(unsavedEditsAtom) ? "You have unsaved edits. Leave anyway?" : null,
+);
