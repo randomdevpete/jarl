@@ -9,3 +9,4 @@ export * from "./hooks";
 export * from "./Link";
 export * from "./Route";
 export * from "./Switch";
+export * from "./useNavigationGuard";
