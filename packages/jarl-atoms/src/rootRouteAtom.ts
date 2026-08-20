@@ -3,8 +3,8 @@ import { Path, normalizePathname } from "./href";
 import { locationAtom } from "./locationAtom";
 import { DefaultParams, RouteAtom } from "./types";
 
-/** Options for `createRootAtom`: how to scope the router to a subtree of the URL. */
-export type RootOptions = {
+/** Options for `rootRouteAtom`: how to scope the router to a subtree of the URL. */
+export type RootRouteOptions = {
   /**
    * Scopes the router to a subtree of the URL: the prefix is stripped from the pathname before
    * matching begins, and prepended again by `reverse`/write. A location outside `basePath` makes
@@ -23,12 +23,12 @@ const stripBasePath = (pathname: string, basePath: string): string | undefined =
 };
 
 /**
- * Creates a root RouteAtom. Call this instead of using the default `rootAtom` export when the
+ * Creates a root RouteAtom. Call this instead of using the default `rootRoute` export when the
  * app needs to be scoped under a `basePath` - e.g. mounted under a subpath, or as one router
  * among several sharing a page. The returned atom is a normal `RouteAtom`: pass it as `parent`
- * to the routes built on top of it, exactly like `rootAtom` itself.
+ * to the routes built on top of it, exactly like `rootRoute` itself.
  */
-export const createRootAtom = (options?: RootOptions): RouteAtom<DefaultParams> => {
+export const rootRouteAtom = (options?: RootRouteOptions): RouteAtom<DefaultParams> => {
   const basePath = options?.basePath ? normalizePathname(options.basePath) : "";
   return atom(
     (get) => {
@@ -69,4 +69,4 @@ export const createRootAtom = (options?: RootOptions): RouteAtom<DefaultParams> 
 };
 
 /** The default root of every route atom chain: matches `/`, and is the implicit `parent`. */
-export const rootAtom = createRootAtom();
+export const rootRoute = rootRouteAtom();

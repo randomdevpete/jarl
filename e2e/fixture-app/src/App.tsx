@@ -1,6 +1,6 @@
 import { useAtomValue } from "jotai";
 import type { ComponentType } from "react";
-import { rootAtom } from "./routes";
+import { rootRoute } from "./routes";
 import Shell from "./pages/Shell";
 import BasicRouting from "./pages/BasicRouting";
 import AdvancedRouting from "./pages/AdvancedRouting";
@@ -10,7 +10,7 @@ import NavigationGuards from "./pages/NavigationGuards";
 
 // Top-level segment -> demo. The v2 route atoms don't have a "first match
 // wins" switch/exclusivity primitive yet, so this dispatch is done in plain
-// component code (reading rootAtom directly) rather than by composing
+// component code (reading rootRoute directly) rather than by composing
 // several independent <Route> elements, which would all render at once
 // since nothing here excludes them from each other.
 const DEMOS: Record<string, ComponentType> = {
@@ -22,7 +22,7 @@ const DEMOS: Record<string, ComponentType> = {
 };
 
 const App = () => {
-  const root = useAtomValue(rootAtom);
+  const root = useAtomValue(rootRoute);
   const section = root.match ? root.rest.path[0] : undefined;
   const Demo = section && DEMOS[section];
   return Demo ? <Demo /> : <Shell />;

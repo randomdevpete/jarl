@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { rootAtom } from "jarl-atoms";
+import { rootRoute } from "jarl-atoms";
 import { useRoute, useNavigate, useIsActive, useHref, useLink } from "../hooks";
 import { aboutAtom, teamAtom, userAtom, usersAtom } from "./fixtures";
 
@@ -99,7 +99,7 @@ describe("useIsActive", () => {
   it("treats root as active only at '/'", () => {
     goTo("/about");
     const Probe = () => {
-      const active = useIsActive(rootAtom, { exact: true });
+      const active = useIsActive(rootRoute, { exact: true });
       return <div data-testid="root">{String(active)}</div>;
     };
     render(<Probe />);

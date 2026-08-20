@@ -4,7 +4,7 @@ import { locationAtom } from "../locationAtom";
 import { numericRouteAtom } from "../numericRouteAtom";
 import { paramRouteAtom } from "../paramRouteAtom";
 import { staticRouteAtom } from "../staticRouteAtom";
-import { validateAtom } from "../validateAtom";
+import { validateRouteAtom } from "../validateRouteAtom";
 
 const seed = (store: ReturnType<typeof createStore>, pathname: string) => {
   store.set(locationAtom, { pathname, searchParams: new URLSearchParams() });
@@ -20,10 +20,10 @@ const calendarRoute = () => {
   const year = numericRouteAtom("year", { parent: blog });
   const month = numericRouteAtom("month", { parent: year, min: 1, max: 12 });
   const day = numericRouteAtom("day", { parent: month });
-  return validateAtom(day, (values) => isValidCalendarDate(values.year, values.month, values.day));
+  return validateRouteAtom(day, (values) => isValidCalendarDate(values.year, values.month, values.day));
 };
 
-describe("validateAtom", () => {
+describe("validateRouteAtom", () => {
   it("matches, with the wrapped route's values, when the predicate accepts", () => {
     const store = createStore();
     const date = calendarRoute();
@@ -91,7 +91,7 @@ describe("validateAtom", () => {
     const store = createStore();
     const openYears = atom([2024]);
     const year = numericRouteAtom("year", { parent: staticRouteAtom("blog") });
-    const open = validateAtom(year, (values, get) => get(openYears).includes(values.year));
+    const open = validateRouteAtom(year, (values, get) => get(openYears).includes(values.year));
     seed(store, "/blog/2023");
 
     expect(store.get(open).match).toBe(false);

@@ -1,7 +1,7 @@
 import { Atom, Getter, WritableAtom, atom } from "jotai/vanilla";
 import { splitHref } from "./href";
 import { locationAtom } from "./locationAtom";
-import { Redirect, Store, isRedirect } from "./redirectAtom";
+import { Redirect, Store, isRedirect } from "./redirectRouteAtom";
 import { transformRouteAtom } from "./transformRouteAtom";
 import { DefaultParams, RouteAtom } from "./types";
 

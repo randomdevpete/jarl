@@ -162,14 +162,14 @@ the current location with its target (`history.replaceState`, so the abandoned U
 linger in the back-button history).
 
 If a route should redirect unconditionally - with no data fetch involved at all -
-`redirectAtom`/`followRedirects` do the same job without a loader:
+`redirectRouteAtom`/`followRedirects` do the same job without a loader:
 
 ```ts
-import { redirectAtom, followRedirects } from "jarl-atoms";
+import { redirectRouteAtom, followRedirects } from "jarl-atoms";
 import { staticRouteAtom } from "jarl-atoms";
 
 export const oldAboutRoute = staticRouteAtom("about-us");
-export const oldAboutRedirect = redirectAtom("/about", { parent: oldAboutRoute });
+export const oldAboutRedirect = redirectRouteAtom("/about", { parent: oldAboutRoute });
 
 followRedirects(store, [oldAboutRedirect]);
 ```

@@ -1,10 +1,10 @@
-import { createRootAtom, paramRouteAtom } from "jarl-atoms";
+import { rootRouteAtom, paramRouteAtom } from "jarl-atoms";
 import { Link, Route, Switch } from "jarl-react";
 import Markdown from "../lib/Markdown";
 import { changelogEntries, changelogEntryFor, fullChangelog, ChangelogEntry } from "./changelogEntries";
 
 // The page this is mounted on, so its version route below is a plain module-level atom.
-const changelogRoot = createRootAtom({ basePath: "/changelog" });
+const changelogRoot = rootRouteAtom({ basePath: "/changelog" });
 const versionRoute = paramRouteAtom("version", { parent: changelogRoot });
 
 const ChangelogNav = () => (

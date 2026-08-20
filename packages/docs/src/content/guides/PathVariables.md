@@ -4,7 +4,7 @@ Now we've seen how to set up some static routes, let's look at something a bit m
 Routing isn't much use if we have to define every single URL statically!
 
 `paramRouteAtom` binds a single dynamic path segment to a named value, composed on top of a
-parent route atom (any route atom - `rootAtom`, a `staticRouteAtom`, or another
+parent route atom (any route atom - `rootRoute`, a `staticRouteAtom`, or another
 `paramRouteAtom`, for nested dynamic segments):
 
 routes.ts:
@@ -58,15 +58,15 @@ Linking to a dynamic route works the same way as a static one - just pass the pa
 
 ## Query parameters
 
-Dynamic _path_ segments aren't the only way to carry a value in a URL - `queryParamAtom` (from
+Dynamic _path_ segments aren't the only way to carry a value in a URL - `queryParamRouteAtom` (from
 `jarl-atoms`) does the same job for a single named query-string parameter, composed on top of a
 parent route atom exactly like `paramRouteAtom`, except it doesn't consume a path segment:
 
 ```ts
-import { staticRouteAtom, queryParamAtom } from "jarl-atoms";
+import { staticRouteAtom, queryParamRouteAtom } from "jarl-atoms";
 
 export const searchRoute = staticRouteAtom("search");
-export const searchQueryRoute = queryParamAtom("q", { parent: searchRoute });
+export const searchQueryRoute = queryParamRouteAtom("q", { parent: searchRoute });
 ```
 
 `searchQueryRoute` matches whenever `/search` does, with `values.q` set to the current `?q=`
