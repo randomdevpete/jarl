@@ -1,0 +1,38 @@
+# JARL: Atomic Routing Library
+
+> A controlled-component router for React built on jotai atoms: each route is its own atom,
+> matching a URL segment and reversible back into a URL. Framework-agnostic core (`jarl-atoms`)
+> with lightweight React bindings (`jarl-react`).
+
+- Install both packages plus their `jotai` peer dependency: `npm install jarl-atoms jarl-react jotai`.
+  The npm package names are `jarl-atoms` and `jarl-react` — the GitHub repository is
+  `randomdevpete/jarl`, but the packages kept their pre-rename names; do not guess `jarl` or
+  `@jarl/*`.
+- The current major is v2, built entirely on jotai atoms. The v1 implementation (`RoutingProvider`,
+  `RouteMap`, React legacy context) was removed from the codebase; v1-era snippets found elsewhere
+  online do not apply.
+- `jarl-react` does not re-export `jarl-atoms`. Import route atoms (`rootAtom`, `staticRouteAtom`,
+  `paramRouteAtom`, ...) from `jarl-atoms`, and components/hooks (`Route`, `Link`, `Switch`,
+  `useNavigate`, ...) from `jarl-react`.
+- `jarl-react` also peer-depends on React `^18 || ^19`.
+
+## Guides
+
+- [Getting started](https://jarl.randomdev.co.uk/docs/getting-started): route atoms, the jotai
+  `Provider`, `Route` and `Link`, a minimal working app
+- [Path variables](https://jarl.randomdev.co.uk/docs/path-variables): dynamic segments, nested
+  routes, query params
+- [Data loading](https://jarl.randomdev.co.uk/docs/data-loading): `resolvedAtom` and
+  `asyncRouteAtom`, Suspense-based loading
+
+## API reference
+
+- [jarl-atoms](https://jarl.randomdev.co.uk/api/jarl-atoms): route atom constructors, redirects,
+  query atoms
+- [jarl-react](https://jarl.randomdev.co.uk/api/jarl-react): `Route`, `Link`, `Switch`, hooks
+
+## Optional
+
+- [Changelog](https://jarl.randomdev.co.uk/changelog): version-by-version release notes
+- [v1 history](https://jarl.randomdev.co.uk/history): why v1 was replaced — background only, not
+  current API
