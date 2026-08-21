@@ -7,14 +7,20 @@ export type ChangelogEntry = { version: string; date?: string; heading: string; 
 const HEADING_RE = /^(#{1,2})\s+(.*)$/;
 const VERSION_RE = /v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)/;
 const DATE_RE = /\((\d{4}-\d{2}-\d{2})\)/;
+const FENCE_RE = /^```/;
 
 /**
  * Splits the generated CHANGELOG.md into one entry per `##` version heading.
  * A non-version `#`/`##` heading closes the current entry without starting a new one.
+ * Lines inside a fenced code block are never treated as headings, so an example release
+ * note that happens to show a `##`/version-shaped line can't be mistaken for a real one.
  */
-const parseChangelogEntries = (markdown: string): ChangelogEntry[] => {
+// Exported for unit tests, which feed it fixture markdown directly rather than the real
+// CHANGELOG.md — the module-level `changelogEntries` below is what production code uses.
+export const parseChangelogEntries = (markdown: string): ChangelogEntry[] => {
   const entries: ChangelogEntry[] = [];
   let current: { version: string; date?: string; heading: string; bodyLines: string[] } | null = null;
+  let inFence = false;
 
   const flush = () => {
     if (current) {
@@ -29,6 +35,16 @@ const parseChangelogEntries = (markdown: string): ChangelogEntry[] => {
   };
 
   for (const line of markdown.split("\n")) {
+    if (FENCE_RE.test(line)) {
+      inFence = !inFence;
+      current?.bodyLines.push(line);
+      continue;
+    }
+    if (inFence) {
+      current?.bodyLines.push(line);
+      continue;
+    }
+
     const heading = line.match(HEADING_RE);
     const versionMatch = heading && heading[1] === "##" ? heading[2].match(VERSION_RE) : null;
     if (versionMatch) {
