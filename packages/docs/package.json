@@ -7,7 +7,7 @@
   "scripts": {
     "docs:dev": "node scripts/dev-server.mjs",
     "docs:build": "node scripts/build.mjs",
-    "docs:preview": "vite preview --outDir dist --port 4173",
+    "docs:preview": "vite preview --outDir dist",
     "dev": "npm run docs:dev",
     "build": "npm run docs:build",
     "typecheck": "tsc --noEmit"

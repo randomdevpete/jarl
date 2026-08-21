@@ -4,6 +4,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { apiReferencePlugin } from "./scripts/apiReferencePlugin.mjs";
 import { sourceLinksPlugin } from "./scripts/sourceLinksPlugin.ts";
+import { devPort, DOCS_PREVIEW_PORT_OFFSET } from "../../scripts/devPorts.mts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // The repo root two levels up (packages/docs -> packages -> repo root). The docs site
@@ -29,5 +30,11 @@ export default defineConfig({
     fs: {
       allow: [__dirname, repoRoot],
     },
+  },
+  preview: {
+    // `npm run dev` serves this site through scripts/dev-server.mjs (Vite in middleware mode), so
+    // only the preview server takes a port from here.
+    port: devPort(DOCS_PREVIEW_PORT_OFFSET),
+    strictPort: true,
   },
 });
