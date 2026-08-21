@@ -3,7 +3,7 @@ const atoms = require("jarl-atoms");
 const bindings = require("jarl-react");
 
 assert.equal(typeof atoms.staticRouteAtom, "function");
-assert.equal(typeof atoms.redirectAtom, "function");
+assert.equal(typeof atoms.redirectRouteAtom, "function");
 assert.equal(typeof bindings.Link, "function");
 assert.equal(typeof bindings.Route, "function");
 assert.equal(typeof bindings.useNavigate, "function");

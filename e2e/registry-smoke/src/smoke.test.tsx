@@ -3,10 +3,10 @@ import { Provider, createStore } from "jotai";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { followRedirects, followResolvedRedirects, isRedirect, locationAtom, redirect, resolvedAtom } from "jarl-atoms";
+import { asyncRouteAtom, followAsyncRedirects, followRedirects, isRedirect, locationAtom, redirect } from "jarl-atoms";
 import { Route, useAtomValue } from "jarl-react";
 import App from "./App";
-import { aboutRoute, movedRedirect, productData, productRoute, rootAtom, searchQueryRoute } from "./routes";
+import { aboutRoute, movedRedirect, productData, productRoute, rootRoute, searchQueryRoute } from "./routes";
 
 type Store = ReturnType<typeof createStore>;
 
@@ -76,7 +76,7 @@ describe("navigation", () => {
 });
 
 describe("redirects", () => {
-  it("follows a matched redirectAtom to its target", () => {
+  it("follows a matched redirectRouteAtom to its target", () => {
     seed(store, "/moved");
     const unsubscribe = followRedirects(store, [movedRedirect]);
     expect(store.get(locationAtom).pathname).toBe("/about");
@@ -84,10 +84,10 @@ describe("redirects", () => {
     unsubscribe();
   });
 
-  it("follows a Redirect returned from a resolver", async () => {
-    const gated = resolvedAtom(productRoute, async () => redirect("/about"));
+  it("follows a Redirect returned from a loader", async () => {
+    const gated = asyncRouteAtom(productRoute, "gated", async () => redirect("/about")).data;
     seed(store, "/products/999");
-    const unsubscribe = followResolvedRedirects(store, [gated]);
+    const unsubscribe = followAsyncRedirects(store, [gated]);
     expect(isRedirect(await store.get(gated))).toBe(true);
     await Promise.resolve();
     expect(store.get(locationAtom).pathname).toBe("/about");
@@ -96,7 +96,7 @@ describe("redirects", () => {
 });
 
 describe("atoms", () => {
-  it("resolves async route data via resolvedAtom", async () => {
+  it("resolves async route data via asyncRouteAtom", async () => {
     seed(store, "/products/42");
     await expect(store.get(productData)).resolves.toEqual({ productId: "42", title: "Product 42" });
   });
@@ -107,7 +107,7 @@ describe("atoms", () => {
   });
 
   it("re-exports jotai's hooks so a consumer needs no direct jotai import", () => {
-    const Probe = () => <span>{String(useAtomValue(rootAtom).match)}</span>;
+    const Probe = () => <span>{String(useAtomValue(rootRoute).match)}</span>;
     seed(store, "/");
     render(
       <Provider store={store}>

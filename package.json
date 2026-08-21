@@ -15,7 +15,7 @@
     "ci-test": "npm run ci-test --workspaces --if-present",
     "test:e2e:install": "npm --prefix e2e install && npx --prefix e2e playwright install --with-deps chromium",
     "test:e2e": "npm --prefix e2e run test",
-    "test:smoke:install": "npm --prefix e2e/registry-smoke install",
+    "test:smoke:install": "npm run build --workspace packages/jarl-atoms --workspace packages/jarl-react && npm --prefix e2e/registry-smoke run pack-local",
     "test:smoke": "npm --prefix e2e/registry-smoke run test",
     "test:smoke:local": "npm run build --workspace packages/jarl-atoms --workspace packages/jarl-react && npm --prefix e2e/registry-smoke run test:cjs-nodenext",
     "ci-publish": "npm publish --workspace packages/jarl-atoms --workspace packages/jarl-react",
