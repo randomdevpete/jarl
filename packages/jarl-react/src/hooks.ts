@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { DefaultParams, RouteAtom } from "jarl-atoms";
+import { DefaultParams, NavOptions, RouteAtom } from "jarl-atoms";
 import { isActive } from "./isActive";
 
 // Re-export jotai's own primitive hooks. Per jotai convention (see
@@ -21,11 +21,12 @@ export function useRoute<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
 
 /**
  * Returns a stable `navigate` function bound to one route atom. Calling it with param values
- * pushes a new location.
+ * pushes a new location; pass `{ replace: true }` as a second argument for a replace navigation,
+ * mirroring the route atom's own setter (`set(routeAtom, values, { replace: true })`).
  */
 export function useNavigate<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
   const setRoute = useSetAtom(routeAtom);
-  return useCallback((to: T) => setRoute(to), [setRoute]);
+  return useCallback((to: T, options?: NavOptions) => setRoute(to, options), [setRoute]);
 }
 
 /**
