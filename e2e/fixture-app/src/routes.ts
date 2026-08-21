@@ -7,23 +7,23 @@
  * can exercise realistic nested/param routes.
  *
  * NOTE: this file only *composes* the primitives jarl-atoms exports
- * (rootAtom, staticRouteAtom, paramRouteAtom, redirectAtom, asyncRouteAtom). It
+ * (rootRoute, staticRouteAtom, paramRouteAtom, redirectRouteAtom, asyncRouteAtom). It
  * does not add routing features to the library.
  */
 import { atom } from "jotai/vanilla";
 import { loadable } from "jotai/utils";
 import {
-  rootAtom,
+  rootRoute,
   staticRouteAtom,
   paramRouteAtom,
-  redirectAtom,
+  redirectRouteAtom,
   asyncRouteAtom,
   redirect,
   navigationGuardAtom,
 } from "jarl-atoms";
 
 // --- Shell (demo/cypress/integration/00DemosShell.js) ---
-export { rootAtom };
+export { rootRoute };
 export const changelogAtom = staticRouteAtom("changelog");
 // Catches any single unmatched top-level segment, e.g. /asdfghjkl
 export const shellMissingAtom = paramRouteAtom("missingPath");
@@ -74,7 +74,7 @@ export const redirectsContentSlugAtom = paramRouteAtom("slug", {
 // landing page. Read via its `match`, not `followRedirects` - see the
 // comment on `reasonSearchParams` in Redirects.tsx for why the actual
 // navigation is handled there instead.
-export const redirectsMovedRedirectAtom = redirectAtom("/redirects", {
+export const redirectsMovedRedirectAtom = redirectRouteAtom("/redirects", {
   parent: redirectsMovedAtom,
 });
 

@@ -3,7 +3,7 @@
 import { Getter, atom } from "jotai/vanilla";
 import { splitHref, Path } from "./href";
 import { locationAtom } from "./locationAtom";
-import { rootAtom } from "./rootAtom";
+import { rootRoute } from "./rootRouteAtom";
 import { DefaultParams, RouteAtom, RouteOptions } from "./types";
 
 export type { Path };
@@ -23,7 +23,7 @@ export const routeAtom = <T extends DefaultParams = DefaultParams, Parent extend
   makePath: (values: T, get: Getter) => string,
   options?: RouteOptions<Parent>,
 ): RouteAtom<T & Parent> => {
-  const parentAtom = options?.parent || (rootAtom as RouteAtom<Parent>);
+  const parentAtom = options?.parent || (rootRoute as RouteAtom<Parent>);
   // TODO: To avoid unnecessary recomputes we should be caching a memoization of the unmatched
   // state, this way we won't recalculate all leaves of an unmatched branch
   const reverse = (get: Getter) => (values: T) => {
