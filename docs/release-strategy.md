@@ -114,11 +114,22 @@ always finishes.
 
 `commit-analyzer` matches release rules against a parsed `type`, so a commit whose subject has no
 `type:` prefix is unreleasable no matter what it changed. `master` carries a couple of dozen of
-these and several are real work — `Add notAtom for catch-all/unmatched routes` (a `feat`),
-`Emit dist/index.d.cts for jarl-atoms/jarl-react, fix require condition types` (a `fix`),
-`Make jotai a peerDependency of jarl-atoms and jarl-react` (a breaking `fix`). They reached npm
-only because a later typed `feat` swept them into its release, and none of them appear in the
-changelog. Enforcing the format at commit or PR time (commitlint) is a separate change.
+these predating enforcement below, and several are real work — `Add notAtom for catch-all/unmatched
+routes` (a `feat`), `Emit dist/index.d.cts for jarl-atoms/jarl-react, fix require condition types`
+(a `fix`), `Make jotai a peerDependency of jarl-atoms and jarl-react` (a breaking `fix`). They
+reached npm only because a later typed `feat` swept them into its release, and none of them appear
+in the changelog.
+
+### Enforcing the type at PR time
+
+The `commitlint` job in `.github/workflows/ci.yml` runs [commitlint](https://commitlint.js.org/)
+(`commitlint.config.cjs`) over every commit a PR adds on top of its base, using
+`@commitlint/config-conventional`'s `type-enum`/`type-case`/`type-empty` rules — the same type set
+`commit-analyzer`'s `conventionalcommits` preset recognises (the table above). An untyped commit
+(`Emit dist/index.d.cts for...`) or one with a miscased type (`Style: tighten...`) fails the job, so
+neither can reach `master`. The config disables `config-conventional`'s subject-case and line-length
+rules, which are unrelated to the type prefix and would otherwise flag this project's normal style —
+see the config file's own comment.
 
 ## Changelog content
 
