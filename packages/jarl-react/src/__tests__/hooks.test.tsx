@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { rootAtom } from "jarl-atoms";
 import { useRoute, useNavigate, useIsActive, useHref, useLink } from "../hooks";
@@ -49,6 +49,21 @@ describe("useNavigate", () => {
     expect(screen.getByTestId("match")).toHaveTextContent("false");
     fireEvent.click(screen.getByText("Go"));
     expect(screen.getByTestId("match")).toHaveTextContent("true");
+    expect(window.location.pathname).toBe("/about");
+  });
+
+  it("forwards { replace: true } as a replace navigation", () => {
+    goTo("/");
+    const pushSpy = vi.spyOn(window.history, "pushState");
+    const replaceSpy = vi.spyOn(window.history, "replaceState");
+    const Probe = () => {
+      const navigate = useNavigate(aboutAtom);
+      return <button onClick={() => navigate({}, { replace: true })}>Go</button>;
+    };
+    render(<Probe />);
+    fireEvent.click(screen.getByText("Go"));
+    expect(replaceSpy).toHaveBeenCalled();
+    expect(pushSpy).not.toHaveBeenCalled();
     expect(window.location.pathname).toBe("/about");
   });
 });
