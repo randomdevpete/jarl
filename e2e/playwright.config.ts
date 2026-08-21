@@ -1,4 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
+import { devPort, E2E_FIXTURE_PORT_OFFSET } from "../scripts/devPorts.mts";
+
+const fixtureUrl = `http://localhost:${devPort(E2E_FIXTURE_PORT_OFFSET)}`;
 
 /**
  * Playwright config for ticket 57 (port e2e tests to Playwright).
@@ -26,13 +29,13 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
   use: {
-    baseURL: "http://localhost:4173",
+    baseURL: fixtureUrl,
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     command: "npm run build && npm run preview",
-    url: "http://localhost:4173",
+    url: fixtureUrl,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

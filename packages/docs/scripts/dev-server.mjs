@@ -6,10 +6,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer as createViteServer } from "vite";
+import { devPort, DOCS_DEV_PORT_OFFSET } from "../../../scripts/devPorts.mts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
-const port = Number(process.env.PORT) || 4321;
+const port = Number(process.env.PORT) || devPort(DOCS_DEV_PORT_OFFSET);
 
 async function main() {
   const vite = await createViteServer({

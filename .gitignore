@@ -75,6 +75,9 @@ typings/
 # dotenv environment variables file
 .env
 
+# This worktree's derived dev ports (npm run ports -- --write-env)
+.env.ports
+
 # Cypress test run Output
 
 # Editors / XDE

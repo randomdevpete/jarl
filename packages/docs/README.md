@@ -12,13 +12,17 @@ Run from `packages/docs/`:
 
 ```
 npm install
-npm run docs:dev      # custom SSR dev server (Vite in middleware mode), http://localhost:4321
+npm run docs:dev      # custom SSR dev server (Vite in middleware mode), on this worktree's `+0` port
 npm run docs:build    # produces a static, deployable build in dist/
-npm run docs:preview  # serve the built dist/ output locally, to sanity-check the static build
+npm run docs:preview  # serve the built dist/ output locally, on this worktree's `+5` port
 npm run typecheck     # tsc --noEmit
 ```
 
 Or from the repo root: `npm run docs:build --prefix packages/docs`.
+
+Both servers derive their port from the worktree's branch name rather than taking a fixed one —
+`npm run ports` at the repo root prints this worktree's block, and the root `CLAUDE.md` has the
+offset map.
 
 `docs:build` is the command a later deploy step (ticket 60's GitHub Actions workflow)
 should run and then upload the contents of `dist/` as-is to static hosting - every page

@@ -3,8 +3,11 @@ import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
+import { devPort, E2E_FIXTURE_PORT_OFFSET } from "../../scripts/devPorts.mts";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const fixturePort = devPort(E2E_FIXTURE_PORT_OFFSET);
 
 const atomsPackageJson = JSON.parse(
   readFileSync(path.resolve(dirname, "../../packages/jarl-atoms/package.json"), "utf-8"),
@@ -42,11 +45,11 @@ export default defineConfig({
     __JARL_VERSION__: JSON.stringify(atomsPackageJson.version),
   },
   server: {
-    port: 4173,
+    port: fixturePort,
     strictPort: true,
   },
   preview: {
-    port: 4173,
+    port: fixturePort,
     strictPort: true,
   },
 });

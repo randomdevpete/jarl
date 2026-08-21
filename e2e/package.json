@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite --config fixture-app/vite.config.ts",
     "build": "vite build --config fixture-app/vite.config.ts",
-    "preview": "vite preview --config fixture-app/vite.config.ts --port 4173 --strict-port",
+    "preview": "vite preview --config fixture-app/vite.config.ts",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "typecheck": "tsc --noEmit -p tsconfig.json"
