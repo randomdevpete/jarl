@@ -1,6 +1,12 @@
 import { Link } from "jarl-react";
 import LinkList from "../lib/LinkList";
-import { asyncLookupDemoRoute, basicRoutingDemoRoute, blogRoutingDemoRoute, dataGridDemoRoute } from "../router/routes";
+import {
+  asyncLookupDemoRoute,
+  basicRoutingDemoRoute,
+  blogRoutingDemoRoute,
+  complexRoutingDemoRoute,
+  dataGridDemoRoute,
+} from "../router/routes";
 
 export const DemosIndex = () => (
   <>
@@ -33,6 +39,13 @@ export const DemosIndex = () => (
         </Link>{" "}
         &mdash; a table whose filter text and sort column live in <code>queryParamAtom</code>s chained off the mount
         route, so the grid&apos;s state is shareable and moves with back/forward navigation.
+      </li>
+      <li>
+        <Link route={complexRoutingDemoRoute} to={{}}>
+          Complex routing
+        </Link>{" "}
+        &mdash; custom single-segment path atoms built on <code>routeAtom</code> directly: <code>yyyy-mm-dd</code> gated
+        on the real calendar with <code>validateAtom</code>, and <code>name.ext</code> filenames.
       </li>
       <li>
         <Link route={asyncLookupDemoRoute} to={{}}>
