@@ -7,6 +7,7 @@ import {
   complexRoutingDemoRoute,
   cancelNavigationDemoRoute,
   dataGridDemoRoute,
+  switchRoutingDemoRoute,
 } from "../router/routes";
 
 export const DemosIndex = () => (
@@ -26,6 +27,13 @@ export const DemosIndex = () => (
         </Link>{" "}
         &mdash; a nested router-within-a-router built from <code>staticRouteAtom</code>/<code>paramRouteAtom</code> and
         the atoms-based <code>Link</code>/<code>Route</code> components.
+      </li>
+      <li>
+        <Link route={switchRoutingDemoRoute} to={{}}>
+          Switch-statement routing
+        </Link>{" "}
+        &mdash; the same job with no routing components at all: a <code>switch</code> on one route atom&apos;s value
+        picks the page, and the nav buttons navigate by writing to that atom instead of rendering a <code>Link</code>.
       </li>
       <li>
         <Link route={blogRoutingDemoRoute} to={{}}>
