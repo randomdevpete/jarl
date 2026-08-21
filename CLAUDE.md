@@ -35,11 +35,12 @@ or run against a stale build.
 ```bash
 npm install          # installs and links all workspace packages
 npm run build         # build all packages (rolldown) and the docs site (vite SSG)
-npm test              # run each package's tests (vitest)
+npm test              # run the root and per-package tests (vitest)
 npm run ci-test        # CI test run
 npm run lint            # oxlint across the repo
 npm run format           # oxfmt across the repo
-npm run dev / npm start   # run the docs site's Vite dev server
+npm run dev / npm start   # run the docs site's SSR dev server (see Dev ports)
+npm run ports             # print this worktree's derived dev port block
 npm run typecheck         # tsc over packages/ and scripts/ (e2e and infra typecheck separately)
 npm run test:e2e          # Playwright suite (see test:e2e:install)
 npm run test:smoke        # published-package smoke test (see test:smoke:install)
@@ -63,3 +64,26 @@ removed with the rest of the old tooling).
 
 Each package's tests run under Vitest with jsdom (the atoms talk to
 `window.location`/`history` via jotai-location, and the bindings render React).
+
+## Dev ports
+
+Ports are derived from the worktree's branch name, never hardcoded — `scripts/devPorts.mts` implements
+the scheme. `npm run ports`
+prints this worktree's block; `npm run ports -- --write-env` also writes a gitignored `.env.ports`
+for anything that can't import the module.
+
+**Offset map** — the only project-specific part:
+
+| offset | service                                                |
+| ------ | ------------------------------------------------------ |
+| `+0`   | docs site SSR dev server (`npm run dev`)               |
+| `+5`   | docs production-build preview (`npm run docs:preview`) |
+| `+6`   | Playwright fixture app (`npm run test:e2e`)            |
+
+`+1`–`+4` and `+7`–`+9` are unused. `+0` is served by `packages/docs/scripts/dev-server.mjs` (Vite
+in middleware mode, so the port is the script's rather than `vite.config.ts`'s); `+5` comes from
+`packages/docs/vite.config.ts`, and `+6` from `e2e/fixture-app/vite.config.ts`, which
+`e2e/playwright.config.ts` dials as its `baseURL`.
+
+`packages/docs/src/prod-server.ts` is production rather than dev: it takes `PORT` from the
+`jarl-ssr` systemd unit in `infra/lib/jarl-stacks.ts` and refuses to start without it.
