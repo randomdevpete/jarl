@@ -9,6 +9,7 @@ import { atom } from "jotai";
 import { asyncRouteAtom, notAtom, rootAtom, staticRouteAtom, paramRouteAtom, unionRouteAtom } from "jarl-atoms";
 import { blogStaticPaths } from "../demos/blogPosts";
 import { complexRoutingStaticPaths } from "../demos/complexRoutingSamples";
+import { switchRoutingStaticPaths } from "../demos/switchRoutingPages";
 import { articleSlugs, findArticle } from "../demos/asyncArticles";
 import { changelogStaticPaths } from "../pages/changelogEntries";
 
@@ -31,6 +32,10 @@ export const demosIndexRoute = staticRouteAtom("demos");
 // mirrors the shape of the old demo/source/demos/basicRouting example.
 export const basicRoutingDemoRoute = staticRouteAtom("basic-routing", { parent: demosIndexRoute });
 export const basicRoutingDemoPageRoute = paramRouteAtom("page", { parent: basicRoutingDemoRoute });
+
+// Switch-statement routing demo: the site's own mount point. The demo reads one page route atom
+// and switches on its value, on its own basePath-scoped root inside SwitchRoutingApp.
+export const switchRoutingDemoRoute = staticRouteAtom("switch-routing", { parent: demosIndexRoute });
 
 // Blog routing demo: the site's own mount point. The demo's own /:year/:month/:day/:slug tree
 // lives inside BlogRoutingApp, on its own basePath-scoped root.
@@ -79,14 +84,16 @@ const exactRouteMissedAtom = notAtom(
     asyncLookupDemoRoute,
     asyncArticleRoute,
     cancelNavigationDemoRoute,
+    switchRoutingDemoRoute,
   ]),
 );
 
 /**
  * Whether the current location has nothing behind it, which is what makes a server render's
- * *status code* right and not just its HTML. Everything under the changelog's, the blog demo's,
- * the complex-routing demo's and the cancel-navigation demo's mounts counts as found - all four
- * route their own subtree and render their own not-found views. The async demo gets no such blanket, and lists
+ * *status code* right and not just its HTML. Everything under the changelog's, the switch demo's,
+ * the blog demo's, the complex-routing demo's and the cancel-navigation demo's mounts counts as
+ * found - all five route their own subtree and render their own not-found views. The async demo
+ * gets no such blanket, and lists
  * `asyncArticleRoute` rather than `asyncLookupSlugRoute`: an unknown slug is a genuine miss, even
  * though the demo page still renders its own not-found view.
  */
@@ -94,6 +101,7 @@ export const notFoundAtom = atom(
   (get) =>
     get(exactRouteMissedAtom) &&
     !get(changelogRoute).match &&
+    !get(switchRoutingDemoRoute).match &&
     !get(blogRoutingDemoRoute).match &&
     !get(complexRoutingDemoRoute).match &&
     !get(cancelNavigationDemoRoute).match,
@@ -138,6 +146,7 @@ export const staticPaths: string[] = [
   "/demos",
   "/demos/basic-routing",
   "/demos/basic-routing/about",
+  ...switchRoutingStaticPaths(),
   ...blogStaticPaths(),
   "/demos/data-grid",
   ...complexRoutingStaticPaths(),

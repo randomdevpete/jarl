@@ -11,6 +11,7 @@ import {
   historyRoute,
   demosIndexRoute,
   basicRoutingDemoRoute,
+  switchRoutingDemoRoute,
   blogRoutingDemoRoute,
   dataGridDemoRoute,
   complexRoutingDemoRoute,
@@ -24,6 +25,7 @@ import Changelog from "./pages/Changelog";
 import History from "./pages/History";
 import DemosIndex from "./pages/DemosIndex";
 import BasicRoutingDemo from "./pages/BasicRoutingDemo";
+import SwitchRoutingDemo from "./pages/SwitchRoutingDemo";
 import BlogRoutingDemo from "./pages/BlogRoutingDemo";
 import DataGridDemo from "./pages/DataGridDemo";
 import ComplexRoutingDemo from "./pages/ComplexRoutingDemo";
@@ -64,6 +66,9 @@ export const App = () => (
         </Route>
         <Route on={basicRoutingDemoRoute}>
           <BasicRoutingDemo />
+        </Route>
+        <Route on={switchRoutingDemoRoute}>
+          <SwitchRoutingDemo />
         </Route>
         <Route on={blogRoutingDemoRoute}>
           <BlogRoutingDemo />
