@@ -13,7 +13,8 @@
     "packages/jarl-react/src/**/*.tsx",
     "packages/docs/src/**/*.ts",
     "packages/docs/src/**/*.tsx",
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    "scripts/**/*.mts"
   ],
   "exclude": ["node_modules", "**/node_modules", "**/dist/**"]
 }
