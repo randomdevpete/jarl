@@ -1,16 +1,23 @@
-import { paramRouteAtom, queryParamAtom, redirectAtom, resolvedAtom, rootAtom, staticRouteAtom } from "jarl-atoms";
+import {
+  asyncRouteAtom,
+  paramRouteAtom,
+  queryParamRouteAtom,
+  redirectRouteAtom,
+  rootRoute,
+  staticRouteAtom,
+} from "jarl-atoms";
 
-export { rootAtom };
+export { rootRoute };
 
 export const aboutRoute = staticRouteAtom("about");
 export const productsRoute = staticRouteAtom("products");
 export const productRoute = paramRouteAtom("productId", { parent: productsRoute });
-export const searchQueryRoute = queryParamAtom("q");
+export const searchQueryRoute = queryParamRouteAtom("q");
 
 export const movedRoute = staticRouteAtom("moved");
-export const movedRedirect = redirectAtom("/about", { parent: movedRoute });
+export const movedRedirect = redirectRouteAtom("/about", { parent: movedRoute });
 
-export const productData = resolvedAtom(productRoute, async ({ productId }) => ({
+export const productData = asyncRouteAtom(productRoute, "product", async ({ productId }) => ({
   productId,
   title: `Product ${productId}`,
-}));
+})).data;
