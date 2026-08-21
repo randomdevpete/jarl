@@ -78,12 +78,13 @@ export const notFoundAtom = atom(
   (get) => get(exactRouteMissedAtom) && !get(changelogRoute).match && !get(blogRoutingDemoRoute).match,
 );
 
-export type DocName = "getting-started" | "data-loading" | "path-variables";
+export type DocName = "getting-started" | "data-loading" | "path-variables" | "benchmarks";
 
 export const docPages: { docName: DocName; title: string }[] = [
   { docName: "getting-started", title: "Getting Started" },
   { docName: "data-loading", title: "Data Loading" },
   { docName: "path-variables", title: "Path Variables" },
+  { docName: "benchmarks", title: "Benchmarks" },
 ];
 
 export type ApiName = "jarl-atoms" | "jarl-react";
