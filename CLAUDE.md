@@ -38,6 +38,7 @@ npm run build         # build all packages (rolldown) and the docs site (vite SS
 npm test              # run the root and per-package tests (vitest)
 npm run ci-test        # CI test run
 npm run lint            # oxlint across the repo
+npm run lint:commits    # commitlint over local commit messages
 npm run format           # oxfmt across the repo
 npm run dev / npm start   # run the docs site's SSR dev server (see Dev ports)
 npm run ports             # print this worktree's derived dev port block
