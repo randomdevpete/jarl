@@ -2,9 +2,10 @@
   "name": "jarl-registry-smoke",
   "version": "0.0.0",
   "private": true,
-  "description": "Consumes the published jarl-atoms/jarl-react from the npm registry, exactly as a third-party project would, and exercises routing, navigation, redirects and the atoms API against the real build artifacts.",
+  "description": "Consumes jarl-atoms/jarl-react as a third-party project would — real package resolution, not a workspace link — and exercises routing, navigation, redirects and the atoms API against a locally-packed build of this branch.",
   "type": "module",
   "scripts": {
+    "pack-local": "node ./pack-local.mjs",
     "test": "npm run typecheck && npm run test:entrypoints && vitest run",
     "test:entrypoints": "node ./esm-smoke.mjs && node ./cjs-smoke.cjs",
     "test:unit": "vitest run",
@@ -12,8 +13,9 @@
     "test:cjs-nodenext": "npm --prefix cjs-nodenext run test"
   },
   "dependencies": {
-    "jarl-atoms": "latest",
-    "jarl-react": "latest"
+    "jarl-atoms": "file:./tarballs/jarl-atoms.tgz",
+    "jarl-react": "file:./tarballs/jarl-react.tgz",
+    "jotai": "^2"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.1",

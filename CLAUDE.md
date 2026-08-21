@@ -14,11 +14,12 @@ JARL ("JARL: Atomic Routing Library") is a controlled-component router for React
   dogfoods the two packages above for its own navigation
 - `e2e/` — Playwright suite plus the minimal Vite fixture app it drives. A separate
   npm project (not a workspace) with its own deps: `npm run test:e2e:install` first.
-- `e2e/registry-smoke/` — a consumer project that installs both packages from the npm
-  registry and uses them unlinked, so the published tarballs get exercised. Also a
-  separate npm project; run it after a release, not against working-tree changes.
-  `cjs-nodenext/` inside it is the exception: it packs and installs from the working
-  tree, to typecheck a `node16`-resolution CommonJS consumer against uncommitted builds.
+- `e2e/registry-smoke/` — a consumer project that installs both packages as a real npm
+  dependency, unlinked from the workspace — `pack-local.mjs` packs them from the working
+  tree and installs the tarballs, so it exercises the same `dist`/`exports`/`.d.ts` a
+  release would ship, on every PR (see its README, "Tracking source renames"). Also a
+  separate npm project. `cjs-nodenext/` inside it does the same pack-and-install, to
+  typecheck a `node16`-resolution CommonJS consumer.
 - `infra/` — AWS CDK app provisioning the hosting for jarl.randomdev.co.uk. Also a separate
   npm project, kept out of the workspaces so it is never published: `infra/README.md`.
 

@@ -1,3 +1,4 @@
 node_modules/
-# Committing one would pin the versions under test to whatever was latest the day it was written.
+tarballs/
+# Committing one would pin the tarball integrity hash to whatever pack-local.mjs last produced.
 package-lock.json

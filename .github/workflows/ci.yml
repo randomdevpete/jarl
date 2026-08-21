@@ -40,10 +40,6 @@ on:
         description: "Release everything outstanding since the last tag"
         type: boolean
         default: false
-      registry_smoke:
-        description: "Smoke-test the currently published packages"
-        type: boolean
-        default: false
 
 jobs:
   build-and-test:
@@ -98,18 +94,27 @@ jobs:
         run: npm run test:e2e
 
   registry-smoke:
-    name: Registry smoke test (published packages)
+    name: Registry smoke test (packed local build)
     runs-on: ubuntu-latest
-    # Tests the published packages, not this commit — pointless on a PR build; run by hand after a release.
-    if: github.event_name == 'workflow_dispatch' && inputs.registry_smoke
+    needs: build-and-test
+    # Ticket 823: this used to install from the npm registry at `latest`, gated behind
+    # workflow_dispatch only — so a source rename here couldn't fail until the next release
+    # republished, in a job nobody was watching. It now packs jarl-atoms/jarl-react from this
+    # commit as `npm pack` would for a release and installs those tarballs as a real npm
+    # dependency (see e2e/registry-smoke/README.md, "Tracking source renames"), so drift shows up
+    # on the PR that introduced it instead of after a release ships broken.
     steps:
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+          cache: npm
 
-      - name: Install the smoke consumer from the registry
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Pack local build and install the smoke consumer
         run: npm run test:smoke:install
 
       - name: Run the smoke consumer
