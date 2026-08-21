@@ -66,6 +66,29 @@ jobs:
       - name: Unit tests
         run: npm test
 
+  commitlint:
+    name: Lint commit messages
+    runs-on: ubuntu-latest
+    # A push to master lands the same commits a PR already carries via
+    # rebase-merge, so linting the PR's range is what gates master.
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Needs the base commit and everything since it, not just HEAD.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint commits since the PR's base
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
   e2e:
     name: End-to-end tests (Playwright)
     runs-on: ubuntu-latest
