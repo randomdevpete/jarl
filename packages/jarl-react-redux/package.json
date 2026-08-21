@@ -1,0 +1,13 @@
+{
+  "name": "jarl-react-redux",
+  "version": "1.0.1",
+  "description": "Retired. Superseded by jarl-react and jarl-atoms — see the README.",
+  "homepage": "https://jarl.randomdev.co.uk",
+  "license": "MIT",
+  "author": "Peter Hurst",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/randomdevpete/jarl.git"
+  },
+  "deprecated": "Retired: Not in scope for JARL v2. JARL v2 is built on Jotai state and fundamentally incompatible with Redux (though you are welcome to build a bridge). See https://jarl.randomdev.co.uk"
+}
