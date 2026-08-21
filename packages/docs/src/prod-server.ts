@@ -7,7 +7,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { render } from "./entry-server";
 
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.PORT);
+if (!Number.isInteger(port)) {
+  throw new Error("PORT must be set; the jarl-ssr unit in infra/lib/jarl-stacks.ts sets it.");
+}
 const template = readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "template.html"), "utf-8");
 
 /** Matches `ssrPathPattern` in infra/lib/jarl-stacks.ts: CloudFront forwards the whole /ssr/* request. */
