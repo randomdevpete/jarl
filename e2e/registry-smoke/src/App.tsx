@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Route, useIsActive, useNavigate } from "jarl-react";
-import { aboutRoute, productRoute, productsRoute, rootAtom, searchQueryRoute } from "./routes";
+import { aboutRoute, productRoute, productsRoute, rootRoute, searchQueryRoute } from "./routes";
 
 const SearchForm = () => {
   const [searchText, setSearchText] = useState("");
@@ -23,7 +23,7 @@ const App = () => {
   return (
     <>
       <nav>
-        <Link route={rootAtom} to={{}} exact activeClassName="active">
+        <Link route={rootRoute} to={{}} exact activeClassName="active">
           Home
         </Link>
         <Link route={aboutRoute} to={{}} activeClassName="active">
@@ -34,7 +34,7 @@ const App = () => {
         </Link>
       </nav>
       <SearchForm />
-      <Route on={rootAtom} exact>
+      <Route on={rootRoute} exact>
         <h1>Home</h1>
       </Route>
       <Route on={aboutRoute}>
