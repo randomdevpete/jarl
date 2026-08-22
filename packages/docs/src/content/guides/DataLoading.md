@@ -103,8 +103,8 @@ const html = renderToString(
 const status = store.get(notFoundAtom) ? 404 : 200;
 ```
 
-`notFoundAtom` there is `notAtom(...everyRouteYouRender)` - listing `postRoute` rather than
-`slugRoute`, so an unknown slug counts as a miss.
+`notFoundAtom` there is `notAtom(unionRouteAtom(everyRouteYouRender))` - listing `postRoute` rather
+than `slugRoute`, so an unknown slug counts as a miss.
 
 `preloadRoutes` returns one snapshot per route, in the order given. Serialise them into the page
 and the client picks up where the server left off, without repeating the lookup:
