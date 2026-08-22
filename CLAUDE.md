@@ -87,3 +87,8 @@ in middleware mode, so the port is the script's rather than `vite.config.ts`'s);
 
 `packages/docs/src/prod-server.ts` is production rather than dev: it takes `PORT` from the
 `jarl-ssr` systemd unit in `infra/lib/jarl-stacks.ts` and refuses to start without it.
+## Coding & commenting style
+
+[`docs/coding-style.md`](./docs/coding-style.md) is the binding coding and commenting style guide
+for this project — comment types and their rules, hard bans, test/config conventions. Rules live
+there once; don't duplicate them here.

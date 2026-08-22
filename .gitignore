@@ -84,5 +84,5 @@ typings/
 .expo
 .idea
 
-# Untracked, machine-local convention pointers
+# Local-only operating instructions for a session opened outside a wider workflow
 CLAUDE.local.md
