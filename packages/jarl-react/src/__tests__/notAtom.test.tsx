@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { useAtomValue } from "jotai";
-import { notAtom } from "jarl-atoms";
+import { notAtom, unionRouteAtom } from "jarl-atoms";
 import { Route } from "../Route";
 import { aboutAtom, usersAtom } from "./fixtures";
 
@@ -11,7 +11,7 @@ beforeEach(() => {
   goTo("/");
 });
 
-const notFoundAtom = notAtom(aboutAtom, usersAtom);
+const notFoundAtom = notAtom(unionRouteAtom([aboutAtom, usersAtom]));
 
 const NotFound = () => (useAtomValue(notFoundAtom) ? <div>Not found</div> : null);
 
