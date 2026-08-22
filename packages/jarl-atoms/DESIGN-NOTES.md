@@ -182,3 +182,28 @@ Dropping `Route` from every name instead was rejected: `routeAtom` would collide
 No deprecated aliases were kept for the old names. Two names per export would make the surface
 less consistent rather than more, which is the opposite of the point, and the alias would then
 need its own removal later.
+
+## Naming a fixed-value segment: `enumRouteAtom`
+
+`enum` is the ecosystem's word for a value drawn from a fixed set of strings — JSON Schema's and
+OpenAPI's `enum`, and zod's `z.enum([...])`, which takes the same non-empty literal tuple and
+yields the same string-literal union. It is not TypeScript's `enum` keyword, which this package
+uses nowhere; what the route binds is a union of literals. It also keeps the segment constructors
+named for the kind of segment they match — static, param, numeric, enum — which is what makes the
+family scannable.
+
+Two other names were rejected. `setRouteAtom` satisfies the return-type rule above but collides
+with jotai's write vocabulary, where `set` means "write to an atom": `useSetAtom(setRouteAtom(...))`
+is a sentence fighting itself. `oneOfRouteAtom` reads well in isolation, but "one of" names a choice
+between whole alternatives — JSON Schema's `oneOf` is exactly a union of schemas — which is what a
+primitive combining several _routes_ wants, not one constraining a single segment to a value set.
+The two do different jobs and neither subsumes the other, so two near-synonymous names would only
+invite reaching for the wrong one.
+
+## A fixed-value segment needs no precedence rule
+
+A path segment is one string, so at most one member of the set can match it: matching is a
+membership test rather than an ordered scan, and the order the values are listed in decides
+nothing. What can still overlap is a route and its _siblings_ — a `staticRouteAtom("about")` and an
+`enumRouteAtom` that accepts `"about"` under the same parent both match `/about` — but that is the
+ordinary ambiguity of declaring two routes for one URL, which no single route atom can see.

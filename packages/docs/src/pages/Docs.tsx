@@ -31,23 +31,6 @@ export const DocsIndex = () => (
   </>
 );
 
-export const DocPage = ({ docName }: { docName: string }) => {
-  const source = guides[docName as DocName];
-  if (!source) {
-    return (
-      <>
-        <h1>Not found</h1>
-        <p>
-          No guide named &ldquo;{docName}&rdquo;. Back to{" "}
-          <Link route={docPageRoute} to={{ docName: docPages[0].docName }}>
-            Docs
-          </Link>
-          .
-        </p>
-      </>
-    );
-  }
-  return <Markdown source={source} />;
-};
+export const DocPage = ({ docName }: { docName: DocName }) => <Markdown source={guides[docName]} />;
 
 export default DocsIndex;

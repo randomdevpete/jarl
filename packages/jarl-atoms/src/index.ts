@@ -11,6 +11,7 @@ export * from "./rootRouteAtom";
 export * from "./staticRouteAtom";
 export * from "./paramRouteAtom";
 export * from "./numericRouteAtom";
+export * from "./enumRouteAtom";
 export * from "./transformRouteAtom";
 export * from "./validateRouteAtom";
 export * from "./notAtom";
