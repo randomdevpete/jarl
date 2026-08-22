@@ -80,3 +80,6 @@ typings/
 # Editors / XDE
 .expo
 .idea
+
+# Local-only operating instructions for a session opened outside a wider workflow
+CLAUDE.local.md
