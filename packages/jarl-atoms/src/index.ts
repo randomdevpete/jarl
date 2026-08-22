@@ -11,6 +11,7 @@ export * from "./staticRouteAtom";
 export * from "./paramRouteAtom";
 export * from "./numericRouteAtom";
 export * from "./transformRouteAtom";
+export * from "./unionRouteAtom";
 export * from "./notAtom";
 export * from "./href";
 export * from "./queryAtom";

@@ -59,6 +59,9 @@ export type RouteReturn<T extends DefaultParams = DefaultParams> = {
 /** A route: read it for its `RouteReturn` match state, write param values to it to navigate. */
 export type RouteAtom<T extends DefaultParams> = WritableAtom<RouteReturn<T>, [T, NavOptions?], void>;
 
+/** The param values a route atom binds: `RouteValues<typeof postRoute>` is that route's `values`. */
+export type RouteValues<Route extends RouteAtom<any>> = Route extends RouteAtom<infer T> ? T : never;
+
 /** Common options for every route atom constructor. */
 export type RouteOptions<Parent extends DefaultParams> = {
   /** Route this one nests under, matching the segment after its parent's. Defaults to `rootAtom`. */
