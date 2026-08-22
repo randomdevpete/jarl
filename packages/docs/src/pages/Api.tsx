@@ -48,34 +48,17 @@ export const ApiIndex = () => (
   </>
 );
 
-export const ApiPage = ({ apiName }: { apiName: string }) => {
-  const source = content[apiName as ApiName];
-  if (!source) {
-    return (
-      <>
-        <h1>Not found</h1>
-        <p>
-          No API reference named &ldquo;{apiName}&rdquo;. Back to{" "}
-          <Link route={apiPageRoute} to={{ apiName: apiPages[0].apiName }}>
-            API
-          </Link>
-          .
-        </p>
-      </>
-    );
-  }
-  return (
-    <>
-      <PackageTabs>
-        {apiPages.map(({ apiName: name, title }) => (
-          <Link key={name} route={apiPageRoute} to={{ apiName: name }} exact>
-            {title}
-          </Link>
-        ))}
-      </PackageTabs>
-      <Markdown source={source} />
-    </>
-  );
-};
+export const ApiPage = ({ apiName }: { apiName: ApiName }) => (
+  <>
+    <PackageTabs>
+      {apiPages.map(({ apiName: name, title }) => (
+        <Link key={name} route={apiPageRoute} to={{ apiName: name }} exact>
+          {title}
+        </Link>
+      ))}
+    </PackageTabs>
+    <Markdown source={content[apiName]} />
+  </>
+);
 
 export default ApiIndex;

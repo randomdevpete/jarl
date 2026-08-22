@@ -6,7 +6,7 @@
  * `jarl-atoms`' server-seedable `locationAtom`.
  */
 import { atom } from "jotai";
-import { asyncRouteAtom, notAtom, rootRoute, staticRouteAtom, paramRouteAtom, unionRouteAtom } from "jarl-atoms";
+import { asyncRouteAtom, enumRouteAtom, notAtom, rootRoute, staticRouteAtom, paramRouteAtom, unionRouteAtom } from "jarl-atoms";
 import { blogStaticPaths } from "../demos/blogPosts";
 import { complexRoutingStaticPaths } from "../demos/complexRoutingSamples";
 import { switchRoutingStaticPaths } from "../demos/switchRoutingPages";
@@ -16,10 +16,20 @@ import { changelogStaticPaths } from "../pages/changelogEntries";
 export const homeRoute = rootRoute;
 
 export const docsSectionRoute = staticRouteAtom("docs");
-export const docPageRoute = paramRouteAtom("docName", { parent: docsSectionRoute });
+const docNames = [
+  "getting-started",
+  "data-loading",
+  "path-variables",
+  "custom-route-atoms",
+  "location-and-base-paths",
+  "switch-and-not-found",
+  "hooks-and-links",
+] as const;
+export const docPageRoute = enumRouteAtom("docName", docNames, { parent: docsSectionRoute });
 
 export const apiSectionRoute = staticRouteAtom("api");
-export const apiPageRoute = paramRouteAtom("apiName", { parent: apiSectionRoute });
+const apiNames = ["jarl-atoms", "jarl-react"] as const;
+export const apiPageRoute = enumRouteAtom("apiName", apiNames, { parent: apiSectionRoute });
 
 // Changelog: static mount point. The per-version tree lives inside the Changelog component.
 export const changelogRoute = staticRouteAtom("changelog");
@@ -107,14 +117,7 @@ export const notFoundAtom = atom(
     !get(cancelNavigationDemoRoute).match,
 );
 
-export type DocName =
-  | "getting-started"
-  | "data-loading"
-  | "path-variables"
-  | "custom-route-atoms"
-  | "location-and-base-paths"
-  | "switch-and-not-found"
-  | "hooks-and-links";
+export type DocName = (typeof docNames)[number];
 
 /** A guide's nav entry: which page it renders, its link text, and which index section groups it. */
 export const docPages: { docName: DocName; title: string; section: string }[] = [
@@ -127,7 +130,7 @@ export const docPages: { docName: DocName; title: string; section: string }[] = 
   { docName: "hooks-and-links", title: "Hooks & Links", section: "Components" },
 ];
 
-export type ApiName = "jarl-atoms" | "jarl-react";
+export type ApiName = (typeof apiNames)[number];
 
 export const apiPages: { apiName: ApiName; title: string }[] = [
   { apiName: "jarl-atoms", title: "jarl-atoms" },
