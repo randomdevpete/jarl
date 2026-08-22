@@ -56,6 +56,34 @@ Linking to a dynamic route works the same way as a static one - just pass the pa
 </Link>
 ```
 
+## Segments from a fixed set
+
+A dynamic segment usually isn't dynamic in the sense of "anything at all" - it's one of a handful of
+known values. `enumRouteAtom` matches exactly those and nothing else, and types the value it binds
+as the union of them rather than as `string`:
+
+```ts
+import { staticRouteAtom, paramRouteAtom, enumRouteAtom } from "jarl-atoms";
+
+const productTabs = ["overview", "reviews", "specs"] as const;
+
+export const productsRoute = staticRouteAtom("products");
+export const productRoute = paramRouteAtom("productId", { parent: productsRoute });
+export const productTabRoute = enumRouteAtom("tab", productTabs, { parent: productRoute });
+```
+
+`/products/123/reviews` matches with `{ productId: "123", tab: "reviews" }`, where `tab` is
+`"overview" | "reviews" | "specs"` - so a `switch` over it is exhaustive with no default case to
+write, and `<Link route={productTabRoute} to={{ productId: "123", tab: "reveiws" }}>` is a typo the
+compiler catches rather than a dead link. `/products/123/pricing` doesn't match at all, so it falls
+through to whatever the app renders for an unknown URL instead of reaching the tab page with a value
+it has nothing to show for.
+
+`numericRouteAtom` does the same job for a segment that has to be a whole number, optionally within
+a `min`/`max` range, binding it as a `number` rather than a string. For a constraint neither one
+covers - a checksum, a slug in a database, a rule spanning several segments - see
+`transformRouteAtom` and `validateRouteAtom` in the [API reference](/api/jarl-atoms).
+
 ## Query parameters
 
 Dynamic _path_ segments aren't the only way to carry a value in a URL - `queryParamRouteAtom` (from
