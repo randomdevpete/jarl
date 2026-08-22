@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { locationAtom } from "../locationAtom";
 import { notAtom } from "../notAtom";
 import { staticRouteAtom } from "../staticRouteAtom";
+import { unionRouteAtom } from "../unionRouteAtom";
 
 const seed = (store: ReturnType<typeof createStore>, pathname: string) => {
   store.set(locationAtom, { pathname, searchParams: new URLSearchParams() });
@@ -15,7 +16,7 @@ describe("notAtom", () => {
     const users = staticRouteAtom("users");
     seed(store, "/nowhere");
 
-    expect(store.get(notAtom(about, users))).toBe(true);
+    expect(store.get(notAtom(unionRouteAtom([about, users])))).toBe(true);
   });
 
   it("does not match when the only given route matches", () => {
@@ -33,7 +34,7 @@ describe("notAtom", () => {
     const contact = staticRouteAtom("contact");
     seed(store, "/users");
 
-    expect(store.get(notAtom(about, users, contact))).toBe(false);
+    expect(store.get(notAtom(unionRouteAtom([about, users, contact])))).toBe(false);
   });
 
   it("checks exactness rather than a bare match", () => {
@@ -47,6 +48,15 @@ describe("notAtom", () => {
     expect(store.get(about).match).toBe(true);
     expect(store.get(about).exact).toBe(false);
     expect(store.get(notAtom(about))).toBe(true);
-    expect(store.get(notAtom(about, team))).toBe(false);
+    expect(store.get(notAtom(unionRouteAtom([about, team])))).toBe(false);
+  });
+
+  it("counts an ancestor match too when exactness is switched off", () => {
+    const store = createStore();
+    const about = staticRouteAtom("about");
+    staticRouteAtom("team", { parent: about });
+    seed(store, "/about/team");
+
+    expect(store.get(notAtom(about, { exact: false }))).toBe(false);
   });
 });
