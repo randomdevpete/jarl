@@ -6,7 +6,7 @@
  * `jarl-atoms`' server-seedable `locationAtom`.
  */
 import { atom } from "jotai";
-import { asyncRouteAtom, notAtom, rootRoute, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { asyncRouteAtom, enumRouteAtom, notAtom, rootRoute, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
 import { blogStaticPaths } from "../demos/blogPosts";
 import { articleSlugs, findArticle } from "../demos/asyncArticles";
 import { changelogStaticPaths } from "../pages/changelogEntries";
@@ -14,10 +14,12 @@ import { changelogStaticPaths } from "../pages/changelogEntries";
 export const homeRoute = rootRoute;
 
 export const docsSectionRoute = staticRouteAtom("docs");
-export const docPageRoute = paramRouteAtom("docName", { parent: docsSectionRoute });
+const docNames = ["getting-started", "data-loading", "path-variables"] as const;
+export const docPageRoute = enumRouteAtom("docName", docNames, { parent: docsSectionRoute });
 
 export const apiSectionRoute = staticRouteAtom("api");
-export const apiPageRoute = paramRouteAtom("apiName", { parent: apiSectionRoute });
+const apiNames = ["jarl-atoms", "jarl-react"] as const;
+export const apiPageRoute = enumRouteAtom("apiName", apiNames, { parent: apiSectionRoute });
 
 // Changelog: static mount point. The per-version tree lives inside the Changelog component.
 export const changelogRoute = staticRouteAtom("changelog");
@@ -78,7 +80,7 @@ export const notFoundAtom = atom(
   (get) => get(exactRouteMissedAtom) && !get(changelogRoute).match && !get(blogRoutingDemoRoute).match,
 );
 
-export type DocName = "getting-started" | "data-loading" | "path-variables";
+export type DocName = (typeof docNames)[number];
 
 export const docPages: { docName: DocName; title: string }[] = [
   { docName: "getting-started", title: "Getting Started" },
@@ -86,7 +88,7 @@ export const docPages: { docName: DocName; title: string }[] = [
   { docName: "path-variables", title: "Path Variables" },
 ];
 
-export type ApiName = "jarl-atoms" | "jarl-react";
+export type ApiName = (typeof apiNames)[number];
 
 export const apiPages: { apiName: ApiName; title: string }[] = [
   { apiName: "jarl-atoms", title: "jarl-atoms" },
