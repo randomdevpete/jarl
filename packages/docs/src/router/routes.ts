@@ -6,7 +6,7 @@
  * `jarl-atoms`' server-seedable `locationAtom`.
  */
 import { atom } from "jotai";
-import { asyncRouteAtom, notAtom, rootAtom, staticRouteAtom, paramRouteAtom } from "jarl-atoms";
+import { asyncRouteAtom, notAtom, rootAtom, staticRouteAtom, paramRouteAtom, unionRouteAtom } from "jarl-atoms";
 import { blogStaticPaths } from "../demos/blogPosts";
 import { articleSlugs, findArticle } from "../demos/asyncArticles";
 import { changelogStaticPaths } from "../pages/changelogEntries";
@@ -51,20 +51,22 @@ export const asyncArticleRoute = asyncRouteAtom(asyncLookupSlugRoute, "article",
 export const asyncRoutes = [asyncArticleRoute];
 
 const exactRouteMissedAtom = notAtom(
-  homeRoute,
-  docsSectionRoute,
-  docPageRoute,
-  apiSectionRoute,
-  apiPageRoute,
-  changelogRoute,
-  historyRoute,
-  demosIndexRoute,
-  basicRoutingDemoRoute,
-  basicRoutingDemoPageRoute,
-  blogRoutingDemoRoute,
-  dataGridDemoRoute,
-  asyncLookupDemoRoute,
-  asyncArticleRoute,
+  unionRouteAtom([
+    homeRoute,
+    docsSectionRoute,
+    docPageRoute,
+    apiSectionRoute,
+    apiPageRoute,
+    changelogRoute,
+    historyRoute,
+    demosIndexRoute,
+    basicRoutingDemoRoute,
+    basicRoutingDemoPageRoute,
+    blogRoutingDemoRoute,
+    dataGridDemoRoute,
+    asyncLookupDemoRoute,
+    asyncArticleRoute,
+  ]),
 );
 
 /**

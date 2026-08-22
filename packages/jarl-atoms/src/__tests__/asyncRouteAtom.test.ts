@@ -6,6 +6,7 @@ import { notAtom } from "../notAtom";
 import { paramRouteAtom } from "../paramRouteAtom";
 import { redirect } from "../redirectAtom";
 import { staticRouteAtom } from "../staticRouteAtom";
+import { unionRouteAtom } from "../unionRouteAtom";
 
 type Post = { slug: string; title: string };
 
@@ -52,7 +53,7 @@ describe("asyncRouteAtom", () => {
 
   it("doesn't match when the lookup finds nothing, so notAtom reports a not-found", async () => {
     const postRoute = asyncRouteAtom(slugRoute, "post", findPost);
-    const notFound = notAtom(blogRoute, postRoute);
+    const notFound = notAtom(unionRouteAtom([blogRoute, postRoute]));
     seed(store, "/blog/no-such-post");
     await preloadRoutes(store, [postRoute]);
 
