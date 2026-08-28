@@ -63,11 +63,3 @@ removed with the rest of the old tooling).
 
 Each package's tests run under Vitest with jsdom (the atoms talk to
 `window.location`/`history` via jotai-location, and the bindings render React).
-
-## Coding & commenting style
-
-`<root>/TODOS/CODING-STYLE.md` is the binding coding and commenting style guide for this project — comment types and their rules, hard bans, test/config conventions. Rules live there once; don't duplicate them here.
-
-## TODOs
-
-Active and completed tasks for this project are tracked as tickets in `<root>/TODOS/board/` (filename-prefixed `jarl-*`; `<root>` is the repos root, one level above TODOS - resolve it fresh, don't hardcode it). When adding a TODO comment or TODO.md here, turn it into a ticket there instead.

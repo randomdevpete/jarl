@@ -80,3 +80,6 @@ typings/
 # Editors / XDE
 .expo
 .idea
+
+# Untracked, machine-local convention pointers
+CLAUDE.local.md
