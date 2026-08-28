@@ -1,8 +1,8 @@
 # Legacy CI/CD: CircleCI + Now (Zeit) — archived reference
 
 This document captures what the pre-v2 CircleCI pipeline and Now (Zeit) deployment
-were doing, at the point they were removed in favour of GitHub Actions
-(ticket 60 on the TODOS board). It exists so the new GitHub Actions workflow
+were doing, at the point they were removed in favour of GitHub Actions.
+It exists so the new GitHub Actions workflow
 (`.github/workflows/ci.yml`) can be checked against it and nothing that mattered
 gets silently dropped. The original source files were `.circleci/config.yml` and
 `now/now.json` (both deleted by this change) — see git history on `master` prior
