@@ -9,14 +9,13 @@ import {
   FunctionEventType,
   HttpVersion,
   OriginProtocolPolicy,
-  OriginRequestPolicy,
   PriceClass,
   ResponseHeadersPolicy,
   ViewerProtocolPolicy,
   VpcOrigin as VpcOriginResource,
   VpcOriginEndpoint,
 } from "aws-cdk-lib/aws-cloudfront";
-import { S3BucketOrigin, VpcOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
+import { S3BucketOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import {
   AmazonLinuxCpuType,
   BlockDeviceVolume,
@@ -261,14 +260,9 @@ systemctl daemon-reload
 systemctl enable ${ssrServiceName}
 `;
 
-export interface JarlSsrStackProps extends StackProps {
-  /** {@link JarlStaticSiteStack.distribution} — this stack adds its behaviour to it rather than creating a front. */
-  readonly distribution: Distribution;
-}
-
-/** EC2 instance running the docs SSR server, attached to the distribution as a second origin. */
+/** EC2 instance running the docs SSR server, and the CloudFront VPC origin that reaches it. */
 export class JarlSsrStack extends Stack {
-  constructor(scope: Construct, id: string, props: JarlSsrStackProps) {
+  constructor(scope: Construct, id: string, props: StackProps) {
     super(scope, id, props);
 
     // No NAT gateway: one would cost more per month than the instance it serves, so outbound
@@ -333,6 +327,8 @@ export class JarlSsrStack extends Stack {
 
     // The server terminates nothing, so CloudFront has to speak plain HTTP to it; the default
     // policy would follow the viewer onto port 443, where nothing listens.
+    // No distribution behaviour points here yet: CloudFront refuses to update a VPC origin while a
+    // distribution is associated with it, so attaching this one is a deploy of its own.
     const vpcOrigin = new VpcOriginResource(this, "SsrVpcOrigin", {
       endpoint: VpcOriginEndpoint.ec2Instance(instance),
       httpPort: ssrPort,
@@ -380,23 +376,6 @@ export class JarlSsrStack extends Stack {
         },
       ),
       Port.tcp(ssrPort),
-    );
-
-    // JarlStaticSiteStack's errorResponses are distribution-wide: a 403/404 from the server still
-    // serves the static build's 404.html, not anything from this origin.
-    props.distribution.addBehavior(
-      ssrPathPattern,
-      VpcOrigin.withVpcOrigin(vpcOrigin, {
-        // CloudFront makes three connection attempts, so the default 10 seconds is 30 before a 504.
-        connectionTimeout: Duration.seconds(2),
-      }),
-      {
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        cachePolicy: CachePolicy.CACHING_DISABLED,
-        originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
-        compress: true,
-      },
     );
 
     // The deploy role's baseline permissions (assume-cdk-roles, DescribeStacks, site-bucket S3,
