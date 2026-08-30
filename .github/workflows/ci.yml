@@ -47,7 +47,7 @@ on:
 
 jobs:
   build-and-test:
-    name: Build & unit test
+    name: Build, unit test & infra synth
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -65,6 +65,23 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+      # infra/ is a standalone npm project, absent from the root `workspaces`,
+      # so the root `npm ci` above installs none of it and none of the checks
+      # above read it.
+      - name: Install infra dependencies
+        working-directory: infra
+        run: npm ci
+
+      - name: Typecheck infra
+        working-directory: infra
+        run: npm run typecheck
+
+      # This job holds no AWS credentials, which is the property being checked:
+      # synth has to resolve everything without reading the account.
+      - name: Synth infra
+        working-directory: infra
+        run: npx cdk synth --quiet
 
   e2e:
     name: End-to-end tests (Playwright)

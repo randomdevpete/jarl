@@ -1,4 +1,4 @@
-import { CfnOutput, Duration, Fn, RemovalPolicy, Stack, type StackProps } from "aws-cdk-lib";
+import { CfnOutput, CustomResource, Duration, Fn, RemovalPolicy, Stack, type StackProps } from "aws-cdk-lib";
 import { Certificate, CertificateValidation, type ICertificate } from "aws-cdk-lib/aws-certificatemanager";
 import {
   AllowedMethods,
@@ -27,19 +27,18 @@ import {
   InstanceType,
   IpAddresses,
   MachineImage,
-  Peer,
   Port,
   SecurityGroup,
   SubnetType,
   UserData,
   Vpc,
 } from "aws-cdk-lib/aws-ec2";
-import { ApplicationLoadBalancer, ApplicationProtocol } from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import { InstanceTarget } from "aws-cdk-lib/aws-elasticloadbalancingv2-targets";
 import { ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { Code, Function as LambdaFunction, determineLatestNodeRuntime } from "aws-cdk-lib/aws-lambda";
 import { ARecord, AaaaRecord, type IHostedZone, PublicHostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
 import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
 import { BlockPublicAccess, Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
+import { Provider } from "aws-cdk-lib/custom-resources";
 import type { Construct } from "constructs";
 
 export const siteDomainName = "jarl.randomdev.co.uk";
@@ -200,9 +199,38 @@ export class JarlStaticSiteStack extends Stack {
 const ssrPathPattern = "/ssr/*";
 
 const ssrPort = 3000;
-const ssrHealthCheckPath = "/healthz";
 const ssrInstallDirectory = "/opt/jarl-ssr";
 const ssrServiceName = "jarl-ssr";
+
+/** Created by CloudFront with its first VPC origin, and carried by the interfaces it routes origin traffic through. */
+const cloudFrontOriginSecurityGroupName = "CloudFront-VPCOrigins-Service-SG";
+
+/** Resolves {@link cloudFrontOriginSecurityGroupName} in the SSR VPC, failing by name when it is not there. */
+const originSecurityGroupLookupHandler = `
+const { EC2Client, DescribeSecurityGroupsCommand } = require("@aws-sdk/client-ec2");
+
+exports.handler = async (event) => {
+  if (event.RequestType === "Delete") {
+    return {};
+  }
+  const { VpcId, GroupName } = event.ResourceProperties;
+  const { SecurityGroups } = await new EC2Client({}).send(
+    new DescribeSecurityGroupsCommand({
+      Filters: [
+        { Name: "vpc-id", Values: [VpcId] },
+        { Name: "group-name", Values: [GroupName] },
+      ],
+    }),
+  );
+  const groupId = SecurityGroups?.[0]?.GroupId;
+  if (!groupId) {
+    throw new Error(
+      \`No security group \${GroupName} in \${VpcId}. CloudFront creates it with an account's first VPC origin; the SSR instance has no ingress source without it.\`,
+    );
+  }
+  return { PhysicalResourceId: groupId, Data: { GroupId: groupId } };
+};
+`;
 
 /** Created out of band for the GitHub OIDC deploy job; not a CDK-managed role, only its incremental grants below are. */
 const deployRoleName = "jarl-github-actions-deploy";
@@ -243,8 +271,8 @@ export class JarlSsrStack extends Stack {
   constructor(scope: Construct, id: string, props: JarlSsrStackProps) {
     super(scope, id, props);
 
-    // Two AZs because a load balancer needs two, and no NAT gateway: one would cost more per month
-    // than the instance it serves. The internet gateway is also a prerequisite of VPC origins.
+    // No NAT gateway: one would cost more per month than the instance it serves, so outbound
+    // access runs through the public subnet's internet gateway, which VPC origins require anyway.
     const vpc = new Vpc(this, "SsrVpc", {
       ipAddresses: IpAddresses.cidr("10.0.0.0/16"),
       maxAzs: 2,
@@ -274,14 +302,14 @@ export class JarlSsrStack extends Stack {
 
     const instanceSecurityGroup = new SecurityGroup(this, "SsrInstanceSecurityGroup", {
       vpc,
-      description: "jarl SSR server: load balancer ingress only",
+      description: "jarl SSR server: CloudFront VPC origin ingress only",
     });
 
     const userData = UserData.forLinux();
     userData.addCommands(ssrInstanceSetup);
 
     // Public subnet only for outbound access (dnf, npm, SSM) — no key pair, no port 22; the only
-    // ingress is the load balancer's rule below.
+    // ingress is the VPC origin's rule below.
     const instance = new Instance(this, "SsrInstance", {
       vpc,
       vpcSubnets: { subnetType: SubnetType.PUBLIC },
@@ -303,53 +331,73 @@ export class JarlSsrStack extends Stack {
       ],
     });
 
-    const loadBalancer = new ApplicationLoadBalancer(this, "SsrLoadBalancer", {
-      vpc,
-      internetFacing: false,
-      vpcSubnets: { subnetType: SubnetType.PRIVATE_ISOLATED },
-    });
-
-    // CloudFront's VPC-origin ENIs sit inside this VPC, so ingress is only as narrow as the CIDR;
-    // the tighter CloudFront-managed prefix list needs a credentialed lookup, which synth must avoid.
-    loadBalancer.connections.allowFrom(Peer.ipv4(vpc.vpcCidrBlock), Port.HTTP);
-
-    // Registering an instance target wires no security group rules of its own.
-    instance.connections.allowFrom(loadBalancer, Port.tcp(ssrPort));
-
-    // `open` would put an 0.0.0.0/0 rule on the listener's port, undoing the rule above.
-    const listener = loadBalancer.addListener("SsrListener", {
-      protocol: ApplicationProtocol.HTTP,
-      open: false,
-    });
-
-    listener.addTargets("SsrTarget", {
-      port: ssrPort,
-      protocol: ApplicationProtocol.HTTP,
-      targets: [new InstanceTarget(instance, ssrPort)],
-      deregistrationDelay: Duration.seconds(10),
-      healthCheck: {
-        path: ssrHealthCheckPath,
-        interval: Duration.seconds(30),
-        healthyThresholdCount: 2,
-      },
-    });
-
-    // The load balancer terminates nothing, so CloudFront has to speak plain HTTP to it; the default
-    // policy would follow the viewer onto port 443, where there is no listener.
+    // The server terminates nothing, so CloudFront has to speak plain HTTP to it; the default
+    // policy would follow the viewer onto port 443, where nothing listens.
     const vpcOrigin = new VpcOriginResource(this, "SsrVpcOrigin", {
-      endpoint: VpcOriginEndpoint.applicationLoadBalancer(loadBalancer),
+      endpoint: VpcOriginEndpoint.ec2Instance(instance),
+      httpPort: ssrPort,
       protocolPolicy: OriginProtocolPolicy.HTTP_ONLY,
     });
 
+    // CloudFront's origin security group is nowhere among the VPC origin's attributes; only its name is known.
+    const originSecurityGroupLookupFunction = new LambdaFunction(this, "SsrOriginSecurityGroupLookupFunction", {
+      runtime: determineLatestNodeRuntime(this),
+      handler: "index.handler",
+      code: Code.fromInline(originSecurityGroupLookupHandler),
+      timeout: Duration.seconds(30),
+      // DescribeSecurityGroups takes no resource-level permissions, so the region condition is the
+      // only narrowing available.
+      initialPolicy: [
+        new PolicyStatement({
+          actions: ["ec2:DescribeSecurityGroups"],
+          resources: ["*"],
+          conditions: { StringEquals: { "aws:RequestedRegion": this.region } },
+        }),
+      ],
+    });
+
+    // The handler ignores VpcOriginId: it is here to order the lookup after the origin and to re-run
+    // it whenever that origin is replaced.
+    const originSecurityGroupLookup = new CustomResource(this, "SsrOriginSecurityGroupLookup", {
+      serviceToken: new Provider(this, "SsrOriginSecurityGroupLookupProvider", {
+        onEventHandler: originSecurityGroupLookupFunction,
+      }).serviceToken,
+      properties: {
+        VpcId: vpc.vpcId,
+        GroupName: cloudFrontOriginSecurityGroupName,
+        VpcOriginId: vpcOrigin.vpcOriginId,
+      },
+    });
+
+    // An address-range source would also admit the instance's own public address from the internet.
+    instance.connections.allowFrom(
+      SecurityGroup.fromSecurityGroupId(
+        this,
+        "SsrOriginSecurityGroup",
+        originSecurityGroupLookup.getAttString("GroupId"),
+        {
+          mutable: false,
+        },
+      ),
+      Port.tcp(ssrPort),
+    );
+
     // JarlStaticSiteStack's errorResponses are distribution-wide: a 403/404 from the server still
     // serves the static build's 404.html, not anything from this origin.
-    props.distribution.addBehavior(ssrPathPattern, VpcOrigin.withVpcOrigin(vpcOrigin), {
-      viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-      cachePolicy: CachePolicy.CACHING_DISABLED,
-      originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
-      compress: true,
-    });
+    props.distribution.addBehavior(
+      ssrPathPattern,
+      VpcOrigin.withVpcOrigin(vpcOrigin, {
+        // CloudFront makes three connection attempts, so the default 10 seconds is 30 before a 504.
+        connectionTimeout: Duration.seconds(2),
+      }),
+      {
+        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+        cachePolicy: CachePolicy.CACHING_DISABLED,
+        originRequestPolicy: OriginRequestPolicy.ALL_VIEWER,
+        compress: true,
+      },
+    );
 
     // The deploy role's baseline permissions (assume-cdk-roles, DescribeStacks, site-bucket S3,
     // CloudFront invalidation) were granted out of band alongside the role itself; this adds

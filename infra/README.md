@@ -18,7 +18,7 @@ All three are declared in [`lib/jarl-stacks.ts`](./lib/jarl-stacks.ts) and insta
 | stack | holds |
 | --- | --- |
 | `JarlStaticSiteStack` | private S3 bucket for the docs build, and the CloudFront distribution fronting the site |
-| `JarlSsrStack` | EC2 instance running the docs SSR server, behind an internal load balancer the distribution reaches as a second origin |
+| `JarlSsrStack` | EC2 instance running the docs SSR server, which the distribution reaches directly as a second origin |
 | `JarlDomainStack` | Route53 hosted zone for the domain, and the ACM certificate CloudFront serves it under |
 
 `JarlStaticSiteStack` owns the single CloudFront distribution; the other two meet it there rather than
@@ -69,24 +69,48 @@ as the static build's `404.html`.
 isn't, and nothing today matches it - the server behind it renders through the same `App` component
 tree, so an unmatched path gets the same not-found page a prerendered route would.
 
-The traffic path is `viewer → CloudFront → VPC origin → internal ALB → instance:3000`:
+The traffic path is `viewer → CloudFront → VPC origin → instance:3000`:
 
-- **The load balancer is internal**, in isolated subnets, and CloudFront reaches it as a
+- **CloudFront reaches the instance directly**, as a
   [VPC origin](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-vpc-origins.html)
-  rather than over the internet — so it has no public DNS name and no public address. Its security
-  group admits port 80 from the VPC CIDR, where CloudFront's service-managed network interfaces live.
-  Narrowing that to CloudFront alone means the `com.amazonaws.global.cloudfront.origin-facing` prefix
-  list, whose id can only be resolved by a credentialed lookup, which synth must not need.
-- **The instance takes no inbound traffic at all** beyond port 3000 from the load balancer's security
-  group. There is no key pair and no port 22: shell access is
+  rather than over the internet, addressing it by its private DNS name on port 3000. Creating one
+  makes CloudFront attach a service-managed network interface to the origin's own subnet, carrying a
+  security group it creates and owns, `CloudFront-VPCOrigins-Service-SG`.
+- **The instance takes no inbound traffic at all** beyond port 3000 from that security group. There
+  is no key pair and no port 22: shell access is
   `aws ssm start-session --target <JarlSsrInstanceId>`, which is what the instance role's
   `AmazonSSMManagedInstanceCore` is for.
-- **It sits in a public subnet regardless**, because it needs outbound access for `dnf`, npm and the
-  SSM agent, and a NAT gateway costs more per month than the `t4g.small` it would serve. A public
-  subnet buys that through the internet gateway; the security group is what keeps the instance
-  unreachable.
-- **No API Gateway.** As a front for an EC2 origin it would need a VPC link to a load balancer — so
-  it removes nothing — or a public HTTP proxy integration, which means exposing the instance.
+- **That ingress rule names the security group, not an address range**, and the two are not
+  interchangeable here. A VPC-CIDR rule does not match at all — the interface holds a private
+  address, but the origin sees a CloudFront one. A rule against the
+  `com.amazonaws.global.cloudfront.origin-facing` prefix list would match, but the instance holds a
+  public IPv4 address, so it would admit that address from the internet as well. Only a
+  security-group source is unreachable from outside the VPC. Its id is not an attribute of the VPC
+  origin, so the stack looks the group up by name at deploy time, in a custom resource, which is what
+  keeps `cdk synth` free of credentials.
+- **On an account that has never had a VPC origin, the first deploy fails.** The group does not exist
+  until CloudFront has made one, so the lookup finds nothing and the deploy stops at
+  `SsrOriginSecurityGroupLookup`, naming the group it could not find. **No recovery from that is
+  established here**, and it is worse than a retry: the failed create rolls the whole stack back,
+  the VPC with it, and `DeleteVpc` fails with `DependencyViolation` while CloudFront's group and
+  interfaces are still inside — which they are, because CloudFront removes them asynchronously. The
+  realistic outcome is a stack wedged in `ROLLBACK_FAILED` needing manual cleanup, not a second
+  `cdk deploy` that works. An account that already has a VPC origin is unaffected.
+- **A lookup that fails on an update wedges the rollback as well.** Re-running the lookup whenever the
+  VPC origin is replaced is the point of it, but it means the lookup can fail on an update too, if the
+  group has genuinely gone by then. CloudFormation rolls that update back by re-sending the previous
+  properties, which fail identically, leaving `UPDATE_ROLLBACK_FAILED` — recoverable only with
+  `aws cloudformation continue-update-rollback --resources-to-skip`.
+- **It sits in a public subnet**, because it needs outbound access for `dnf`, npm and the SSM agent,
+  and a NAT gateway costs more per month than the `t4g.small` it would serve. The internet gateway
+  that buys is separately a prerequisite of VPC origins, which require one on the VPC without
+  routing any origin traffic through it.
+- **The isolated subnets carry nothing.** CloudFront places its network interface in the origin's own
+  subnet, which is the public one. Deleting them is left to a follow-up: the interfaces CloudFront
+  removes asynchronously would race it.
+- **No API Gateway.** As a front for an EC2 origin it would need either a VPC link to a load
+  balancer, which is a resource this deliberately does without, or a public HTTP proxy integration,
+  which means exposing the instance.
 
 Deploying a server bundle means putting it in `/opt/jarl-ssr` (entry point `server.mjs`, listening on
 `$PORT`) and starting the unit:
@@ -95,8 +119,33 @@ Deploying a server bundle means putting it in `/opt/jarl-ssr` (entry point `serv
 sudo systemctl restart jarl-ssr
 ```
 
-It must answer `GET /healthz`, which is the target group's health check; the load balancer serves no
-traffic to it until it does.
+It must answer `GET /healthz`, which the roll below polls on the instance before it reports success.
+
+Nothing health-checks the instance between rolls. CloudFront has no origin health check, so an
+unreachable instance costs three connection attempts and then a 504; the origin's connection timeout
+is 2 seconds rather than the default 10, which makes that 6 seconds of viewer wait rather than 30.
+`/ssr/*` is uncached and 502/504 are not mapped to a custom error response, so the path recovers as
+soon as the server does instead of serving a cached error.
+
+**The origin's address is not stable across instance replacement.** CloudFront addresses the origin by
+the instance's private DNS name, which `JarlSsrStack` supplies and the distribution in
+`JarlStaticSiteStack` holds. `MachineImage.latestAmazonLinux2023()` re-resolves the AMI on every
+deploy, so a new AMI replaces the instance and changes that name, and `/ssr/*` points at an instance
+that no longer exists until `JarlStaticSite` deploys too and its new configuration propagates.
+`cdk deploy --all` does both in order and closes the gap by itself; deploying `JarlSsr` alone does not.
+A load balancer in front would not have this gap: its DNS name survives instance replacement, and its
+target group registers the replacement itself. **This is the cost of doing without one that applies at
+exactly one instance** — unlike health-check draining and round-robin, which need more than one to
+matter at all. Nothing here mitigates it: pinning the AMI, and always deploying the two stacks
+together, are the obvious routes and neither is taken.
+
+Neither value the distribution takes from `JarlSsrStack` — the origin's domain name and the VPC origin
+id — crosses as a CloudFormation export. `cdk.json` sets `@aws-cdk/core:defaultCrossStackReferences` to
+`weak`, so the CDK CLI resolves both from the other stack's outputs at deploy time instead. Nothing
+therefore refuses to remove them while they are in use: `cdk destroy JarlSsr` succeeds and leaves
+`JarlStaticSite` routing `/ssr/*` at an origin that has gone, where an `Fn::ImportValue` would have
+refused. It also means only the CDK CLI can deploy these stacks; a raw CloudFormation update is
+rejected, because the template holds an intrinsic CloudFormation cannot parse.
 
 ### Rolling the SSR server
 
