@@ -28,7 +28,5 @@ const staticSite = new JarlStaticSiteStack(app, "JarlStaticSite", {
   certificate: domain.certificate,
 });
 
-const ssr = new JarlSsrStack(app, "JarlSsr", stackPropsIn(primaryRegion));
-
-// The distribution has to let go of the VPC origin before CloudFront will let this stack update it.
-ssr.addDependency(staticSite);
+// Instantiated last but deployed before JarlStaticSite, whose template references this origin.
+new JarlSsrStack(app, "JarlSsr", { ...stackPropsIn(primaryRegion), distribution: staticSite.distribution });
