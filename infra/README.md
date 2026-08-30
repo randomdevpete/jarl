@@ -28,11 +28,6 @@ for them to build on, and exports `JarlSiteBucketName`, `JarlDistributionId` and
 `/ssr/*` behaviour pointing at its own origin while every other path keeps hitting S3;
 `JarlDomainStack` hands over the hosted zone and the certificate the distribution is created with.
 
-> **Mid-cutover: the `/ssr/*` behaviour is deliberately absent.** CloudFront refuses to update a VPC
-> origin that a distribution is still associated with, so detaching the behaviour and repointing the
-> origin cannot happen in one deploy. Until the next deploy restores it, `/ssr/*` falls through to the
-> distribution's static 404, and `JarlSsr` deploys *after* `JarlStaticSite`, inverting the order below.
-
 `JarlStaticSite` therefore deploys last, whichever way the wiring runs: its template references
 `JarlSsr`'s origin and `JarlDomain`'s certificate, so CloudFormation needs both in place before it can
 be created or updated. `cdk deploy --all` works this out from the templates; deploying stacks one at a
@@ -93,6 +88,11 @@ The traffic path is `viewer → CloudFront → VPC origin → instance:3000`:
   security-group source is unreachable from outside the VPC. Its id is not an attribute of the VPC
   origin, so the stack looks the group up by name at deploy time, in a custom resource, which is what
   keeps `cdk synth` free of credentials.
+- **Changing where the origin points takes two deploys**, not one. CloudFront rejects an update to a
+  VPC origin while a distribution is associated with it (409, *disassociate the VPC origin from all
+  distributions*), so the `/ssr/*` behaviour has to be removed and deployed before the endpoint can
+  change, and restored in a second deploy afterwards. `/ssr/*` serves the static 404 in between, and
+  `JarlSsr` deploys after `JarlStaticSite` for the first of the two, inverting the order above.
 - **On an account that has never had a VPC origin, the first deploy fails.** The group does not exist
   until CloudFront has made one, so the lookup finds nothing and the deploy stops at
   `SsrOriginSecurityGroupLookup`, naming the group it could not find. **No recovery from that is
