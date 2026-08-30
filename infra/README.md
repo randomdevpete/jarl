@@ -28,6 +28,11 @@ for them to build on, and exports `JarlSiteBucketName`, `JarlDistributionId` and
 `/ssr/*` behaviour pointing at its own origin while every other path keeps hitting S3;
 `JarlDomainStack` hands over the hosted zone and the certificate the distribution is created with.
 
+> **Mid-cutover: the `/ssr/*` behaviour is deliberately absent.** CloudFront refuses to update a VPC
+> origin that a distribution is still associated with, so detaching the behaviour and repointing the
+> origin cannot happen in one deploy. Until the next deploy restores it, `/ssr/*` falls through to the
+> distribution's static 404, and `JarlSsr` deploys *after* `JarlStaticSite`, inverting the order below.
+
 `JarlStaticSite` therefore deploys last, whichever way the wiring runs: its template references
 `JarlSsr`'s origin and `JarlDomain`'s certificate, so CloudFormation needs both in place before it can
 be created or updated. `cdk deploy --all` works this out from the templates; deploying stacks one at a
