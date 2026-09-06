@@ -65,7 +65,6 @@ export type RouteAtom<T extends DefaultParams> = WritableAtom<RouteReturn<T>, [T
 /** The param values a route atom binds: `RouteValues<typeof postRoute>` is that route's `values`. */
 export type RouteValues<Route extends RouteAtom<any>> = Route extends RouteAtom<infer T> ? T : never;
 
-/** Common options for every route atom constructor. */
 /**
  * Options shared by every plain route-atom constructor (`staticRouteAtom`, `paramRouteAtom`, ...):
  * which route atom it composes under.
