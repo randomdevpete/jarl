@@ -1,9 +1,9 @@
 import { atom } from "jotai";
-import { createRootAtom, navigationGuardAtom, staticRouteAtom } from "jarl-atoms";
+import { rootRouteAtom, navigationGuardAtom, staticRouteAtom } from "jarl-atoms";
 import { Link, Route, Switch, useAtom, useAtomValue, useNavigate, useNavigationGuard, useSetAtom } from "jarl-react";
 
 // The page this demo is mounted on, so its whole tree below is plain module-level atoms.
-const cancelNavigationRoot = createRootAtom({ basePath: "/demos/cancel-navigation" });
+const cancelNavigationRoot = rootRouteAtom({ basePath: "/demos/cancel-navigation" });
 const otherRoute = staticRouteAtom("other", { parent: cancelNavigationRoot });
 
 const SAVED = "Dear reviewer,";
