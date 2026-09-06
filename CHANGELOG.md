@@ -1,3 +1,77 @@
+## [2.7.0](https://github.com/randomdevpete/jarl/compare/v2.6.0...v2.7.0) (2026-09-06)
+
+### ⚠ BREAKING CHANGES
+
+* **atoms:** `rootAtom` is renamed `rootRoute`, `createRootAtom` to
+`rootRouteAtom`, `redirectAtom` to `redirectRouteAtom`, `queryParamAtom` to
+`queryParamRouteAtom`, and `validateAtom` to `validateRouteAtom`. Their
+options types follow: `RootOptions` becomes `RootRouteOptions` and
+`QueryParamOptions` becomes `QueryParamRouteOptions`. `locationAtom`,
+`queryAtom`, `notAtom`, `navigationGuardAtom` and every name already ending in
+`RouteAtom` are unchanged.
+
+Ticket: 789
+* **atoms:** `resolvedAtom` is removed. `resolvedAtom(route, load)` becomes
+`asyncRouteAtom(route, name, load).data`, where `name` is what the loaded object
+binds to if the route is ever used for gating. `followResolvedRedirects` is
+renamed `followAsyncRedirects` and takes `.data` atoms. `preloadRoutes` is
+renamed `preloadAsyncRoutes`, matching `hydrateAsyncRoutes`/`followAsyncRoutes`.
+The `Resolver` and `RouteLookup` types are replaced by one `RouteLoader`, and
+`AsyncRouteAtom.lookup` is renamed `data`. `hydrateAsyncRoutes`,
+`followAsyncRoutes` and `AsyncRouteSnapshot` are unchanged.
+
+Ticket: 675
+* **jarl-atoms:** `notAtom` takes a single route atom rather than a spread of
+them. Combine several with `unionRouteAtom([...])` first.
+
+Ticket: 420
+* **changelog:** suppression' mid-paragraph, no colon, not a real footer,
+and the parser swept it (plus the trailing Co-Authored-By line) into the
+release notes as a fabricated BREAKING CHANGES entry.
+
+What it described was also stale even if it had been real: the very next
+commit (2db21b1) abandoned that reset-to-2.0.1 plan and continued from
+2.5.0 instead, once it turned out npm's dependent-check and dist-tags
+made the rollback impossible. Nothing about jarl's public API actually
+broke in 2.6.0 - every other entry in the release is an internal
+release-process change. Safe to hand-edit: @semantic-release/changelog
+only ever prepends new releases, it never rewrites past entries.
+
+### Features
+
+* **atoms:** add validateAtom for constraints spanning several segments ([794f8c0](https://github.com/randomdevpete/jarl/commit/794f8c04ba0ed3316984fd06aec45028cca492cd))
+* **atoms:** one asyncRouteAtom API for async route data ([d67c00c](https://github.com/randomdevpete/jarl/commit/d67c00cebfb0066da302bca787ed32f48d31a99e))
+* **docs:** 678 — routing demo that switches on a page route atom ([b5a0aec](https://github.com/randomdevpete/jarl/commit/b5a0aec6b35e1e90db778cd1d532c6d7ae8c31fa))
+* **docs:** 907 — host an llms.txt for coding agents installing jarl ([daff689](https://github.com/randomdevpete/jarl/commit/daff6896baebcf8f56e196af79c1b4c40349eef8))
+* **docs:** demo page for cancelling navigation on dirty edits ([5870133](https://github.com/randomdevpete/jarl/commit/5870133c444f5e0fca8956528cb1ba7abe0e6502))
+* **docs:** demo page for custom path atoms (yyyy-mm-dd, name.ext) ([f89999e](https://github.com/randomdevpete/jarl/commit/f89999ee8de41f467994bd43e7e15a8ea0516833))
+* **docs:** link jarl-atoms/jarl-react identifiers in code blocks to their API reference ([045b894](https://github.com/randomdevpete/jarl/commit/045b89403d9f6c035acb031973687dbbcbdbeb3b)), closes [#slug](https://github.com/randomdevpete/jarl/issues/slug)
+* **docs:** link local relative imports in demo source to GitHub ([2cc8dfb](https://github.com/randomdevpete/jarl/commit/2cc8dfbc23e9ea73efe28aaf004a8ba1ee32a22d))
+* **jarl-atoms:** 420 — notAtom takes one route and an options object ([de0e997](https://github.com/randomdevpete/jarl/commit/de0e99726e6449aceb5fa1a1b7ffe84e07898148))
+* **jarl-atoms:** 420 — unionRouteAtom combines several routes into one ([a2af36c](https://github.com/randomdevpete/jarl/commit/a2af36cceb582bbc60542df097c88845a16889dd))
+* **jarl-atoms:** 778 — veto any navigation with navigationGuardAtom ([9ac8b10](https://github.com/randomdevpete/jarl/commit/9ac8b1050bc8dd6df8204e6e6c50186da9ba0843))
+* **jarl-atoms:** 927 — enumRouteAtom binds a path segment from a fixed set of values ([5b43305](https://github.com/randomdevpete/jarl/commit/5b43305ddb16e27e2d7271379bca9f26d6f34971))
+* **jarl-react:** 435 — forward NavOptions through useNavigate ([5311c85](https://github.com/randomdevpete/jarl/commit/5311c85d3888e172c8a30b167eaff92d5c2c206c))
+* **jarl-react:** 778 — useNavigationGuard binding ([4b934d2](https://github.com/randomdevpete/jarl/commit/4b934d28640591cad99293c1bd2008c93c319180))
+
+### Bug Fixes
+
+* **docs:** bundle the production SSR server self-contained ([82c9772](https://github.com/randomdevpete/jarl/commit/82c97728a496bbdc4d0fd6fb71197b12beba0854))
+* **docs:** stop exporting non-component values from Fast Refresh boundaries ([abfccd6](https://github.com/randomdevpete/jarl/commit/abfccd6fe868b70ebd0054e9c6933483c7713193))
+* **e2e:** 823 — update registry-smoke to the exports 675/789 renamed ([3befb44](https://github.com/randomdevpete/jarl/commit/3befb44b296f573fb6c16585d1f3c0d7cd62d2bb))
+* **infra:** JARL1183 — reach the SSR instance directly, dropping the load balancer ([48ede6c](https://github.com/randomdevpete/jarl/commit/48ede6c255472a4e5477d7e5dd2ca3dbecd01836))
+* **infra:** JARL1188 — detach the /ssr/* behaviour so the VPC origin can be updated ([3e1b2e9](https://github.com/randomdevpete/jarl/commit/3e1b2e9c46145b2b67ddffbc1ddecf1f4614270c))
+* **infra:** JARL1188 — restore the /ssr/* behaviour on the repointed VPC origin ([3292e96](https://github.com/randomdevpete/jarl/commit/3292e965c0a3503583146498500d0fb7133017f0))
+* **infra:** JARL1337 — pin the SSR AMI so deploys stop replacing the instance ([6771c3e](https://github.com/randomdevpete/jarl/commit/6771c3e8b34c181c87a5595c87ea6603a272720e))
+
+### Documentation
+
+* **changelog:** remove the bogus 2.6.0 BREAKING CHANGES section ([59f9c94](https://github.com/randomdevpete/jarl/commit/59f9c9484bc22f8bd18acc82bac0f76b5e2f848e))
+
+### Code Refactoring
+
+* **atoms:** 789 — name every route atom `*RouteAtom`, and only route atoms ([cf4d08e](https://github.com/randomdevpete/jarl/commit/cf4d08e2ddaefc2d6904b7d05dbf300ef8d6bc38))
+
 ## [2.6.0](https://github.com/randomdevpete/jarl/compare/v2.5.0...v2.6.0) (2026-08-17)
 
 ### Features
