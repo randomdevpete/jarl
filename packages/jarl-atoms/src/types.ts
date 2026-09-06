@@ -19,7 +19,10 @@ export type ExtractRouteOptionalParam<PathType extends Path> = PathType extends 
       ? { readonly [k in Param]: string }
       : { readonly [k in PathType]: string };
 
-/** The full param object a `:name`-style path pattern binds. */
+/**
+ * The full param object a `:name`-style path pattern binds, honouring each segment's `?`/`*`/`+`
+ * suffix via `ExtractRouteOptionalParam`.
+ */
 export type ExtractRouteParams<PathType extends string> = string extends PathType
   ? DefaultParams
   : PathType extends `${infer _Start}:${infer ParamWithOptionalRegExp}/${infer Rest}`
@@ -63,6 +66,10 @@ export type RouteAtom<T extends DefaultParams> = WritableAtom<RouteReturn<T>, [T
 export type RouteValues<Route extends RouteAtom<any>> = Route extends RouteAtom<infer T> ? T : never;
 
 /** Common options for every route atom constructor. */
+/**
+ * Options shared by every plain route-atom constructor (`staticRouteAtom`, `paramRouteAtom`, ...):
+ * which route atom it composes under.
+ */
 export type RouteOptions<Parent extends DefaultParams> = {
   /** Route this one nests under, matching the segment after its parent's. Defaults to `rootAtom`. */
   parent?: RouteAtom<Parent>;
