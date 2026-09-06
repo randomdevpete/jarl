@@ -72,18 +72,18 @@ with an invalid month - so a bad month never reaches your component as data to v
 a matched route hands back `{ year: 2024 }` as a real `number`, not a string you'd otherwise have
 to parse yourself.
 
-## Constraints spanning several segments: `validateAtom`
+## Constraints spanning several segments: `validateRouteAtom`
 
 A segment's own options only bound it in isolation. `/blog/2024/02/31` passes every one of them -
-`31` is all digits, and no `max` on a day segment can know which month it landed in. `validateAtom`
+`31` is all digits, and no `max` on a day segment can know which month it landed in. `validateRouteAtom`
 narrows an existing route to the values a predicate accepts, and it sees the whole chain's values,
 not just the last segment's:
 
 ```ts
-import { numericRouteAtom, validateAtom } from "jarl-atoms";
+import { numericRouteAtom, validateRouteAtom } from "jarl-atoms";
 
 const daySegment = numericRouteAtom("day", { parent: monthRoute });
-export const dayRoute = validateAtom(daySegment, ({ year, month, day }) => isValidCalendarDate(year, month, day));
+export const dayRoute = validateRouteAtom(daySegment, ({ year, month, day }) => isValidCalendarDate(year, month, day));
 ```
 
 31 February now simply doesn't match, and falls through to whatever handles a non-matching URL -
@@ -92,7 +92,7 @@ a `Switch` fallback, or the 404 that `notAtom` reports (see
 date inside the page component - makes every consumer of that route responsible for a rule the
 route itself should own. The [blog routing demo](/demos/blog-routing) does exactly this.
 
-`validateAtom` is a `transformRouteAtom` with an identity `setter` and a predicate for a `getter`,
+`validateRouteAtom` is a `transformRouteAtom` with an identity `setter` and a predicate for a `getter`,
 so it changes a route's values not at all - only whether it matches. Its predicate takes a `Getter`
 too, for a constraint that depends on other atoms rather than only on the values in the URL.
 

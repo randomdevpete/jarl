@@ -70,7 +70,7 @@ const status = store.get(notFoundAtom) ? 404 : 200;
 ```
 
 List every route your app actually renders, the same way `Switch`'s children would be listed.
-`notAtom` checks `exact` rather than `match`: an ancestor route (`usersRoute`, or `rootAtom`
+`notAtom` checks `exact` rather than `match`: an ancestor route (`usersRoute`, or `rootRoute`
 itself) is `match: true` for everything beneath it, so checking `match` would mean `notAtom` never
 fires. For an async route, list the async atom itself (`asyncRouteAtom`'s return value) rather
 than its underlying param route - an unresolved lookup is a genuine miss even though the param
