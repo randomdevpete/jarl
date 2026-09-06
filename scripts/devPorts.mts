@@ -1,16 +1,16 @@
 import { execFileSync } from "node:child_process";
 
 /**
- * Deterministic per-worktree dev server ports (TODOS `DEV-SERVERS.md`).
+ * Deterministic per-worktree dev server ports.
  *
  * Every worktree/branch is named `task-<id>-...` or `master`. Each owns a contiguous ten-port
- * block, `10000 + 10 × (id mod 1000)` … `+ 9` — ticket 475 owns 14750–14759, the docs dev server
+ * block, `10000 + 10 × (id mod 1000)` … `+ 9` — task 475 owns 14750–14759, the docs dev server
  * on 14750 (`+0`). A service takes one offset inside its own worktree's block and nothing outside
  * it; `devPort` throws for an offset outside 0–9.
  *
- * `master` is not a ticket, so it is allocated per project instead: the reserved pseudo-id `-1`,
- * shifted by this project's row in `board/projects.md` before the same formula applies. jarl is
- * row 2, so its `master` worktree owns 9970–9979.
+ * `master` is not a task, so it is allocated per project instead: the reserved pseudo-id `-1`,
+ * shifted by the project's ordinal (its position among the projects sharing this scheme) before
+ * the same formula applies. jarl is ordinal 2, so its `master` worktree owns 9970–9979.
  */
 const PROJECT_ORDINAL = 2;
 
@@ -66,10 +66,10 @@ export function getTaskId(cwd: string = process.cwd()): number {
 
 /**
  * The base port of the ten-port block a task id owns. The standing pseudo-id `master` uses
- * (negative) is shifted by `ordinal` — a project's row in `board/projects.md` — first; ticket ids
- * are globally unique and pass through unshifted. `ordinal` defaults to this project's own
- * `PROJECT_ORDINAL`; it's a parameter so the shift itself is testable independently of jarl being
- * row 2.
+ * (negative) is shifted by `ordinal` — the project's position among the projects sharing this
+ * scheme — first; task ids are globally unique and pass through unshifted. `ordinal` defaults to
+ * this project's own `PROJECT_ORDINAL`; it's a parameter so the shift itself is testable
+ * independently of jarl being ordinal 2.
  */
 export function devPortBase(taskId: number, ordinal: number = PROJECT_ORDINAL): number {
   const override = process.env["DEV_PORT_BASE"];
