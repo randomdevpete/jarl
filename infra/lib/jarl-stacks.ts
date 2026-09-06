@@ -18,7 +18,6 @@ import {
 } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin, VpcOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import {
-  AmazonLinuxCpuType,
   BlockDeviceVolume,
   EbsDeviceVolumeType,
   Instance,
@@ -202,6 +201,29 @@ const ssrPort = 3000;
 const ssrInstallDirectory = "/opt/jarl-ssr";
 const ssrServiceName = "jarl-ssr";
 
+/**
+ * The Amazon Linux 2023 arm64 image the SSR instance runs, pinned rather than resolved per deploy.
+ *
+ * `MachineImage.latestAmazonLinux2023()` renders an `AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>`
+ * parameter defaulting to `/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-arm64`, which
+ * CloudFormation re-resolves on every deploy. The day AWS publishes a new image, that value moves on
+ * its own and replaces the instance — which changes the instance ARN `SsrVpcOrigin` points at, an
+ * update CloudFront refuses while the distribution is attached to it (409, *disassociate the VPC
+ * origin from all distributions*). Every deploy then fails, including deploys of pushes that touch
+ * nothing here, because the trigger is the calendar rather than the diff.
+ *
+ * A literal id draws a portability warning out of `cdk synth` (`CloudFormation-Validate::W9010`,
+ * "Hardcoded AMI ID"). That warning is the trade being made, not an oversight: it fires once per
+ * synth and is the price of an origin endpoint that only moves when someone edits this file.
+ *
+ * Bumping it is therefore a deliberate change *and a replacing one*, so it needs the two-deploy
+ * detach/reattach in `README.md` and a fresh roll of the server bundle onto the replacement.
+ */
+const ssrMachineImageIdByRegion: Record<string, string> = {
+  // amazon/al2023-ami-kernel-6.1-arm64, the image the instance has run since 2026-08-17.
+  [primaryRegion]: "ami-06e7624a7500d11e9",
+};
+
 /** Created by CloudFront with its first VPC origin, and carried by the interfaces it routes origin traffic through. */
 const cloudFrontOriginSecurityGroupName = "CloudFront-VPCOrigins-Service-SG";
 
@@ -314,7 +336,7 @@ export class JarlSsrStack extends Stack {
       vpc,
       vpcSubnets: { subnetType: SubnetType.PUBLIC },
       instanceType: InstanceType.of(InstanceClass.BURSTABLE4_GRAVITON, InstanceSize.SMALL),
-      machineImage: MachineImage.latestAmazonLinux2023({ cpuType: AmazonLinuxCpuType.ARM_64 }),
+      machineImage: MachineImage.genericLinux(ssrMachineImageIdByRegion),
       securityGroup: instanceSecurityGroup,
       role: instanceRole,
       userData,

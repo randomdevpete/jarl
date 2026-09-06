@@ -134,15 +134,27 @@ soon as the server does instead of serving a cached error.
 
 **The origin's address is not stable across instance replacement.** CloudFront addresses the origin by
 the instance's private DNS name, which `JarlSsrStack` supplies and the distribution in
-`JarlStaticSiteStack` holds. `MachineImage.latestAmazonLinux2023()` re-resolves the AMI on every
-deploy, so a new AMI replaces the instance and changes that name, and `/ssr/*` points at an instance
-that no longer exists until `JarlStaticSite` deploys too and its new configuration propagates.
-`cdk deploy --all` does both in order and closes the gap by itself; deploying `JarlSsr` alone does not.
-A load balancer in front would not have this gap: its DNS name survives instance replacement, and its
-target group registers the replacement itself. **This is the cost of doing without one that applies at
-exactly one instance** — unlike health-check draining and round-robin, which need more than one to
-matter at all. Nothing here mitigates it: pinning the AMI, and always deploying the two stacks
-together, are the obvious routes and neither is taken.
+`JarlStaticSiteStack` holds, and it addresses the VPC origin's endpoint by the instance ARN. Replacing
+the instance changes both, so `/ssr/*` points at an instance that no longer exists until
+`JarlStaticSite` deploys too and its new configuration propagates. `cdk deploy --all` does both in
+order and closes the gap by itself; deploying `JarlSsr` alone does not. A load balancer in front would
+not have this gap: its DNS name survives instance replacement, and its target group registers the
+replacement itself. **This is the cost of doing without one that applies at exactly one instance** —
+unlike health-check draining and round-robin, which need more than one to matter at all.
+
+**The AMI is pinned so that nothing replaces the instance on its own.** `MachineImage.latestAmazonLinux2023()`
+renders an SSM-parameter-typed CloudFormation parameter that every deploy re-resolves, so the day AWS
+published a new Amazon Linux 2023 arm64 image the instance was replaced by a deploy whose diff did not
+touch `infra/` at all — and replacing it under an attached origin is exactly the update CloudFront
+answers with a 409. Because the trigger is the calendar, that then failed *every* subsequent deploy of
+the repository, not just infrastructure ones. `ssrMachineImageIdByRegion` in
+[`lib/jarl-stacks.ts`](./lib/jarl-stacks.ts) holds the image id instead, which costs a
+`CloudFormation-Validate::W9010` "Hardcoded AMI ID" warning on every `cdk synth` — the warning is the
+trade, not a defect. **Bumping it is a replacing change**, so it wants the two-deploy detach/reattach
+above and a fresh roll of the server bundle onto the replacement. The other side of that trade is that
+the base image no longer advances on its own, and nothing here patches the instance in place either —
+so picking up OS updates is now a deliberate bump of this id rather than something a deploy does by
+accident.
 
 Neither value the distribution takes from `JarlSsrStack` — the origin's domain name and the VPC origin
 id — crosses as a CloudFormation export. `cdk.json` sets `@aws-cdk/core:defaultCrossStackReferences` to
