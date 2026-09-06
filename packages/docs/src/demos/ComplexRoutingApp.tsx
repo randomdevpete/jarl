@@ -1,4 +1,4 @@
-import { createRootAtom, DefaultParams, RouteOptions, routeAtom, staticRouteAtom, validateAtom } from "jarl-atoms";
+import { rootRouteAtom, DefaultParams, RouteOptions, routeAtom, staticRouteAtom, validateRouteAtom } from "jarl-atoms";
 import { Link, Route, Switch } from "jarl-react";
 import { isValidCalendarDate } from "./blogPosts";
 import { DateSegment, formatDateSegment, sampleDates, sampleFiles } from "./complexRoutingSamples";
@@ -39,14 +39,14 @@ const filenameRouteAtom = <Parent extends DefaultParams>(options?: RouteOptions<
   );
 
 // The page this demo is mounted on, so its whole tree below is plain module-level atoms.
-const complexRoot = createRootAtom({ basePath: "/demos/complex-routing" });
+const complexRoot = rootRouteAtom({ basePath: "/demos/complex-routing" });
 
 const archiveRoute = staticRouteAtom("archive", { parent: complexRoot });
 const archiveDateSegment = dateSegmentRouteAtom({ parent: archiveRoute });
 // The segment's own syntax only rules out shapes like `2024-1-1`; whether the three parts spell a
 // real calendar date is a constraint across all of them, so it is applied as part of matching
 // rather than checked in a page component.
-const archiveDateRoute = validateAtom(archiveDateSegment, ({ year, month, day }) =>
+const archiveDateRoute = validateRouteAtom(archiveDateSegment, ({ year, month, day }) =>
   isValidCalendarDate(year, month, day),
 );
 
@@ -136,7 +136,7 @@ const FilePage = ({ name, ext }: FilenameSegment) => (
 /**
  * Self-contained demo of custom single-segment path atoms, built directly on `routeAtom` rather
  * than `staticRouteAtom`/`paramRouteAtom`: `yyyy-mm-dd` under `/archive`, gated on the real
- * calendar via `validateAtom`, and `name.ext` under `/files`.
+ * calendar via `validateRouteAtom`, and `name.ext` under `/files`.
  */
 export const ComplexRoutingApp = () => (
   <>
