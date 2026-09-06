@@ -10,13 +10,13 @@ const DATE_RE = /\((\d{4}-\d{2}-\d{2})\)/;
 const FENCE_RE = /^```/;
 
 /**
- * Splits the generated CHANGELOG.md into one entry per `##` version heading.
- * A non-version `#`/`##` heading closes the current entry without starting a new one.
- * Lines inside a fenced code block are never treated as headings, so an example release
- * note that happens to show a `##`/version-shaped line can't be mistaken for a real one.
+ * Splits the generated CHANGELOG.md into one entry per `##` version heading. A non-version
+ * `#`/`##` heading closes the current entry without starting a new one, and headings inside a
+ * fenced code block are ignored.
+ *
+ * Exported for unit tests, which feed it fixture markdown directly rather than the real
+ * CHANGELOG.md; production code should use the module-level `changelogEntries` below instead.
  */
-// Exported for unit tests, which feed it fixture markdown directly rather than the real
-// CHANGELOG.md — the module-level `changelogEntries` below is what production code uses.
 export const parseChangelogEntries = (markdown: string): ChangelogEntry[] => {
   const entries: ChangelogEntry[] = [];
   let current: { version: string; date?: string; heading: string; bodyLines: string[] } | null = null;
@@ -35,6 +35,9 @@ export const parseChangelogEntries = (markdown: string): ChangelogEntry[] => {
   };
 
   for (const line of markdown.split("\n")) {
+    // Content inside a fenced code block is appended to the current entry's body but never
+    // checked against HEADING_RE, so an example release note that shows a `##`/version-shaped
+    // line inside a fence isn't mistaken for a real heading.
     if (FENCE_RE.test(line)) {
       inFence = !inFence;
       current?.bodyLines.push(line);
