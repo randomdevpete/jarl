@@ -1,18 +1,7 @@
-import { useMemo } from "react";
-import {
-  DefaultParams,
-  RouteAtom,
-  RouteOptions,
-  routeAtom,
-  rootAtom as defaultRootAtom,
-  staticRouteAtom,
-  validateAtom,
-} from "jarl-atoms";
+import { createRootAtom, DefaultParams, RouteOptions, routeAtom, staticRouteAtom, validateAtom } from "jarl-atoms";
 import { Link, Route, Switch } from "jarl-react";
 import { isValidCalendarDate } from "./blogPosts";
-import { sampleDates, sampleFiles } from "./complexRoutingSamples";
-
-type DateSegment = { year: number; month: number; day: number };
+import { DateSegment, formatDateSegment, sampleDates, sampleFiles } from "./complexRoutingSamples";
 
 const DATE_SEGMENT = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -29,8 +18,7 @@ const dateSegmentRouteAtom = <Parent extends DefaultParams>(options?: RouteOptio
       if (!match) return undefined;
       return { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) };
     },
-    ({ year, month, day }) =>
-      `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+    formatDateSegment,
     options,
   );
 
@@ -50,19 +38,20 @@ const filenameRouteAtom = <Parent extends DefaultParams>(options?: RouteOptions<
     options,
   );
 
-// The demo's whole route tree hangs off whatever root it is given, so the app
-// never knows the URL it is mounted on.
-const createComplexRoutes = (root: RouteAtom<DefaultParams>) => {
-  const archive = staticRouteAtom("archive", { parent: root });
-  const archiveDate = validateAtom(dateSegmentRouteAtom({ parent: archive }), ({ year, month, day }) =>
-    isValidCalendarDate(year, month, day),
-  );
-  const files = staticRouteAtom("files", { parent: root });
-  const file = filenameRouteAtom({ parent: files });
-  return { root, archive, archiveDate, files, file };
-};
+// The page this demo is mounted on, so its whole tree below is plain module-level atoms.
+const complexRoot = createRootAtom({ basePath: "/demos/complex-routing" });
 
-type ComplexRoutes = ReturnType<typeof createComplexRoutes>;
+const archiveRoute = staticRouteAtom("archive", { parent: complexRoot });
+const archiveDateSegment = dateSegmentRouteAtom({ parent: archiveRoute });
+// The segment's own syntax only rules out shapes like `2024-1-1`; whether the three parts spell a
+// real calendar date is a constraint across all of them, so it is applied as part of matching
+// rather than checked in a page component.
+const archiveDateRoute = validateAtom(archiveDateSegment, ({ year, month, day }) =>
+  isValidCalendarDate(year, month, day),
+);
+
+const filesRoute = staticRouteAtom("files", { parent: complexRoot });
+const fileRoute = filenameRouteAtom({ parent: filesRoute });
 
 const FILE_KIND: Record<string, string> = {
   pdf: "document",
@@ -70,37 +59,36 @@ const FILE_KIND: Record<string, string> = {
   zip: "archive",
 };
 
-const ComplexNav = ({ routes }: { routes: ComplexRoutes }) => (
+const ComplexNav = () => (
   <nav>
-    <Link route={routes.root} to={{}} exact>
+    <Link route={complexRoot} to={{}} exact>
       Overview
     </Link>
   </nav>
 );
 
-const dateFromSegment = (segment: string): DateSegment => {
-  const [year, month, day] = segment.split("-").map(Number);
-  return { year, month, day };
-};
-
-const ComplexIndex = ({ routes }: { routes: ComplexRoutes }) => (
+const ComplexIndex = () => (
   <div>
     <h3>Custom path segments</h3>
-    <p>Dates as one `yyyy-mm-dd` segment, validated against the real calendar:</p>
+    <p>
+      Dates as one <code>yyyy-mm-dd</code> segment, validated against the real calendar:
+    </p>
     <ul>
       {sampleDates.map((date) => (
-        <li key={date}>
-          <Link route={routes.archiveDate} to={dateFromSegment(date)}>
-            /archive/{date}
+        <li key={formatDateSegment(date)}>
+          <Link route={archiveDateRoute} to={date}>
+            /archive/{formatDateSegment(date)}
           </Link>
         </li>
       ))}
     </ul>
-    <p>Filenames as one `name.ext` segment:</p>
+    <p>
+      Filenames as one <code>name.ext</code> segment:
+    </p>
     <ul>
       {sampleFiles.map(({ name, ext, label }) => (
         <li key={`${name}.${ext}`}>
-          <Link route={routes.file} to={{ name, ext }}>
+          <Link route={fileRoute} to={{ name, ext }}>
             /files/{name}.{ext}
           </Link>{" "}
           &mdash; {label}
@@ -110,14 +98,14 @@ const ComplexIndex = ({ routes }: { routes: ComplexRoutes }) => (
   </div>
 );
 
-const ComplexNotFound = ({ routes }: { routes: ComplexRoutes }) => (
+const ComplexNotFound = () => (
   <div>
     <h3>Not found</h3>
     <p>
       No custom segment here matched: an out-of-range date, an invalid calendar date, or a filename with no extension.
     </p>
     <p>
-      <Link route={routes.root} to={{}}>
+      <Link route={complexRoot} to={{}}>
         Back to overview
       </Link>
     </p>
@@ -126,7 +114,7 @@ const ComplexNotFound = ({ routes }: { routes: ComplexRoutes }) => (
 
 const ArchivePage = ({ year, month, day }: DateSegment) => (
   <div>
-    <h3>Archive for {`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`}</h3>
+    <h3>Archive for {formatDateSegment({ year, month, day })}</h3>
     <p>
       Parsed from a single path segment into <code>{`{ year: ${year}, month: ${month}, day: ${day} }`}</code>.
     </p>
@@ -148,27 +136,23 @@ const FilePage = ({ name, ext }: FilenameSegment) => (
 /**
  * Self-contained demo of custom single-segment path atoms, built directly on `routeAtom` rather
  * than `staticRouteAtom`/`paramRouteAtom`: `yyyy-mm-dd` under `/archive`, gated on the real
- * calendar via `validateAtom`, and `name.ext` under `/files`. Pass the route atom it is mounted
- * on as `rootAtom` and it builds its own tree under that.
+ * calendar via `validateAtom`, and `name.ext` under `/files`.
  */
-export const ComplexRoutingApp = ({ rootAtom = defaultRootAtom }: { rootAtom?: RouteAtom<DefaultParams> }) => {
-  const routes = useMemo(() => createComplexRoutes(rootAtom), [rootAtom]);
-  return (
-    <>
-      <ComplexNav routes={routes} />
-      <Switch fallback={<ComplexNotFound routes={routes} />}>
-        <Route on={routes.root} exact>
-          <ComplexIndex routes={routes} />
-        </Route>
-        <Route on={routes.archiveDate} exact>
-          {(values) => <ArchivePage {...values} />}
-        </Route>
-        <Route on={routes.file} exact>
-          {(values) => <FilePage {...values} />}
-        </Route>
-      </Switch>
-    </>
-  );
-};
+export const ComplexRoutingApp = () => (
+  <>
+    <ComplexNav />
+    <Switch fallback={<ComplexNotFound />}>
+      <Route on={complexRoot} exact>
+        <ComplexIndex />
+      </Route>
+      <Route on={archiveDateRoute} exact>
+        {(values) => <ArchivePage {...values} />}
+      </Route>
+      <Route on={fileRoute} exact>
+        {(values) => <FilePage {...values} />}
+      </Route>
+    </Switch>
+  </>
+);
 
 export default ComplexRoutingApp;
