@@ -1,16 +1,14 @@
 # JARL: Atomic Routing Library
 
-> A controlled-component router for React built on jotai atoms: each route is its own atom,
+> A router for React and vanilla JS projects, built on jotai atoms: each route is its own atom,
 > matching a URL segment and reversible back into a URL. Framework-agnostic core (`jarl-atoms`)
 > with lightweight React bindings (`jarl-react`).
 
 - Install both packages plus their `jotai` peer dependency: `npm install jarl-atoms jarl-react jotai`.
   The npm package names are `jarl-atoms` and `jarl-react` — the GitHub repository is
-  `randomdevpete/jarl`, but the packages kept their pre-rename names; do not guess `jarl` or
-  `@jarl/*`.
+  `randomdevpete/jarl`; do not guess `jarl` or `@jarl/*`.
 - The current major is v2, built entirely on jotai atoms. The v1 implementation (`RoutingProvider`,
-  `RouteMap`, React legacy context) was removed from the codebase; v1-era snippets found elsewhere
-  online do not apply.
+  `RouteMap`, React legacy context) was removed from the codebase.
 - `jarl-react` does not re-export `jarl-atoms`. Import route atoms (`rootAtom`, `staticRouteAtom`,
   `paramRouteAtom`, ...) from `jarl-atoms`, and components/hooks (`Route`, `Link`, `Switch`,
   `useNavigate`, ...) from `jarl-react`.
