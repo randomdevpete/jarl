@@ -58,7 +58,7 @@ export type UseLinkResult = {
   onClick: (event?: { preventDefault?: () => void }) => void;
 };
 
-/** How strictly a link reports itself active. */
+/** Options for `useLink`/`Link`: how strictly a link reports itself `active`. */
 export type UseLinkOptions = {
   /** Only report `active` for an exact match, rather than any ancestor route too. */
   exact?: boolean;
