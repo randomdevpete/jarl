@@ -45,7 +45,7 @@ export const DemosIndex = () => (
           Complex routing
         </Link>{" "}
         &mdash; custom single-segment path atoms built on <code>routeAtom</code> directly: <code>yyyy-mm-dd</code> gated
-        on the real calendar with <code>validateAtom</code>, and <code>name.ext</code> filenames.
+        on the real calendar with <code>validateRouteAtom</code>, and <code>name.ext</code> filenames.
       </li>
       <li>
         <Link route={asyncLookupDemoRoute} to={{}}>
