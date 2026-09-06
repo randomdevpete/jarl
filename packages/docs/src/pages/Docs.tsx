@@ -1,6 +1,10 @@
 import gettingStarted from "../content/guides/GettingStarted.md?raw";
 import dataLoading from "../content/guides/DataLoading.md?raw";
 import pathVariables from "../content/guides/PathVariables.md?raw";
+import customRouteAtoms from "../content/guides/CustomRouteAtoms.md?raw";
+import locationAndBasePaths from "../content/guides/LocationAndBasePaths.md?raw";
+import switchAndNotFound from "../content/guides/SwitchAndNotFound.md?raw";
+import hooksAndLinks from "../content/guides/HooksAndLinks.md?raw";
 import LinkList from "../lib/LinkList";
 import Markdown from "../lib/Markdown";
 import { Link } from "jarl-react";
@@ -10,6 +14,24 @@ const guides: Record<DocName, string> = {
   "getting-started": gettingStarted,
   "data-loading": dataLoading,
   "path-variables": pathVariables,
+  "custom-route-atoms": customRouteAtoms,
+  "location-and-base-paths": locationAndBasePaths,
+  "switch-and-not-found": switchAndNotFound,
+  "hooks-and-links": hooksAndLinks,
+};
+
+/** `docPages`, grouped by `section`, keeping each section's first-seen order. */
+const docSections = (): { section: string; pages: typeof docPages }[] => {
+  const sections: { section: string; pages: typeof docPages }[] = [];
+  for (const page of docPages) {
+    const group = sections.find((s) => s.section === page.section);
+    if (group) {
+      group.pages.push(page);
+    } else {
+      sections.push({ section: page.section, pages: [page] });
+    }
+  }
+  return sections;
 };
 
 export const DocsIndex = () => (
@@ -19,15 +41,20 @@ export const DocsIndex = () => (
       Guides for using JARL's atomic routing model - the route atoms in <code>jarl-atoms</code> and the React bindings
       in <code>jarl-react</code>.
     </p>
-    <LinkList>
-      {docPages.map(({ docName, title }) => (
-        <li key={docName}>
-          <Link route={docPageRoute} to={{ docName }}>
-            {title}
-          </Link>
-        </li>
-      ))}
-    </LinkList>
+    {docSections().map(({ section, pages }) => (
+      <section key={section}>
+        <h2>{section}</h2>
+        <LinkList>
+          {pages.map(({ docName, title }) => (
+            <li key={docName}>
+              <Link route={docPageRoute} to={{ docName }}>
+                {title}
+              </Link>
+            </li>
+          ))}
+        </LinkList>
+      </section>
+    ))}
   </>
 );
 
