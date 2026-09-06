@@ -1,6 +1,7 @@
 import gettingStarted from "../content/guides/GettingStarted.md?raw";
 import dataLoading from "../content/guides/DataLoading.md?raw";
 import pathVariables from "../content/guides/PathVariables.md?raw";
+import benchmarks from "../content/guides/Benchmarks.md?raw";
 import LinkList from "../lib/LinkList";
 import Markdown from "../lib/Markdown";
 import { Link } from "jarl-react";
@@ -10,6 +11,7 @@ const guides: Record<DocName, string> = {
   "getting-started": gettingStarted,
   "data-loading": dataLoading,
   "path-variables": pathVariables,
+  benchmarks,
 };
 
 export const DocsIndex = () => (
