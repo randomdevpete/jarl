@@ -4,7 +4,7 @@ import demoSource from "../demos/CancelNavigationApp.tsx?raw";
 
 export const CancelNavigationDemo = () => (
   <DemoPage
-    title="Live demo: cancel navigation on dirty edits"
+    title="Live demo: cancel navigation on dirty edits (navigation guards)"
     sourcePath="packages/docs/src/demos/CancelNavigationApp.tsx"
     source={demoSource}
   >

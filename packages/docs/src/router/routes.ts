@@ -45,11 +45,10 @@ export const dataGridDemoRoute = staticRouteAtom("data-grid", { parent: demosInd
 // ComplexRoutingApp, on its own basePath-scoped root.
 export const complexRoutingDemoRoute = staticRouteAtom("complex-routing", { parent: demosIndexRoute });
 
-// Cancel-navigation demo: the site's own mount point, with one further static child for the
-// "other" page it navigates to. Dirty-tracking and the confirm prompt live entirely inside
-// CancelNavigationApp - the router only needs the two destinations to exist.
+// Cancel-navigation demo: the site's own mount point. The demo's own /other page and the
+// navigation guard that vetoes leaving a dirty form live inside CancelNavigationApp, on its own
+// basePath-scoped root.
 export const cancelNavigationDemoRoute = staticRouteAtom("cancel-navigation", { parent: demosIndexRoute });
-export const cancelNavigationOtherRoute = staticRouteAtom("other", { parent: cancelNavigationDemoRoute });
 
 // Async-lookup demo: /demos/async-lookup/:slug exists only if the demo's fake database has an
 // article at that slug, and the article it found rides along on the route's own values. Its
@@ -80,15 +79,14 @@ const exactRouteMissedAtom = notAtom(
     asyncLookupDemoRoute,
     asyncArticleRoute,
     cancelNavigationDemoRoute,
-    cancelNavigationOtherRoute,
   ]),
 );
 
 /**
  * Whether the current location has nothing behind it, which is what makes a server render's
- * *status code* right and not just its HTML. Everything under the changelog's, the blog demo's
- * and the complex-routing demo's mounts counts as found - all three route their own subtree and
- * render their own not-found views. The async demo gets no such blanket, and lists
+ * *status code* right and not just its HTML. Everything under the changelog's, the blog demo's,
+ * the complex-routing demo's and the cancel-navigation demo's mounts counts as found - all four
+ * route their own subtree and render their own not-found views. The async demo gets no such blanket, and lists
  * `asyncArticleRoute` rather than `asyncLookupSlugRoute`: an unknown slug is a genuine miss, even
  * though the demo page still renders its own not-found view.
  */
@@ -97,7 +95,8 @@ export const notFoundAtom = atom(
     get(exactRouteMissedAtom) &&
     !get(changelogRoute).match &&
     !get(blogRoutingDemoRoute).match &&
-    !get(complexRoutingDemoRoute).match,
+    !get(complexRoutingDemoRoute).match &&
+    !get(cancelNavigationDemoRoute).match,
 );
 
 export type DocName = "getting-started" | "data-loading" | "path-variables";

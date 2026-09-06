@@ -52,8 +52,9 @@ export const DemosIndex = () => (
         <Link route={cancelNavigationDemoRoute} to={{}}>
           Cancel navigation on dirty edits
         </Link>{" "}
-        &mdash; a link that confirms before leaving an in-progress edit, built by wrapping <code>useLink</code>&apos;s
-        own <code>onClick</code> rather than the <code>Link</code> component.
+        &mdash; a <code>navigationGuardAtom</code> that vetoes leaving a form with unsaved edits, so ordinary{" "}
+        <code>Link</code>s, <code>useNavigate</code> and the browser&apos;s back/forward buttons are all confirmed
+        alike.
       </li>
       <li>
         <Link route={asyncLookupDemoRoute} to={{}}>
