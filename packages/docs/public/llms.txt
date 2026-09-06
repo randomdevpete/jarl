@@ -9,7 +9,7 @@
   `randomdevpete/jarl`; do not guess `jarl` or `@jarl/*`.
 - The current major is v2, built entirely on jotai atoms. The v1 implementation (`RoutingProvider`,
   `RouteMap`, React legacy context) was removed from the codebase.
-- `jarl-react` does not re-export `jarl-atoms`. Import route atoms (`rootAtom`, `staticRouteAtom`,
+- `jarl-react` does not re-export `jarl-atoms`. Import route atoms (`rootRoute`, `staticRouteAtom`,
   `paramRouteAtom`, ...) from `jarl-atoms`, and components/hooks (`Route`, `Link`, `Switch`,
   `useNavigate`, ...) from `jarl-react`.
 - `jarl-react` also peer-depends on React `^18 || ^19`.
