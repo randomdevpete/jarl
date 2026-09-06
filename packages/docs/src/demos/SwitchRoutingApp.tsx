@@ -1,5 +1,5 @@
 import { atom, useAtomValue, useSetAtom } from "jotai";
-import { createRootAtom, paramRouteAtom, transformRouteAtom } from "jarl-atoms";
+import { rootRouteAtom, paramRouteAtom, transformRouteAtom } from "jarl-atoms";
 import {
   SwitchRoutingPage,
   isSwitchRoutingPage,
@@ -8,7 +8,7 @@ import {
 } from "./switchRoutingPages";
 
 // The page this demo is mounted on, so everything below it is a plain module-level atom.
-const switchRoutingRoot = createRootAtom({ basePath: "/demos/switch-routing" });
+const switchRoutingRoot = rootRouteAtom({ basePath: "/demos/switch-routing" });
 
 // One segment out of a fixed set: a paramRouteAtom narrowed by a transformRouteAtom, which also
 // types the value as the union the switch below needs.

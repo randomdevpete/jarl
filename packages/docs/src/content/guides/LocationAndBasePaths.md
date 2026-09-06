@@ -29,15 +29,15 @@ instead of reaching into `window.history` to get a route atom into a particular 
 
 ## Scoping a router under a `basePath`
 
-`rootAtom`, the implicit parent of every route atom, matches `/`. When a tree of routes is mounted
+`rootRoute`, the implicit parent of every route atom, matches `/`. When a tree of routes is mounted
 under a subpath instead - an app served from a project site, a micro-frontend embedded at
-`/app/*`, or a self-contained widget on one page of a larger site - call `createRootAtom` yourself
+`/app/*`, or a self-contained widget on one page of a larger site - call `rootRouteAtom` yourself
 and use its result as every top-level route's `parent`:
 
 ```ts
-import { createRootAtom, staticRouteAtom } from "jarl-atoms";
+import { rootRouteAtom, staticRouteAtom } from "jarl-atoms";
 
-export const appRoot = createRootAtom({ basePath: "/app" });
+export const appRoot = rootRouteAtom({ basePath: "/app" });
 export const aboutRoute = staticRouteAtom("about", { parent: appRoot });
 ```
 
@@ -47,7 +47,7 @@ prepended again by `reverse()`/write, so every downstream route atom deals in pa
 one that merely shares its prefix, like `/app-other` - makes the whole tree report `match: false`,
 not just the routes under it.
 
-The atom `createRootAtom` returns is an ordinary `RouteAtom`, so it can be linked to and rendered
+The atom `rootRouteAtom` returns is an ordinary `RouteAtom`, so it can be linked to and rendered
 on like any other - `<Link route={appRoot} to={{}} exact>` is the "home" link of the scoped tree.
 
 This is how the demos on this site stay self-contained: the [blog routing demo](/demos/blog-routing)
