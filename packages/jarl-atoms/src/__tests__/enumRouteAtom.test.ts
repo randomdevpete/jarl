@@ -3,7 +3,6 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { enumRouteAtom } from "../enumRouteAtom";
 import { locationAtom } from "../locationAtom";
 import { paramRouteAtom } from "../paramRouteAtom";
-import { requireMatch } from "../requireMatch";
 import { staticRouteAtom } from "../staticRouteAtom";
 
 const seed = (store: ReturnType<typeof createStore>, pathname: string) => {
@@ -54,7 +53,8 @@ describe("enumRouteAtom", () => {
     const store = createStore();
     seed(store, "/docs/getting-started");
 
-    const route = requireMatch(store.get(guideRoute), "guideRoute");
+    const route = store.get(guideRoute);
+    if (!route.match) throw new Error("guideRoute does not match /docs/getting-started");
 
     expectTypeOf(route.values.guide).toEqualTypeOf<"getting-started" | "data-loading">();
     // @ts-expect-error - only the segments the route was given can be reversed, written or linked
