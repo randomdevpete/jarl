@@ -10,10 +10,8 @@ import { isActive } from "./isActive";
 export { useAtom, useAtomValue, useSetAtom };
 
 /**
- * Subscribes to a route atom and returns its current match state
- * (`match`, `exact`, `values`, `reverse`, ...). Equivalent to
- * `useAtomValue(routeAtom)`, given a name that reads naturally at call
- * sites and mirrors `useRoute` conventions in other routers.
+ * Subscribes to a route atom and returns its current match state (`match`, `exact`, `values`,
+ * `reverse`, ...). Equivalent to `useAtomValue(routeAtom)`.
  */
 export function useRoute<T extends DefaultParams>(routeAtom: RouteAtom<T>) {
   return useAtomValue(routeAtom);
