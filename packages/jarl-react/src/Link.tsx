@@ -31,10 +31,10 @@ export type LinkProps<T extends DefaultParams> = {
   Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "children" | "href" | "onClick">;
 
 /**
- * Renders an anchor (or `element`) linking to a route atom + param values.
- * Clicking navigates by writing to the route atom instead of a full page
- * load. Hooks-first: `Link` is a thin wrapper over `useLink`, so anything
- * `Link` can do is also available directly via the hook.
+ * Renders an anchor (or `element`) linking to a route atom and param values. Clicking navigates by
+ * writing to the route atom instead of a full page load.
+ *
+ * `useLink` offers the same behaviour to a link-like component of your own.
  */
 export const Link = <T extends DefaultParams>({
   route: routeAtom,
