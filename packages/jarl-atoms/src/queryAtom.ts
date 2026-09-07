@@ -76,11 +76,16 @@ export type QueryParamRouteOptions<Parent extends DefaultParams> = RouteOptions<
 };
 
 /**
- * A single named query param, composable exactly like a path RouteAtom:
- * it can be given a `parent` (any RouteAtom, path- or query-based), and its
- * own `reverse()`/write round-trip through the same href as its parent, with
- * this param appended/updated on top. Doesn't consume any path segments, so
- * path matching continues unaffected by however many query params are
+ * Binds one named query param, composing exactly like a path route atom:
+ *
+ * ```ts
+ * const searchRoute = queryParamRouteAtom("q", { parent: searchPageRoute });
+ * ```
+ *
+ * `parent` may be any route atom, path- or query-based. `reverse` and writes round-trip through
+ * the same href as that parent, with this param appended or updated on top.
+ *
+ * Consumes no path segments, so path matching is unaffected by however many query params are
  * chained on.
  */
 export const queryParamRouteAtom = <T extends string, Parent extends DefaultParams = DefaultParams>(
