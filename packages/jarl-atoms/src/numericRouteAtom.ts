@@ -13,11 +13,15 @@ export type NumericRouteOptions<Parent extends DefaultParams> = RouteOptions<Par
 const NUMERIC_SEGMENT = /^\d+$/;
 
 /**
- * Binds one dynamic path segment to a named non-negative integer: `numericRouteAtom("year", {
- * parent: blog, min: 2000 })` matches `/blog/:year` and yields `{ year: 2024 }` as a number
- * rather than a string. A segment that isn't all digits, or falls outside `min`/`max`, doesn't
- * match at all - it's a plain `paramRouteAtom` with a `transformRouteAtom` layered on top, the
- * usual way to build a constrained segment from the existing primitives.
+ * Binds one path segment to a named non-negative integer, typed as a number rather than as a
+ * string:
+ *
+ * ```ts
+ * const yearRoute = numericRouteAtom("year", { parent: blogRoute, min: 2000 });
+ * ```
+ *
+ * A segment that isn't all digits leaves the route unmatched, as does one outside the inclusive
+ * `min`/`max` range.
  */
 export const numericRouteAtom = <T extends string, Parent extends DefaultParams>(
   name: T,

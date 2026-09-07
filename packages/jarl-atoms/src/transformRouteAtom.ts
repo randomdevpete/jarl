@@ -2,11 +2,13 @@ import { Getter, atom } from "jotai/vanilla";
 import { DefaultParams, RouteAtom } from "./types";
 
 /**
- * Reshapes a route's matched `values` into a different shape, and back again for
- * `reverse`/write - composable middleware over a chain of route atoms. `getter` runs only when
- * `parentAtom` matches; returning `undefined` makes this atom not match either, e.g. to reject a
- * segment the parent accepted. `setter` is its inverse, and must produce values `parentAtom`
- * itself accepts, since `reverse`/write pass straight through to it.
+ * Reshapes a route's matched `values` into a different shape, and back again for `reverse` and
+ * writes.
+ *
+ * `getter` runs only when `parentAtom` matches. Returning `undefined` leaves this atom unmatched
+ * too, which is how a segment the parent accepted gets rejected.
+ *
+ * `setter` is its inverse, and must produce values `parentAtom` itself accepts.
  */
 export const transformRouteAtom = <T extends DefaultParams, Return extends DefaultParams>(
   parentAtom: RouteAtom<T>,
