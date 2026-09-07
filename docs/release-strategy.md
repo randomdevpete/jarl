@@ -94,8 +94,8 @@ on a manual `workflow_dispatch` with the `release` input ticked; no push to `mas
 can trigger it. That way a release happens when enough has accumulated to be worth cutting, which
 is a judgement no commit-message convention can make.
 
-`on.push.branches` still includes `master` and `beta` — build, e2e and deploy are unchanged and do
-belong on every push. Only the release is decoupled from it.
+`on.push.branches` still includes `master` and `beta` — build and e2e do belong on every push, and
+a push to `master` still deploys the site. Only the release is decoupled from it.
 
 ### Cutting a release
 
@@ -109,6 +109,20 @@ waiting — the accumulated commits are all still there to be analysed whenever 
 The job keeps a `concurrency` group (`release-<ref>`, `cancel-in-progress: false`) so two
 dispatches can't race each other's tag push and npm publishes, and so a run already mid-publish
 always finishes.
+
+### The dispatch deploys the site too
+
+On `master`, `deploy` runs after `release`, so the dispatch that cuts a release also publishes the
+site describing it. Without that the site would only catch up on the next ordinary merge, because
+semantic-release's own `chore(release): <version> [skip ci]` commit triggers no run. `deploy`
+checks out the branch tip rather than the SHA the run started from, so the site it builds contains
+that commit's `CHANGELOG.md` and version bumps.
+
+A `master` dispatch with **Release everything outstanding since the last tag** left unticked is
+therefore a plain "deploy the site now" button: `release` is skipped and `deploy` runs on its own.
+
+On `beta` neither applies — `deploy` is restricted to `master`, since that is the branch the site
+is built from.
 
 ### Commits with no Conventional Commits type
 

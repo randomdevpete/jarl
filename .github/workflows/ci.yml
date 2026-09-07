@@ -261,10 +261,11 @@ jobs:
   deploy:
     name: Deploy (infra + site content)
     runs-on: ubuntu-latest
-    needs: [build-and-test, e2e]
-    # Deploys https://jarl.randomdev.co.uk on every master push once the test
-    # jobs pass: `cdk deploy --all` for the three stacks (a fast no-op when
-    # nothing in infra/ changed), then the content publish from infra/README.md
+    needs: [build-and-test, e2e, release]
+    # Deploys https://jarl.randomdev.co.uk from master, on a push and on a
+    # workflow_dispatch, once the test jobs pass: `cdk deploy --all` for the
+    # three stacks (a fast no-op when nothing in infra/ changed), then the
+    # content publish from infra/README.md
     # "Publishing site content" — the bucket is deliberately filled by
     # `aws s3 sync`, not a CDK BucketDeployment, so synth never depends on the
     # docs build. Last, "Roll SSR server" ships packages/docs/dist-ssr onto the
@@ -273,10 +274,20 @@ jobs:
     #
     # Same fork guard as `release`: a fork's master would match on.push, but
     # the OIDC role trusts only randomdevpete/jarl, so don't even attempt it.
+    #
+    # `release` is a dependency so a dispatch that ticks it deploys the version
+    # it just cut rather than the one before. It is skipped on a push and on an
+    # unticked dispatch, and a skipped dependency fails the implicit
+    # `success()`, so `!cancelled()` replaces that and every result is then
+    # checked by hand — a failed or cancelled `release` still blocks the deploy.
     if: |
-      github.event_name == 'push' &&
+      !cancelled() &&
+      github.repository == 'randomdevpete/jarl' &&
       github.ref == 'refs/heads/master' &&
-      github.repository == 'randomdevpete/jarl'
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      needs.build-and-test.result == 'success' &&
+      needs.e2e.result == 'success' &&
+      (needs.release.result == 'success' || needs.release.result == 'skipped')
     # Two deploys interleaving would race CloudFormation and the sync; queue
     # them instead. cancel-in-progress stays false so a deploy that already
     # started always runs to completion.
@@ -291,6 +302,13 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v5
+        with:
+          # The branch tip, not the SHA the run started from: `release` pushes
+          # its `chore(release): <version>` commit mid-run, and the docs site
+          # compiles CHANGELOG.md in (packages/docs/src/pages/changelogEntries.ts),
+          # so the default pinned SHA would publish a site missing the release
+          # the same run just cut.
+          ref: ${{ github.ref }}
 
       - uses: actions/setup-node@v5
         with:
