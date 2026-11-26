@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import { enumRouteAtom } from "jarl-atoms";
 import { Link } from "../Link";
 import { aboutAtom, teamAtom } from "./fixtures";
 
@@ -103,6 +104,16 @@ describe("Link", () => {
       expect(fireEvent.click(link)).toBe(false);
       expect(window.location.pathname).toBe("/about");
     });
+  });
+
+  it("links to a route with literal-typed values", () => {
+    const sectionAtom = enumRouteAtom("section", ["news", "events"]);
+    render(
+      <Link route={sectionAtom} to={{ section: "events" }}>
+        Events
+      </Link>,
+    );
+    expect(screen.getByRole("link", { name: "Events" })).toHaveAttribute("href", "/events");
   });
 
   it("applies activeClassName only while active", () => {

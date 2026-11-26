@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { DefaultParams, NavOptions, RouteAtom } from "jarl-atoms";
 import { isActive } from "./isActive";
+import { NonInferred } from "./nonInferred";
 
 // Re-export jotai's own primitive hooks. Per jotai convention (see
 // jotai-location, jotai-utils, etc), a bindings package built on atoms
@@ -43,7 +44,7 @@ export function useIsActive<T extends DefaultParams>(
  * to the route atom, since `reverse` depends on ancestor state, so it re-renders on navigation
  * even when the returned href doesn't change.
  */
-export function useHref<T extends DefaultParams>(routeAtom: RouteAtom<T>, to: T): string {
+export function useHref<T extends DefaultParams>(routeAtom: RouteAtom<T>, to: NonInferred<T>): string {
   const { reverse } = useAtomValue(routeAtom);
   return useMemo(() => reverse(to), [reverse, to]);
 }
@@ -108,7 +109,7 @@ export type UseLinkOptions = {
  */
 export function useLink<T extends DefaultParams>(
   routeAtom: RouteAtom<T>,
-  to: T,
+  to: NonInferred<T>,
   { exact = false }: UseLinkOptions = {},
 ): UseLinkResult {
   const [route, setRoute] = useAtom(routeAtom);

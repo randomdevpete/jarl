@@ -1,6 +1,7 @@
 import { AnchorHTMLAttributes, ElementType, ReactNode } from "react";
 import { DefaultParams, RouteAtom } from "jarl-atoms";
 import { useLink, UseLinkOptions } from "./hooks";
+import { NonInferred } from "./nonInferred";
 
 /**
  * What `Link`'s function-as-child form receives: the resolved `href`, whether the link is currently
@@ -17,7 +18,7 @@ export type LinkProps<T extends DefaultParams> = {
   /** The route atom this link points at. */
   route: RouteAtom<T>;
   /** Param values to reverse into a path for this route. */
-  to?: T;
+  to?: NonInferred<T>;
   /** Extra class name applied only while this link is active. */
   activeClassName?: string;
   /** Element (or component) to render as. Ignored when `children` is a function. */
