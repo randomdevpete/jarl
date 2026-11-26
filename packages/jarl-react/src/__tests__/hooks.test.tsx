@@ -147,4 +147,61 @@ describe("useLink", () => {
     fireEvent.click(link);
     expect(window.location.pathname).toBe("/about");
   });
+
+  it("does not navigate a click a handler has already default-prevented", () => {
+    goTo("/");
+    const Probe = () => {
+      const { href, onClick } = useLink(aboutAtom, {});
+      return (
+        <a
+          href={href}
+          onClick={(event) => {
+            event.preventDefault();
+            onClick(event);
+          }}
+        >
+          About
+        </a>
+      );
+    };
+    render(<Probe />);
+    fireEvent.click(screen.getByRole("link", { name: "About" }));
+    expect(window.location.pathname).toBe("/");
+  });
+
+  it("navigates when called with no event after a handler prevents default", () => {
+    goTo("/");
+    const Probe = () => {
+      const { href, onClick } = useLink(aboutAtom, {});
+      return (
+        <a
+          href={href}
+          onClick={(event) => {
+            event.preventDefault();
+            onClick();
+          }}
+        >
+          About
+        </a>
+      );
+    };
+    render(<Probe />);
+    fireEvent.click(screen.getByRole("link", { name: "About" }), { ctrlKey: true });
+    expect(window.location.pathname).toBe("/about");
+  });
+
+  it("navigates a modified click on an element that is not a link", () => {
+    goTo("/");
+    const Probe = () => {
+      const { onClick } = useLink(aboutAtom, {});
+      return (
+        <div role="button" onClick={onClick}>
+          About
+        </div>
+      );
+    };
+    render(<Probe />);
+    fireEvent.click(screen.getByRole("button", { name: "About" }), { metaKey: true });
+    expect(window.location.pathname).toBe("/about");
+  });
 });

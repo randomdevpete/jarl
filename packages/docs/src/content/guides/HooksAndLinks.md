@@ -72,5 +72,9 @@ the function-as-child form:
 ```
 
 `onClick` here already calls `event.preventDefault()` before navigating - pass it straight to the
-underlying element as-is. When the markup isn't anchor-shaped at all, prefer `useLink` directly
+underlying element as-is. On an `<a href>` it leaves a click with a modifier key held, a
+non-primary button, a `target` other than `_self` or a `download` attribute to the browser, so
+"open in new tab" keeps working; on any other element it always navigates. A click an earlier
+handler of yours has already default-prevented doesn't navigate at all; call `onClick()` with no
+event to navigate regardless. When the markup isn't anchor-shaped at all, prefer `useLink` directly
 over the render-prop form; it's the same three values without a component wrapped around them.

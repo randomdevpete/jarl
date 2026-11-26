@@ -52,8 +52,47 @@ export function useHref<T extends DefaultParams>(routeAtom: RouteAtom<T>, to: T)
 export type UseLinkResult = {
   href: string;
   active: boolean;
-  /** Attach directly to a native element's onClick, or call with no args. */
+  /**
+   * Attach directly to a native element's onClick, or call with no args. On an `<a href>`, a
+   * modified or non-primary click, a `target` other than `_self` or a `download` link is left to
+   * the browser, so "open in new tab" keeps working. A click an earlier handler has already
+   * default-prevented doesn't navigate; call `onClick()` with no event to navigate regardless.
+   */
   onClick: (event?: { preventDefault?: () => void }) => void;
+};
+
+type LinkClick = {
+  defaultPrevented?: boolean;
+  button?: number;
+  metaKey?: boolean;
+  ctrlKey?: boolean;
+  shiftKey?: boolean;
+  altKey?: boolean;
+  currentTarget?: unknown;
+};
+
+// Attributes rather than properties: an SVG <a>'s `href` and `target` are SVGAnimatedStrings.
+const isLinkWithHref = (element: unknown): element is Element => {
+  const candidate = element as Partial<Element> | null | undefined;
+  return (
+    candidate?.localName === "a" &&
+    typeof candidate.hasAttribute === "function" &&
+    (candidate.hasAttribute("href") || candidate.hasAttribute("xlink:href"))
+  );
+};
+
+const leftToBrowser = ({ button, metaKey, ctrlKey, shiftKey, altKey, currentTarget }: LinkClick) => {
+  if (!isLinkWithHref(currentTarget)) return false;
+  const target = currentTarget.getAttribute("target");
+  return Boolean(
+    (button !== undefined && button !== 0) ||
+    metaKey ||
+    ctrlKey ||
+    shiftKey ||
+    altKey ||
+    (target && target !== "_self") ||
+    currentTarget.hasAttribute("download"),
+  );
 };
 
 /** Options for `useLink`/`Link`: how strictly a link reports itself `active`. */
@@ -78,6 +117,8 @@ export function useLink<T extends DefaultParams>(
   const href = useMemo(() => reverse(to), [reverse, to]);
   const onClick = useCallback(
     (event?: { preventDefault?: () => void }) => {
+      const click = event as LinkClick | undefined;
+      if (click && (click.defaultPrevented || leftToBrowser(click))) return;
       event?.preventDefault?.();
       setRoute(to);
     },

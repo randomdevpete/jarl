@@ -33,6 +33,78 @@ describe("Link", () => {
     expect(window.location.pathname).toBe("/about");
   });
 
+  describe("clicks left to the browser", () => {
+    it("leaves a modified or non-primary click to the browser", () => {
+      render(
+        <Link route={aboutAtom} to={{}}>
+          About
+        </Link>,
+      );
+      const link = screen.getByRole("link", { name: "About" });
+      for (const modifier of ["metaKey", "ctrlKey", "shiftKey", "altKey"]) {
+        expect(fireEvent.click(link, { [modifier]: true })).toBe(true);
+      }
+      expect(fireEvent.click(link, { button: 1 })).toBe(true);
+      expect(window.location.pathname).toBe("/");
+    });
+
+    it("leaves a click on a link opening in another browsing context to the browser", () => {
+      render(
+        <Link route={aboutAtom} to={{}} target="_blank">
+          About
+        </Link>,
+      );
+      expect(fireEvent.click(screen.getByRole("link", { name: "About" }))).toBe(true);
+      expect(window.location.pathname).toBe("/");
+    });
+
+    it("leaves a download link to the browser", () => {
+      render(
+        <Link route={aboutAtom} to={{}} download>
+          About
+        </Link>,
+      );
+      expect(fireEvent.click(screen.getByRole("link", { name: "About" }))).toBe(true);
+      expect(window.location.pathname).toBe("/");
+    });
+
+    it("navigates a link targeting _self", () => {
+      render(
+        <Link route={aboutAtom} to={{}} target="_self">
+          About
+        </Link>,
+      );
+      expect(fireEvent.click(screen.getByRole("link", { name: "About" }))).toBe(false);
+      expect(window.location.pathname).toBe("/about");
+    });
+
+    it("navigates a modified click on an element that is not a link", () => {
+      render(
+        <Link route={aboutAtom} to={{}} element="button">
+          About
+        </Link>,
+      );
+      fireEvent.click(screen.getByRole("button", { name: "About" }), { ctrlKey: true });
+      expect(window.location.pathname).toBe("/about");
+    });
+
+    it("reads an SVG link's target from its attribute", () => {
+      const { container } = render(
+        <svg>
+          <Link route={aboutAtom} to={{}} target="_blank">
+            <text>About</text>
+          </Link>
+        </svg>,
+      );
+      const link = container.querySelector("a")!;
+      expect(fireEvent.click(link)).toBe(true);
+      expect(window.location.pathname).toBe("/");
+      link.removeAttribute("target");
+      expect(fireEvent.click(link)).toBe(false);
+      expect(window.location.pathname).toBe("/about");
+    });
+  });
+
   it("applies activeClassName only while active", () => {
     goTo("/about");
     render(
