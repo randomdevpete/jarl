@@ -359,7 +359,7 @@ resolve its own `jarl-atoms` dependency.
 Added to the root `package.json`:
 
 ```bash
-npm run release           # semantic-release — full run, needs NPM_TOKEN + GH_TOKEN/GITHUB_TOKEN
+npm run release           # semantic-release — full run, needs GH_TOKEN/GITHUB_TOKEN + npm trusted publishing (OIDC)
 npm run release:dry-run   # semantic-release --dry-run --no-ci — computes and prints the
                            # next version/notes without publishing, tagging, or committing
 ```
@@ -396,9 +396,13 @@ Actions. For the automated release to actually run, ticket 106 needs to:
   after `build-and-test` succeeds, never on PRs — semantic-release itself also refuses to run
   on PR builds, but the job shouldn't even attempt it. See "Release cadence" above for the
   trigger that job uses.
-- Provide these as repository secrets, injected as env vars for that job:
-  - `NPM_TOKEN` — an npm automation/publish token with publish rights to both `jarl-atoms`
-    and `jarl-react` on the registry.
+- npm publishes use trusted publishing (OIDC), not a token: the release job has
+  `id-token: write`, needs npm >= 11.5.1, and each published package needs a Trusted
+  Publisher on npmjs.com (repository `randomdevpete/jarl`, workflow `ci.yml`, no
+  environment). Provenance is generated automatically. Do not set `NPM_TOKEN` or
+  `NODE_AUTH_TOKEN`: a stale token would take precedence over OIDC. See
+  <https://docs.npmjs.com/trusted-publishers> and the `@semantic-release/npm` README.
+- Provide this as a repository secret, injected as an env var for that job:
   - `GH_TOKEN` or `GITHUB_TOKEN` — the default `secrets.GITHUB_TOKEN` GitHub Actions
     provides is sufficient for `@semantic-release/github`, as long as the job's
     `permissions:` block grants at least `contents: write` (to push the release commit
